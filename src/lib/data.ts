@@ -185,19 +185,23 @@ export async function addIncidentUpdate(incidentId: number, text: string): Promi
 
 export async function updateIncidentStatus(id: number, status: IncidentStatus): Promise<Incident | undefined> {
     try {
-        const response = await fetch(`/api/incidents/${id}`, {
-            method: 'PATCH',
+        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/de3848599ca64772bf8276fb184bf3e8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ps36EfLEFdAquzTqd-tgdR-FbNXsD-cG66FD-o5R_rM', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ AFFECT_STATE: status }),
+            body: JSON.stringify({ Id: id, Estado: status }),
         });
         if (!response.ok) {
-            throw new Error('La respuesta de la red no fue correcta');
+            const errorBody = await response.text();
+            console.error('Error al actualizar el estado del incidente. Estado:', response.status, 'Cuerpo:', errorBody);
+            throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
         }
-        return await response.json();
+        // Assuming the API returns the updated incident, but if not, we can refetch or just confirm success
+        // For now, we will fetch the incident again to ensure we have the latest data.
+        const updatedIncident = await getIncidentById(id);
+        return updatedIncident;
+
     } catch (error) {
         console.error('Error al actualizar el estado del incidente:', error);
-        // Como no tenemos acceso directo al estado, no podemos hacer un fallback efectivo.
-        // Se podría intentar recargar el incidente, pero es mejor que la UI maneje el error.
         return undefined;
     }
 }

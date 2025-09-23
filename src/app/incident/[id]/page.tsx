@@ -80,7 +80,7 @@ export default function IncidentDetailPage() {
 
     setIsSubmitting(true);
     const createdUpdate = await addIncidentUpdate(incident.id, newUpdate);
-    setUpdates(prevUpdates => [...prevUpdates, createdUpdate]);
+    setUpdates(prevUpdates => [createdUpdate, ...prevUpdates].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
     setNewUpdate("");
     setIsSubmitting(false);
   }
@@ -93,7 +93,7 @@ export default function IncidentDetailPage() {
     
     // Create the update first
     const createdUpdate = await addIncidentUpdate(incident.id, updateText);
-    setUpdates(prevUpdates => [...prevUpdates, createdUpdate]);
+    setUpdates(prevUpdates => [createdUpdate, ...prevUpdates].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
     
     // Then update the incident status
     const updatedIncident = await updateIncidentStatus(incident.id, newStatus);
@@ -233,7 +233,7 @@ export default function IncidentDetailPage() {
                 />
                 <div className="flex justify-between items-center">
                     <div className="flex gap-2">
-                       {incident.status !== 'En espera' && <Button onClick={() => handleStatusChange("En espera")} type="button" variant="outline" disabled={isSubmitting}>Poner en espera</Button>}
+                       {incident.status !== 'En espera' && incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && <Button onClick={() => handleStatusChange("En espera")} type="button" variant="outline" disabled={isSubmitting}>Poner en espera</Button>}
                        {(incident.status === 'En espera' || incident.status === 'Cerrado' || incident.status === 'Cerrada') && <Button onClick={() => handleStatusChange("Proceso")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
                        {incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && <Button onClick={() => handleStatusChange("Cerrado")} type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>}
                     </div>
