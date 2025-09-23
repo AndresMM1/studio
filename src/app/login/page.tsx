@@ -12,17 +12,32 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/auth-context";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This is a mock login. In a real app, you'd have authentication logic here.
-    // For now, we'll just redirect to the main dashboard.
-    router.push("/");
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      router.push("/");
+    } catch (error) {
+      toast({
+        title: "Error de inicio de sesión",
+        description: "El correo electrónico o la contraseña son incorrectos. Por favor, inténtelo de nuevo.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,6 +61,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               <div className="grid gap-2">
@@ -58,10 +74,12 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
-              <Button type="submit" className="w-full">
-                Iniciar Sesión
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isLoading ? "Iniciando Sesión..." : "Iniciar Sesión"}
               </Button>
             </div>
           </form>

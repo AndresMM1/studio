@@ -27,3 +27,8 @@ export interface Service {
 export interface ServiceApiResponse {
   value: Service[];
 }
+
+export interface User {
+  name: string;
+  email: string;
+}
