@@ -1,6 +1,6 @@
 "use client";
 
-import type { Incident, IncidentSeverity, IncidentStatus } from "@/lib/types";
+import type { Incident, IncidentPriority } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -14,29 +14,22 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AlertCircle, Info, ShieldAlert, TriangleAlert } from "lucide-react";
+import { AlertCircle, Info, ShieldAlert, TriangleAlert, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface IncidentTableProps {
   incidents: Incident[];
 }
 
-const statusStyles: Record<IncidentStatus, string> = {
-  New: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
-  "In Progress": "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
-  Resolved: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-};
-
-const severityMap: Record<IncidentSeverity, { icon: React.ElementType; className: string }> = {
-  Emergency: { icon: ShieldAlert, className: "text-red-500" },
-  High: { icon: TriangleAlert, className: "text-orange-500" },
-  Medium: { icon: AlertCircle, className: "text-yellow-500" },
-  Low: { icon: Info, className: "text-blue-500" },
+const priorityMap: Record<IncidentPriority, { icon: React.ElementType; className: string; badgeClassName: string }> = {
+  P0: { icon: ShieldAlert, className: "text-red-500", badgeClassName: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300" },
+  P1: { icon: TriangleAlert, className: "text-orange-500", badgeClassName: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300" },
+  P2: { icon: AlertCircle, className: "text-yellow-500", badgeClassName: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300" },
+  P3: { icon: Info, className: "text-blue-500", badgeClassName: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300" },
 };
 
 export function IncidentTable({ incidents }: IncidentTableProps) {
@@ -50,39 +43,45 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Reference</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Severity</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Time</TableHead>
+              <TableHead>Service</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Environment</TableHead>
+              <TableHead>Start Time</TableHead>
+              <TableHead className="text-right">Session Link</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {incidents.length > 0 ? (
-              incidents.map((incident) => {
-                const SeverityIcon = severityMap[incident.severity].icon;
-                const severityClassName = severityMap[incident.severity].className;
+              incidents.map((incident, index) => {
+                const PriorityIcon = priorityMap[incident.priority].icon;
+                const priorityClassName = priorityMap[incident.priority].className;
+                const badgeClassName = priorityMap[incident.priority].badgeClassName;
                 return (
-                  <TableRow key={incident.reference}>
-                    <TableCell className="font-medium">{incident.reference}</TableCell>
+                  <TableRow key={`${incident.service}-${index}`}>
+                    <TableCell className="font-medium">{incident.service}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={cn("border-0", statusStyles[incident.status])}>
-                        {incident.status}
+                      <Badge variant="outline" className={cn("border-0 font-medium", badgeClassName)}>
+                        <div className="flex items-center gap-2">
+                          <PriorityIcon className={cn("h-4 w-4", priorityClassName)} />
+                          <span>{incident.priority}</span>
+                        </div>
                       </Badge>
                     </TableCell>
+                    <TableCell>{incident.description}</TableCell>
+                    <TableCell>{incident.environment}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <SeverityIcon className={cn("h-5 w-5", severityClassName)} />
-                        <span>{incident.severity}</span>
-                      </div>
+                      {new Date(incident.startTime).toLocaleString()}
                     </TableCell>
-                    <TableCell>
-                      {incident.location.city}, {incident.location.country}
-                    </TableCell>
-                    <TableCell>{incident.type}</TableCell>
                     <TableCell className="text-right">
-                      {new Date(incident.time).toLocaleString()}
+                      {incident.sessionLink ? (
+                        <Link href={incident.sessionLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-500 hover:underline">
+                          <LinkIcon size={16} />
+                           Join
+                        </Link>
+                      ) : (
+                        "-"
+                      )}
                     </TableCell>
                   </TableRow>
                 );
@@ -100,5 +99,3 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
     </Card>
   );
 }
-
-    

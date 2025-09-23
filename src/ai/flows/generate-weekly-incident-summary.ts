@@ -11,7 +11,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateWeeklyIncidentSummaryInputSchema = z.object({
-  incidentData: z.string().describe('JSON string of incident data from the last week.  Include reference, status, location, time, type, and severity.'),
+  incidentData: z.string().describe('JSON string of incident data from the last week.  Include service, priority, description, environment and start time.'),
 });
 export type GenerateWeeklyIncidentSummaryInput = z.infer<typeof GenerateWeeklyIncidentSummaryInputSchema>;
 

@@ -22,7 +22,7 @@ export async function getWeeklySummary(incidents: Incident[]): Promise<string> {
 export async function getMonthlySummary(month: string, incidents: Incident[]): Promise<string> {
   // The provided AI flow for monthly summary does not use incident data directly.
   // It generates a generic summary for the given month.
-  if (incidents.filter(i => i.time.startsWith(month)).length === 0) {
+  if (incidents.filter(i => i.startTime.startsWith(month)).length === 0) {
       return `No incident data available for ${month} to generate a summary.`
   }
 

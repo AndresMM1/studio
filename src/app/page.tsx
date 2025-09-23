@@ -3,7 +3,6 @@
 import { useState, useMemo, useTransition } from "react";
 import Link from 'next/link';
 import {
-  AlertCircle,
   BarChart,
   Bell,
   Clock,
@@ -11,17 +10,15 @@ import {
   Home,
   LineChart,
   Loader2,
-  Package,
-  Package2,
+  PlusCircle,
   Search,
   ShieldAlert,
-  ShoppingCart,
   Sparkles,
   TriangleAlert,
   Users,
 } from "lucide-react";
-import { incidents as allIncidents } from "@/lib/data";
-import { type Incident, type IncidentStatus, type IncidentSeverity } from "@/lib/types";
+import { incidents as allIncidents, addIncident } from "@/lib/data";
+import { type Incident, type IncidentPriority } from "@/lib/types";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { IncidentTable } from "@/components/dashboard/incident-table";
 import { Button } from "@/components/ui/button";
@@ -38,9 +35,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
@@ -59,18 +53,27 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
-const severities: IncidentSeverity[] = ["Emergency", "High", "Medium", "Low"];
-const statuses: IncidentStatus[] = ["New", "In Progress", "Resolved"];
+const priorities: IncidentPriority[] = ["P0", "P1", "P2", "P3"];
+const environments = ["Production", "Staging"];
 
 const ITEMS_PER_PAGE = 10;
 
 export default function DashboardPage() {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<IncidentStatus | "all">("all");
-  const [severity, setSeverity] = useState<IncidentSeverity | "all">("all");
-  const [country, setCountry] = useState<string>("all");
+  const [priority, setPriority] = useState<IncidentPriority | "all">("all");
+  const [environment, setEnvironment] = useState<string>("all");
   
   const [summary, setSummary] = useState<string>("");
   const [summaryTitle, setSummaryTitle] = useState<string>("");
@@ -78,22 +81,26 @@ export default function DashboardPage() {
   const [isGenerating, startTransition] = useTransition();
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
-  const countries = useMemo(() => {
-    const uniqueCountries = new Set(allIncidents.map((i) => i.location.country));
-    return ["all", ...Array.from(uniqueCountries)];
-  }, []);
+  // Form state for new incident
+  const [newIncidentService, setNewIncidentService] = useState("");
+  const [newIncidentDescription, setNewIncidentDescription] = useState("");
+  const [newIncidentPriority, setNewIncidentPriority] = useState<IncidentPriority>("P2");
+  const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Production");
+  const [newIncidentSessionLink, setNewIncidentSessionLink] = useState("");
+  const [incidents, setIncidents] = useState(allIncidents);
+
 
   const filteredIncidents = useMemo(() => {
-    return allIncidents.filter((incident) => {
+    return incidents.filter((incident) => {
       return (
-        (search === "" || incident.reference.toLowerCase().includes(search.toLowerCase())) &&
-        (status === "all" || incident.status === status) &&
-        (severity === "all" || incident.severity === severity) &&
-        (country === "all" || incident.location.country === country)
+        (search === "" || incident.service.toLowerCase().includes(search.toLowerCase())) &&
+        (priority === "all" || incident.priority === priority) &&
+        (environment === "all" || incident.environment === environment)
       );
     });
-  }, [search, status, severity, country]);
+  }, [search, priority, environment, incidents]);
 
   const paginatedIncidents = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -113,15 +120,15 @@ export default function DashboardPage() {
   }, [filteredIncidents]);
 
   const handleDownload = () => {
-    const headers = ["Reference", "Status", "Location", "Time", "Type", "Severity"];
+    const headers = ["Service", "Start Time", "Description", "Priority", "Environment", "Session Link"];
     const rows = filteredIncidents.map((i) =>
       [
-        i.reference,
-        i.status,
-        `${i.location.city}, ${i.location.country}`,
-        i.time,
-        i.type,
-        i.severity,
+        i.service,
+        i.startTime,
+        `"${i.description}"`,
+        i.priority,
+        i.environment,
+        i.sessionLink,
       ].join(",")
     );
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
@@ -139,15 +146,38 @@ export default function DashboardPage() {
       let result = '';
       if (period === 'weekly') {
         setSummaryTitle('Weekly Incident Summary');
+        // @ts-ignore
         result = await getWeeklySummary(filteredIncidents);
       } else {
         setSummaryTitle('Monthly Incident Summary');
         const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+        // @ts-ignore
         result = await getMonthlySummary(currentMonth, filteredIncidents);
       }
       setSummary(result);
       setIsSummaryOpen(true);
     });
+  };
+
+  const handleCreateIncident = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newIncident: Incident = {
+      service: newIncidentService,
+      startTime: new Date().toISOString(),
+      description: newIncidentDescription,
+      priority: newIncidentPriority,
+      environment: newIncidentEnvironment,
+      sessionLink: newIncidentSessionLink,
+    };
+    addIncident(newIncident);
+    setIncidents([...allIncidents]);
+    setCreateModalOpen(false);
+    // Reset form
+    setNewIncidentService("");
+    setNewIncidentDescription("");
+    setNewIncidentPriority("P2");
+    setNewIncidentEnvironment("Production");
+    setNewIncidentSessionLink("");
   };
 
   return (
@@ -213,10 +243,95 @@ export default function DashboardPage() {
             <h1 className="text-xl font-bold tracking-tight">Incident Insight</h1>
           </div>
           <div className="flex flex-1 items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+            <Dialog open={isCreateModalOpen} onOpenChange={setCreateModalOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Create Incident
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <form onSubmit={handleCreateIncident}>
+                  <DialogHeader>
+                    <DialogTitle>Create New Incident</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="service" className="text-right">
+                        Service
+                      </Label>
+                      <Input
+                        id="service"
+                        value={newIncidentService}
+                        onChange={(e) => setNewIncidentService(e.target.value)}
+                        className="col-span-3"
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="description" className="text-right">
+                        Description
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={newIncidentDescription}
+                        onChange={(e) => setNewIncidentDescription(e.target.value)}
+                        className="col-span-3"
+                        required
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="priority" className="text-right">
+                        Priority
+                      </Label>
+                       <Select onValueChange={(value) => setNewIncidentPriority(value as IncidentPriority)} defaultValue={newIncidentPriority}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {priorities.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="environment" className="text-right">
+                        Environment
+                      </Label>
+                      <Select onValueChange={(value) => setNewIncidentEnvironment(value)} defaultValue={newIncidentEnvironment}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Select environment" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {environments.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="sessionLink" className="text-right">
+                        Session Link
+                      </Label>
+                      <Input
+                        id="sessionLink"
+                        value={newIncidentSessionLink}
+                        onChange={(e) => setNewIncidentSessionLink(e.target.value)}
+                        className="col-span-3"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                       <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit">Create</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+
             <div className="ml-auto flex-initial">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button disabled={isGenerating}>
+                  <Button variant="outline" disabled={isGenerating}>
                     {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                     Generate Summary
                   </Button>
@@ -250,7 +365,7 @@ export default function DashboardPage() {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search by reference..."
+                placeholder="Search by service..."
                 className="w-full rounded-lg bg-background pl-8"
                 value={search}
                 onChange={(e) => {
@@ -259,46 +374,33 @@ export default function DashboardPage() {
                 }}
               />
             </div>
-            <div className="grid grid-cols-2 gap-4 md:flex md:flex-row">
-              <Select value={status} onValueChange={(value) => {
-                  setStatus(value as IncidentStatus | "all");
+            <div className="grid grid-cols-1 gap-4 md:flex md:flex-row md:grid-cols-2">
+              <Select value={priority} onValueChange={(value) => {
+                  setPriority(value as IncidentPriority | "all");
                   setCurrentPage(1);
                 }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by status" />
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by priority" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {statuses.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  {priorities.map((p) => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={severity} onValueChange={(value) => {
-                setSeverity(value as IncidentSeverity | "all");
+              <Select value={environment} onValueChange={(value) => {
+                setEnvironment(value as "all" | string);
                 setCurrentPage(1);
               }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by severity" />
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <SelectValue placeholder="Filter by environment" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Severities</SelectItem>
-                  {severities.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={country} onValueChange={(value) => {
-                setCountry(value);
-                setCurrentPage(1);
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {countries.map((c) => (
-                    <SelectItem key={c} value={c}>{c === "all" ? "All Countries" : c}</SelectItem>
-                  ))}
+                    <SelectItem value="all">All Environments</SelectItem>
+                    {environments.map((e) => (
+                        <SelectItem key={e} value={e}>{e}</SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -347,5 +449,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

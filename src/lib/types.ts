@@ -1,14 +1,10 @@
-export type IncidentStatus = "New" | "In Progress" | "Resolved";
-export type IncidentSeverity = "Emergency" | "High" | "Medium" | "Low";
+export type IncidentPriority = "P0" | "P1" | "P2" | "P3";
 
 export interface Incident {
-  reference: string;
-  status: IncidentStatus;
-  location: {
-    city: string;
-    country: string;
-  };
-  time: string; // ISO 8601 format
-  type: string;
-  severity: IncidentSeverity;
+  service: string;
+  startTime: string; // ISO 8601 format
+  description: string;
+  priority: IncidentPriority;
+  environment: string;
+  sessionLink?: string;
 }
