@@ -16,6 +16,7 @@ const fallbackIncidents: Incident[] = [
     id: 2,
     service: "Pasarela de Pagos",
     startTime: "2024-07-22T14:00:00Z",
+    endDate: undefined,
     description: "Las transacciones con tarjeta de crédito están fallando.",
     priority: "Alta",
     environment: "Producción",
@@ -55,7 +56,7 @@ export async function getIncidents(): Promise<Incident[]> {
 
     if (!Array.isArray(incidentsData)) {
       console.error('La respuesta de la API no es un array y no se pudo encontrar un array de incidentes en el objeto de respuesta.', data);
-      return [];
+      return fallbackIncidents;
     }
     
     // Map API response to Incident[]
@@ -88,36 +89,54 @@ export async function getIncidents(): Promise<Incident[]> {
 }
 
 export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'endDate'>): Promise<Incident> {
-  const newIncidentData = {
-    ...incident,
-    status: 'Abierto',
+  const apiPayload = {
+    AFFECT_STATE: 'Abierto',
+    AFFECT_DETAILS: `Servicio: ${incident.service} Descripción: ${incident.description}`,
+    AFFECT_START_DATE: incident.startTime,
+    PERSON_EMAIL: 'user@example.com', // Placeholder email
+    AFFECT_PRIORITY: incident.priority,
+    AFFECT_ENVIRONMENT: incident.environment,
+    AFFECT_SERVICE: incident.service,
   };
   
   try {
-    // TODO: Reemplaza con la URL de tu API real
-    const response = await fetch('/api/incidents', {
+    const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ef5686f87ba64be5b5eddf78a326b9f9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JNjQ7w17Wf2W6KASNfz0IuKddW_Zd3bSMK8ysI0RZeY', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(newIncidentData),
+      body: JSON.stringify(apiPayload),
     });
     if (!response.ok) {
-      throw new Error('La respuesta de la red no fue correcta');
+        const errorBody = await response.text();
+        console.error('La respuesta de la red no fue correcta. Estado:', response.status, 'Cuerpo:', errorBody);
+        throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
     }
-    const createdIncident: Incident = await response.json();
-    
+    // Assuming the API returns the created incident object that matches our internal format
+    // If not, we might need to adjust this part.
+    const createdIncidentFromApi = await response.json(); 
+
+    // Let's create a full Incident object to return to the app
+    // The API might not return the full object, so we build it
+     const newId = createdIncidentFromApi.Id || Math.max(...fallbackIncidents.map(i => i.id)) + 1;
+     const createdIncident: Incident = {
+        id: newId,
+        status: 'Abierto',
+        ...incident
+     };
+
     // Also create the first update
     await addIncidentUpdate(createdIncident.id, 'Incidente creado.');
 
     return createdIncident;
   } catch (error) {
     console.error('Error al crear el incidente:', error);
-    // Como respaldo, simula la adición localmente si la API falla
+    // As a fallback, simulate adding locally if the API fails
     const newId = Math.max(...fallbackIncidents.map(i => i.id)) + 1;
     const createdIncident: Incident = {
-        ...newIncidentData,
         id: newId,
+        status: 'Abierto',
+        ...incident
     };
     fallbackIncidents.unshift(createdIncident);
     // Also create the first update
