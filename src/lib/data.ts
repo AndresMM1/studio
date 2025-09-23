@@ -1,38 +1,4 @@
-import { Console } from "console";
 import type { Incident, IncidentStatus, IncidentUpdate, IncidentPriority } from "./types";
-
-// Esta es una matriz de respaldo en caso de que la API falle, o para desarrollo sin un backend.
-const fallbackIncidents: Incident[] = [
-    {
-    id: 1,
-    service: "Servicio de Autenticación",
-    startTime: "2024-07-22T10:30:00Z",
-    endDate: "2024-07-22T11:30:00Z",
-    description: "Los usuarios no pueden iniciar sesión.",
-    priority: "Crítica",
-    environment: "Producción",
-    status: "Proceso",
-  },
-  {
-    id: 2,
-    service: "Pasarela de Pagos",
-    startTime: "2024-07-22T14:00:00Z",
-    endDate: undefined,
-    description: "Las transacciones con tarjeta de crédito están fallando.",
-    priority: "Alta",
-    environment: "Producción",
-    status: "Cerrado",
-  },
-];
-
-const fallbackUpdates: IncidentUpdate[] = [
-    { id: 1, incidentId: 1, text: "Incidente declarado, P0 debido al impacto generalizado.", timestamp: "2024-07-22T10:31:00Z" },
-    { id: 2, incidentId: 1, text: "Equipo del servicio de autenticación contactado.", timestamp: "2024-07-22T10:35:00Z" },
-    { id: 3, incidentId: 2, text: "Investigando informes de pagos fallidos.", timestamp: "2024-07-22T14:02:00Z" },
-    { id: 4, incidentId: 2, text: "Problema identificado con el proveedor ascendente.", timestamp: "2024-07-22T14:30:00Z" },
-    { id: 5, incidentId: 2, text: "El proveedor ascendente resolvió el problema. Monitoreando transacciones.", timestamp: "2024-07-22T15:00:00Z" },
-    { id: 6, incidentId: 2, text: "Las transacciones han vuelto a la normalidad. Cerrando incidente.", timestamp: "2024-07-22T15:15:00Z" }
-];
 
 function parseAffectDetails(details: string): { service: string; description: string } {
   const serviceMatch = details.match(/Servicio:\s*(.*?)\s*Descripción:/);
@@ -48,16 +14,16 @@ export async function getIncidents(): Promise<Incident[]> {
   try {
     const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/de271aba90734dbfbf3276dc9791b5e0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=BR1gsw9rIACMMFNdaLQ8C6hP-UQVfNcs4uflH_lY0-A'); 
     if (!response.ok) {
-       console.warn('La API falló, usando datos de respaldo.');
-      return fallbackIncidents;
+       console.error('La API de incidentes falló con el estado:', response.status);
+      return [];
     }
     const data = await response.json();
 
     const incidentsData = data.value || [];
 
     if (!Array.isArray(incidentsData)) {
-      console.error('La respuesta de la API no es un array y no se pudo encontrar un array de incidentes en el objeto de respuesta.', data);
-      return fallbackIncidents;
+      console.error('La respuesta de la API de incidentes no es un array y no se pudo encontrar un array de incidentes en el objeto de respuesta.', data);
+      return [];
     }
     
     // Map API response to Incident[]
@@ -94,7 +60,7 @@ export async function getIncidents(): Promise<Incident[]> {
     });
   } catch (error) {
     console.error('Error al obtener incidentes:', error);
-    return fallbackIncidents;
+    return [];
   }
 }
 
@@ -109,44 +75,31 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
     AFFECT_SERVICE: incident.service,
   };
   
-  try {
-    const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ef5686f87ba64be5b5eddf78a326b9f9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JNjQ7w17Wf2W6KASNfz0IuKddW_Zd3bSMK8ysI0RZeY', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(apiPayload),
-    });
-    if (!response.ok) {
-        const errorBody = await response.text();
-        console.error('La respuesta de la red no fue correcta. Estado:', response.status, 'Cuerpo:', errorBody);
-        throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
-    }
-    
-    const createdIncidentFromApi = await response.json(); 
-
-     const newId = createdIncidentFromApi.Id || Math.max(...fallbackIncidents.map(i => i.id)) + 1;
-     const createdIncident: Incident = {
-        id: newId,
-        status: 'Proceso',
-        ...incident
-     };
-
-    await addIncidentUpdate(createdIncident.id, 'Incidente creado.');
-
-    return createdIncident;
-  } catch (error) {
-    console.error('Error al crear el incidente:', error);
-    const newId = Math.max(...fallbackIncidents.map(i => i.id)) + 1;
-    const createdIncident: Incident = {
-        id: newId,
-        status: 'Proceso',
-        ...incident
-    };
-    fallbackIncidents.unshift(createdIncident);
-    addIncidentUpdate(newId, 'Incidente creado.');
-    return createdIncident;
+  const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ef5686f87ba64be5b5eddf78a326b9f9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JNjQ7w17Wf2W6KASNfz0IuKddW_Zd3bSMK8ysI0RZeY', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(apiPayload),
+  });
+  if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('La respuesta de la red no fue correcta. Estado:', response.status, 'Cuerpo:', errorBody);
+      throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
   }
+  
+  const createdIncidentFromApi = await response.json(); 
+
+   const newId = createdIncidentFromApi.Id || Date.now();
+   const createdIncident: Incident = {
+      id: newId,
+      status: 'Proceso',
+      ...incident
+   };
+
+  await addIncidentUpdate(createdIncident.id, 'Incidente creado.');
+
+  return createdIncident;
 }
 
 export async function getIncidentById(id: number): Promise<Incident | undefined> {
@@ -167,14 +120,14 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
         if (!response.ok) {
             const errorBody = await response.text();
             console.error(`API de actualizaciones falló para el incidente ${incidentId}. Estado: ${response.status}`, errorBody);
-            return fallbackUpdates.filter(update => update.incidentId === incidentId);
+            return [];
         }
 
         const data = await response.json();
         const updatesData = data.value || [];
         if (!Array.isArray(updatesData)) {
             console.error('La respuesta de la API de actualizaciones no es un array.', data);
-            return fallbackUpdates.filter(update => update.incidentId === incidentId);
+            return [];
         }
 
         // Map API response to IncidentUpdate[]
@@ -187,13 +140,12 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
 
     } catch (error) {
         console.error(`Error al obtener las actualizaciones del incidente ${incidentId} desde la API:`, error);
-        return fallbackUpdates.filter(update => update.incidentId === incidentId);
+        return [];
     }
 }
 
 
 export async function getIncidentUpdates(incidentId: number): Promise<IncidentUpdate[]> {
-    // Llama a la nueva función que sabe cómo manejar la respuesta de la API
     return getIncidentUpdatesFromApi(incidentId);
 }
 
@@ -209,7 +161,7 @@ export async function addIncidentUpdate(incidentId: number, text: string): Promi
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              AFFECT_Id: incidentId, // Mapeado al campo esperado por la API
+              AFFECT_Id: incidentId,
               MONITORING_DS: text,
             }),
         });
@@ -226,13 +178,11 @@ export async function addIncidentUpdate(incidentId: number, text: string): Promi
 
     } catch (error) {
         console.error('Error al agregar la actualización del incidente:', error);
-        const newId = Math.max(0, ...fallbackUpdates.map(u => u.id)) + 1;
-        const newUpdate: IncidentUpdate = {
-            id: newId,
+        // Sin fallback, simplemente creamos un objeto local para la UI
+        return {
+            id: Date.now(),
             ...newUpdateData
         };
-        fallbackUpdates.push(newUpdate);
-        return newUpdate;
     }
 }
 
@@ -250,16 +200,10 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
         return await response.json();
     } catch (error) {
         console.error('Error al actualizar el estado del incidente:', error);
-        
-        const incident = fallbackIncidents.find(i => i.id === id);
-        if (!incident) return undefined;
-
-        incident.status = status;
-        if (status === 'Cerrado' || status === 'Cerrada') {
-          incident.endDate = new Date().toISOString();
-        } else {
-          incident.endDate = undefined;
-        }
-        return incident;
+        // Como no tenemos acceso directo al estado, no podemos hacer un fallback efectivo.
+        // Se podría intentar recargar el incidente, pero es mejor que la UI maneje el error.
+        return undefined;
     }
 }
+
+    

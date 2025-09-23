@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from 'next/link';
 import {
   BarChart,
@@ -8,6 +8,7 @@ import {
   Clock,
   Home,
   LineChart,
+  Loader2,
   PlusCircle,
   Search,
   ShieldAlert,
@@ -28,7 +29,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getWeeklySummary, getMonthlySummary } from "@/app/actions";
 import {
   Dialog,
   DialogContent,
@@ -50,9 +50,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
@@ -79,12 +77,15 @@ export default function DashboardPage() {
   const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Producción");
   const [newIncidentStartTime, setNewIncidentStartTime] = useState(new Date().toISOString().slice(0, 16));
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     async function loadIncidents() {
+      setIsLoading(true);
       const fetchedIncidents = await getIncidents();
       setIncidents(fetchedIncidents);
+      setIsLoading(false);
     }
     loadIncidents();
   }, []);
@@ -120,27 +121,35 @@ export default function DashboardPage() {
   
   const handleCreateIncident = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newIncidentData = {
-      service: newIncidentService,
-      startTime: new Date(newIncidentStartTime).toISOString(),
-      description: newIncidentDescription,
-      priority: newIncidentPriority,
-      environment: newIncidentEnvironment,
-    };
-    const newIncident = await addIncident(newIncidentData);
-    setIncidents(prevIncidents => [newIncident, ...prevIncidents]);
-    setCreateModalOpen(false);
-    // Reset form
-    setNewIncidentService("");
-    setNewIncidentDescription("");
-    setNewIncidentPriority("Media");
-    setNewIncidentEnvironment("Producción");
-    setNewIncidentStartTime(new Date().toISOString().slice(0, 16));
+    try {
+        const newIncidentData = {
+          service: newIncidentService,
+          startTime: new Date(newIncidentStartTime).toISOString(),
+          description: newIncidentDescription,
+          priority: newIncidentPriority,
+          environment: newIncidentEnvironment,
+        };
+        const newIncident = await addIncident(newIncidentData);
+        setIncidents(prevIncidents => [newIncident, ...prevIncidents]);
+        setCreateModalOpen(false);
+        // Reset form
+        setNewIncidentService("");
+        setNewIncidentDescription("");
+        setNewIncidentPriority("Media");
+        setNewIncidentEnvironment("Producción");
+        setNewIncidentStartTime(new Date().toISOString().slice(0, 16));
 
-    toast({
-      title: "Incidente Creado",
-      description: "El nuevo incidente ha sido creado exitosamente.",
-    });
+        toast({
+          title: "Incidente Creado",
+          description: "El nuevo incidente ha sido creado exitosamente.",
+        });
+    } catch (error) {
+        toast({
+            title: "Error al crear el incidente",
+            description: "No se pudo crear el incidente. Por favor, inténtelo de nuevo.",
+            variant: "destructive"
+        })
+    }
   };
 
   return (
@@ -376,32 +385,40 @@ export default function DashboardPage() {
                     </Select>
                   </div>
                 </div>
-
-                <IncidentTable incidents={paginatedIncidents} />
                 
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
-                    Mostrando página {currentPage} de {totalPages}
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-64">
+                    <Loader2 className="h-16 w-16 animate-spin text-primary" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Anterior
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                    >
-                      Siguiente
-                    </Button>
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    <IncidentTable incidents={paginatedIncidents} />
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="text-sm text-muted-foreground">
+                        Mostrando página {currentPage} de {totalPages}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                          disabled={currentPage === 1}
+                        >
+                          Anterior
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                        >
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 
@@ -411,3 +428,5 @@ export default function DashboardPage() {
     </TooltipProvider>
   );
 }
+
+    

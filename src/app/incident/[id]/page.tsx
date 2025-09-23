@@ -29,6 +29,7 @@ import {
   Briefcase,
   Layers,
   CalendarCheck,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -54,21 +55,62 @@ export default function IncidentDetailPage() {
   const [updates, setUpdates] = useState<IncidentUpdate[]>([]);
   const [newUpdate, setNewUpdate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (params.id) {
       const id = parseInt(params.id as string, 10);
       async function loadData() {
+        setIsLoading(true);
         const [fetchedIncident, fetchedUpdates] = await Promise.all([
           getIncidentById(id),
           getIncidentUpdates(id)
         ]);
         setIncident(fetchedIncident || null);
         setUpdates(fetchedUpdates || []);
+        setIsLoading(false);
       }
       loadData();
     }
   }, [params.id]);
+
+  const handleAddUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!incident || newUpdate.trim() === "" || isSubmitting) return;
+
+    setIsSubmitting(true);
+    const createdUpdate = await addIncidentUpdate(incident.id, newUpdate);
+    setUpdates(prevUpdates => [...prevUpdates, createdUpdate]);
+    setNewUpdate("");
+    setIsSubmitting(false);
+  }
+  
+  const handleStatusChange = async (newStatus: IncidentStatus) => {
+    if(!incident || isSubmitting) return;
+
+    setIsSubmitting(true);
+    const updateText = `Estado cambiado a ${newStatus}.`;
+    
+    // Create the update first
+    const createdUpdate = await addIncidentUpdate(incident.id, updateText);
+    setUpdates(prevUpdates => [...prevUpdates, createdUpdate]);
+    
+    // Then update the incident status
+    const updatedIncident = await updateIncidentStatus(incident.id, newStatus);
+    if (updatedIncident) {
+      setIncident(updatedIncident);
+    }
+    
+    setIsSubmitting(false);
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!incident) {
     return (
@@ -91,36 +133,6 @@ export default function IncidentDetailPage() {
             </Card>
         </div>
     );
-  }
-
-  const handleAddUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newUpdate.trim() === "" || isSubmitting) return;
-
-    setIsSubmitting(true);
-    const createdUpdate = await addIncidentUpdate(incident.id, newUpdate);
-    setUpdates(prevUpdates => [...prevUpdates, createdUpdate]);
-    setNewUpdate("");
-    setIsSubmitting(false);
-  }
-  
-  const handleStatusChange = async (newStatus: IncidentStatus) => {
-    if(isSubmitting) return;
-
-    setIsSubmitting(true);
-    const updateText = `Estado cambiado a ${newStatus}.`;
-    
-    // Create the update first
-    const createdUpdate = await addIncidentUpdate(incident.id, updateText);
-    setUpdates(prevUpdates => [...prevUpdates, createdUpdate]);
-    
-    // Then update the incident status
-    const updatedIncident = await updateIncidentStatus(incident.id, newStatus);
-    if (updatedIncident) {
-      setIncident(updatedIncident);
-    }
-    
-    setIsSubmitting(false);
   }
 
   const PriorityIcon = priorityMap[incident.priority].icon;
@@ -189,7 +201,7 @@ export default function IncidentDetailPage() {
             <div>
                 <h3 className="text-xl font-semibold mb-4">Línea de tiempo de Avances</h3>
                 <div className="space-y-4">
-                    {updates.map((update, index) => (
+                    {updates.map((update) => (
                         <div key={update.id} className="flex gap-4">
                             <div className="flex flex-col items-center">
                                 <div className="w-3 h-3 bg-primary rounded-full" />
@@ -222,7 +234,7 @@ export default function IncidentDetailPage() {
                     <div className="flex gap-2">
                        {incident.status !== 'En espera' && <Button onClick={() => handleStatusChange("En espera")} type="button" variant="outline" disabled={isSubmitting}>Poner en espera</Button>}
                        {incident.status !== 'Proceso' && <Button onClick={() => handleStatusChange("Proceso")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
-                       {incident.status !== 'Cerrado' && <Button onClick={() => handleStatusChange("Cerrado")} type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>}
+                       {incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && <Button onClick={() => handleStatusChange("Cerrado")} type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>}
                     </div>
                      <Button type="submit" disabled={isSubmitting || newUpdate.trim() === ''}>
                         {isSubmitting ? "Enviando..." : "Agregar Actualización"}
@@ -235,3 +247,5 @@ export default function IncidentDetailPage() {
     </div>
   );
 }
+
+    
