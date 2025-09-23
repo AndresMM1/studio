@@ -141,10 +141,10 @@ export default function DashboardPage() {
   return (
     <TooltipProvider>
       <div className="grid min-h-screen w-full md:grid-cols-[60px_1fr] lg:grid-cols-[60px_1fr]">
-        <div className="hidden border-r bg-card md:block">
+        <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
-            <div className="flex h-14 items-center justify-center border-b px-4 lg:h-[60px] lg:px-6">
-              <Link href="/" className="flex items-center gap-2 font-semibold">
+            <div className="flex h-14 items-center justify-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
+              <Link href="/" className="flex items-center gap-2 font-semibold text-sidebar-primary-foreground">
                 <ShieldAlert className="h-6 w-6" />
                 <span className="sr-only">Gestión de Incidentes</span>
               </Link>
@@ -155,7 +155,7 @@ export default function DashboardPage() {
                   <TooltipTrigger asChild>
                     <Link
                       href="#"
-                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-primary transition-colors hover:text-foreground md:h-8 md:w-8"
+                      className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
                     >
                       <Home className="h-5 w-5" />
                       <span className="sr-only">Panel</span>
@@ -167,7 +167,7 @@ export default function DashboardPage() {
                   <TooltipTrigger asChild>
                     <Link
                       href="#"
-                      className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
                     >
                       <Users className="h-5 w-5" />
                       <span className="sr-only">Usuarios</span>
@@ -179,7 +179,7 @@ export default function DashboardPage() {
                   <TooltipTrigger asChild>
                     <Link
                       href="#"
-                      className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                      className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
                     >
                       <LineChart className="h-5 w-5" />
                       <span className="sr-only">Analíticas</span>
@@ -192,8 +192,8 @@ export default function DashboardPage() {
             <div className="mt-auto p-4 flex justify-center">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-muted cursor-pointer">
-                    <User className="h-5 w-5" />
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-sidebar-accent cursor-pointer">
+                    <User className="h-5 w-5 text-sidebar-accent-foreground" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="right">
