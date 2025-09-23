@@ -45,8 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const responseData = await response.json();
 
-    if (responseData && responseData.name) {
-        const userData = { name: responseData.name, email };
+    if (responseData && responseData.nombre) {
+        const userData = { name: responseData.nombre, email };
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
     } else {
