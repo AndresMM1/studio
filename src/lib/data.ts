@@ -124,7 +124,7 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
         }
 
         const data = await response.json();
-        const updatesData = data.value || [];
+        const updatesData = data.body.value || [];
         if (!Array.isArray(updatesData)) {
             console.error('La respuesta de la API de actualizaciones no es un array.', data);
             return [];
@@ -151,38 +151,34 @@ export async function getIncidentUpdates(incidentId: number): Promise<IncidentUp
 
 
 export async function addIncidentUpdate(incidentId: number, text: string): Promise<IncidentUpdate> {
+    const timestamp = new Date().toISOString();
     const newUpdateData = {
-        incidentId,
-        text,
-        timestamp: new Date().toISOString()
+        AFFECT_ID: incidentId,
+        MONITORING_DS: text,
+        MONITORING_DATE: timestamp,
     };
     try {
-        const response = await fetch(`/api/incidents/${incidentId}/updates`, {
+        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c33e8022de504514bdf4eed5e3cd7411/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=o0Y7Zo8h7qLfiHkHReujjzOSInYf26drDXb2--cEIS8', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              AFFECT_Id: incidentId,
-              MONITORING_DS: text,
-            }),
+            body: JSON.stringify(newUpdateData),
         });
         if (!response.ok) {
-            throw new Error('La respuesta de la red no fue correcta');
+            const errorBody = await response.text();
+            console.error('Error al agregar la actualización del incidente. Estado:', response.status, 'Cuerpo:', errorBody);
+            throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
         }
         const createdUpdateFromApi = await response.json();
         return {
-            id: createdUpdateFromApi.Id,
+            id: createdUpdateFromApi.Id || Date.now(),
             incidentId: incidentId,
             text: text,
-            timestamp: new Date().toISOString()
+            timestamp: timestamp
         };
 
     } catch (error) {
         console.error('Error al agregar la actualización del incidente:', error);
-        // Sin fallback, simplemente creamos un objeto local para la UI
-        return {
-            id: Date.now(),
-            ...newUpdateData
-        };
+        throw error;
     }
 }
 
@@ -205,5 +201,3 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
         return undefined;
     }
 }
-
-    
