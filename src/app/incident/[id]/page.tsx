@@ -201,21 +201,22 @@ export default function IncidentDetailPage() {
             <div>
                 <h3 className="text-xl font-semibold mb-4">Línea de tiempo de Avances</h3>
                 <div className="space-y-4">
-                    {updates.map((update) => (
-                        <div key={update.id} className="flex gap-4">
-                            <div className="flex flex-col items-center">
-                                <div className="w-3 h-3 bg-primary rounded-full" />
-                                <div className="w-px h-full bg-border" />
+                    {updates.length > 0 ? (
+                        updates.map((update) => (
+                            <div key={update.id} className="flex gap-4">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-3 h-3 bg-primary rounded-full" />
+                                    <div className="w-px h-full bg-border" />
+                                </div>
+                                <div>
+                                    <p className="font-medium whitespace-pre-wrap">{update.text}</p>
+                                    <p className="text-xs text-muted-foreground">{new Date(update.timestamp).toLocaleString()}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="font-medium whitespace-pre-wrap">{update.text}</p>
-                                <p className="text-xs text-muted-foreground">{new Date(update.timestamp).toLocaleString()}</p>
-                            </div>
-                        </div>
-                    ))}
-                     {updates.length === 0 && (
+                        ))
+                    ) : (
                         <p className="text-muted-foreground">Aún no hay actualizaciones.</p>
-                     )}
+                    )}
                 </div>
             </div>
 
@@ -233,7 +234,7 @@ export default function IncidentDetailPage() {
                 <div className="flex justify-between items-center">
                     <div className="flex gap-2">
                        {incident.status !== 'En espera' && <Button onClick={() => handleStatusChange("En espera")} type="button" variant="outline" disabled={isSubmitting}>Poner en espera</Button>}
-                       {incident.status !== 'Proceso' && <Button onClick={() => handleStatusChange("Proceso")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
+                       {(incident.status === 'En espera' || incident.status === 'Cerrado' || incident.status === 'Cerrada') && <Button onClick={() => handleStatusChange("Proceso")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
                        {incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && <Button onClick={() => handleStatusChange("Cerrado")} type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>}
                     </div>
                      <Button type="submit" disabled={isSubmitting || newUpdate.trim() === ''}>
@@ -247,5 +248,3 @@ export default function IncidentDetailPage() {
     </div>
   );
 }
-
-    
