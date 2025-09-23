@@ -32,18 +32,49 @@ const fallbackUpdates: IncidentUpdate[] = [
     { id: 6, incidentId: 2, text: "Las transacciones han vuelto a la normalidad. Cerrando incidente.", timestamp: "2024-07-22T15:15:00Z" }
 ];
 
+function parseAffectDetails(details: string): { service: string; description: string } {
+  const serviceMatch = details.match(/Servicio:\s*(.*?)\s*Descripción:/);
+  const descriptionMatch = details.match(/Descripción:\s*(.*)/);
+
+  const service = serviceMatch ? serviceMatch[1].trim() : "N/A";
+  const description = descriptionMatch ? descriptionMatch[1].trim() : details;
+
+  return { service, description };
+}
 
 export async function getIncidents(): Promise<Incident[]> {
   try {
     // TODO: Reemplaza con la URL de tu API real
     const response = await fetch('/api/incidents'); 
     if (!response.ok) {
-      // Si la API falla, usa los datos de respaldo
-      console.warn('La API falló, usando datos de respaldo.');
+       console.warn('La API falló, usando datos de respaldo.');
       return fallbackIncidents;
     }
-    const incidents: Incident[] = await response.json();
-    return incidents;
+    const data = await response.json();
+
+    // Map API response to Incident[]
+    return data.value.map((item: any): Incident => {
+      const { service, description } = parseAffectDetails(item.AFFECT_DETAILS || "");
+      
+      let priority: Incident["priority"] = "Baja";
+      if(item.AFFECT_PRIORITY) {
+          const p = item.AFFECT_PRIORITY.charAt(0).toUpperCase() + item.AFFECT_PRIORITY.slice(1).toLowerCase();
+          if (p === "Crítica" || p === "Alta" || p === "Media" || p === "Baja") {
+              priority = p;
+          }
+      }
+
+      return {
+        id: item.Id,
+        service: service,
+        description: description,
+        startTime: item.AFFECT_START_DATE,
+        priority: priority,
+        status: item.AFFECT_STATE === "Cerrada" ? "Cerrado" : item.AFFECT_STATE,
+        environment: item.AFFECT_ENVIROMENT || "Producción",
+        sessionLink: item.AFFECT_LINK,
+      };
+    });
   } catch (error) {
     console.error('Error al obtener incidentes:', error);
     return fallbackIncidents;
