@@ -153,9 +153,9 @@ export async function getIncidentUpdates(incidentId: number): Promise<IncidentUp
 export async function addIncidentUpdate(incidentId: number, text: string): Promise<IncidentUpdate> {
     const timestamp = new Date().toISOString();
     const newUpdateData = {
-        AFFECT_ID: incidentId,
-        MONITORING_DS: text,
+        AFFECT_ID: incidentId.toString(),
         MONITORING_DATE: timestamp,
+        MONITORING_DS: text,
     };
     try {
         const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c33e8022de504514bdf4eed5e3cd7411/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=o0Y7Zo8h7qLfiHkHReujjzOSInYf26drDXb2--cEIS8', {
