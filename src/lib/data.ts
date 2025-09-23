@@ -124,7 +124,7 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
         }
 
         const data = await response.json();
-        const updatesData = data.body.value || [];
+        const updatesData = data.value || [];
         if (!Array.isArray(updatesData)) {
             console.error('La respuesta de la API de actualizaciones no es un array.', data);
             return [];
