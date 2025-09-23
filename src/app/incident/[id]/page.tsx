@@ -42,9 +42,9 @@ const priorityMap = {
 };
 
 const statusMap = {
-  "Open": { icon: HardHat, className: "text-green-600", badgeClassName: "bg-green-100 text-green-800" },
-  "On Hold": { icon: CircleOff, className: "text-gray-500", badgeClassName: "bg-gray-100 text-gray-800" },
-  "Closed": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800" },
+  "Abierto": { icon: HardHat, className: "text-green-600", badgeClassName: "bg-green-100 text-green-800" },
+  "En espera": { icon: CircleOff, className: "text-gray-500", badgeClassName: "bg-gray-100 text-gray-800" },
+  "Cerrado": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800" },
 };
 
 export default function IncidentDetailPage() {
@@ -67,16 +67,16 @@ export default function IncidentDetailPage() {
         <div className="flex min-h-screen items-center justify-center">
             <Card>
                 <CardHeader>
-                    <CardTitle>Incident Not Found</CardTitle>
+                    <CardTitle>Incidente no encontrado</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p>The incident you are looking for does not exist.</p>
+                    <p>El incidente que estás buscando no existe.</p>
                 </CardContent>
                 <CardFooter>
                      <Button asChild>
                         <Link href="/">
                             <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Dashboard
+                            Volver al Panel
                         </Link>
                     </Button>
                 </CardFooter>
@@ -99,7 +99,7 @@ export default function IncidentDetailPage() {
   };
 
   const handleStatusChange = (newStatus: IncidentStatus) => {
-    const updateText = `Status changed to ${newStatus}.`;
+    const updateText = `Estado cambiado a ${newStatus}.`;
     handleUpdate(newStatus, updateText);
   }
 
@@ -118,7 +118,7 @@ export default function IncidentDetailPage() {
         <Button asChild variant="outline" size="sm">
             <Link href="/">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Dashboard
+                Volver al Panel
             </Link>
         </Button>
       </div>
@@ -129,7 +129,7 @@ export default function IncidentDetailPage() {
             <div>
                 <CardTitle className="text-3xl font-bold">{incident.service}: {incident.description}</CardTitle>
                 <CardDescription className="mt-2 text-lg">
-                    Incident #{incident.id}
+                    Incidente #{incident.id}
                 </CardDescription>
             </div>
              <div className="flex gap-2">
@@ -166,7 +166,7 @@ export default function IncidentDetailPage() {
                      <div className="flex items-center gap-2">
                         <LinkIcon className="h-4 w-4" />
                         <Link href={incident.sessionLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                           Join Session
+                           Unirse a la sesión
                         </Link>
                     </div>
                 )}
@@ -175,7 +175,7 @@ export default function IncidentDetailPage() {
             <Separator className="my-6" />
 
             <div>
-                <h3 className="text-xl font-semibold mb-4">Incident Timeline</h3>
+                <h3 className="text-xl font-semibold mb-4">Línea de tiempo del incidente</h3>
                 <div className="space-y-4">
                     {incident.updates.map((update, index) => (
                         <div key={index} className="flex gap-4">
@@ -190,7 +190,7 @@ export default function IncidentDetailPage() {
                         </div>
                     ))}
                      {incident.updates.length === 0 && (
-                        <p className="text-muted-foreground">No updates yet.</p>
+                        <p className="text-muted-foreground">Aún no hay actualizaciones.</p>
                      )}
                 </div>
             </div>
@@ -198,22 +198,22 @@ export default function IncidentDetailPage() {
             <Separator className="my-6" />
             
             <form onSubmit={handleAddUpdate}>
-                <h3 className="text-xl font-semibold mb-4">Add Update</h3>
+                <h3 className="text-xl font-semibold mb-4">Agregar Actualización</h3>
                 <Textarea 
                     value={newUpdate}
                     onChange={(e) => setNewUpdate(e.target.value)}
-                    placeholder="Provide an update on the incident..."
+                    placeholder="Proporcionar una actualización sobre el incidente..."
                     className="mb-4"
                     disabled={isSubmitting}
                 />
                 <div className="flex justify-between items-center">
                     <div className="flex gap-2">
-                       {incident.status !== 'On Hold' && <Button onClick={() => handleStatusChange("On Hold")} type="button" variant="outline" disabled={isSubmitting}>Put on Hold</Button>}
-                       {incident.status !== 'Open' && <Button onClick={() => handleStatusChange("Open")} type="button" variant="outline" disabled={isSubmitting}>Reopen Incident</Button>}
-                       {incident.status !== 'Closed' && <Button onClick={() => handleStatusChange("Closed")} type="button" variant="destructive" disabled={isSubmitting}>Close Incident</Button>}
+                       {incident.status !== 'En espera' && <Button onClick={() => handleStatusChange("En espera")} type="button" variant="outline" disabled={isSubmitting}>Poner en espera</Button>}
+                       {incident.status !== 'Abierto' && <Button onClick={() => handleStatusChange("Abierto")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
+                       {incident.status !== 'Cerrado' && <Button onClick={() => handleStatusChange("Cerrado")} type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>}
                     </div>
                      <Button type="submit" disabled={isSubmitting || newUpdate.trim() === ''}>
-                        {isSubmitting ? "Submitting..." : "Add Update"}
+                        {isSubmitting ? "Enviando..." : "Agregar Actualización"}
                     </Button>
                 </div>
             </form>

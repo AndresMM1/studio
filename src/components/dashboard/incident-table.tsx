@@ -34,29 +34,29 @@ const priorityMap: Record<IncidentPriority, { icon: React.ElementType; className
 };
 
 const statusMap: Record<IncidentStatus, { icon: React.ElementType; className: string; badgeClassName: string }> = {
-  "Open": { icon: HardHat, className: "text-green-600", badgeClassName: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" },
-  "On Hold": { icon: CircleOff, className: "text-gray-500", badgeClassName: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300" },
-  "Closed": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300" },
+  "Abierto": { icon: HardHat, className: "text-green-600", badgeClassName: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" },
+  "En espera": { icon: CircleOff, className: "text-gray-500", badgeClassName: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300" },
+  "Cerrado": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300" },
 };
 
 export function IncidentTable({ incidents }: IncidentTableProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Incidents</CardTitle>
-        <CardDescription>A list of recent incidents.</CardDescription>
+        <CardTitle>Incidentes</CardTitle>
+        <CardDescription>Una lista de incidentes recientes.</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Service</TableHead>
-              <TableHead>Priority</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Start Time</TableHead>
-              <TableHead>Session Link</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>Servicio</TableHead>
+              <TableHead>Prioridad</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Descripción</TableHead>
+              <TableHead>Hora de inicio</TableHead>
+              <TableHead>Link de sesión</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,7 +96,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                       {incident.sessionLink ? (
                         <Link href={incident.sessionLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-500 hover:underline">
                           <LinkIcon size={16} />
-                           Join
+                           Unirse
                         </Link>
                       ) : (
                         "-"
@@ -106,7 +106,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                        <Button asChild variant="outline" size="sm">
                           <Link href={`/incident/${incident.id}`}>
                             <ExternalLink className="mr-2 h-4 w-4" />
-                            View
+                            Ver
                           </Link>
                         </Button>
                     </TableCell>
@@ -116,7 +116,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
-                  No incidents found.
+                  No se encontraron incidentes.
                 </TableCell>
               </TableRow>
             )}

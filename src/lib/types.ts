@@ -1,5 +1,5 @@
 export type IncidentPriority = "P0" | "P1" | "P2" | "P3";
-export type IncidentStatus = "Open" | "On Hold" | "Closed";
+export type IncidentStatus = "Abierto" | "En espera" | "Cerrado";
 
 export interface IncidentUpdate {
   text: string;

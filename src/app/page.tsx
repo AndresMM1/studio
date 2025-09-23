@@ -74,8 +74,8 @@ import {
 
 
 const priorities: IncidentPriority[] = ["P0", "P1", "P2", "P3"];
-const statuses: IncidentStatus[] = ["Open", "On Hold", "Closed"];
-const environments = ["Production", "Staging"];
+const statuses: IncidentStatus[] = ["Abierto", "En espera", "Cerrado"];
+const environments = ["Producción", "Staging"];
 
 const ITEMS_PER_PAGE = 10;
 
@@ -97,7 +97,7 @@ export default function DashboardPage() {
   const [newIncidentService, setNewIncidentService] = useState("");
   const [newIncidentDescription, setNewIncidentDescription] = useState("");
   const [newIncidentPriority, setNewIncidentPriority] = useState<IncidentPriority>("P2");
-  const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Production");
+  const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Producción");
   const [newIncidentSessionLink, setNewIncidentSessionLink] = useState("");
   const [incidents, setIncidents] = useState(allIncidents);
 
@@ -126,12 +126,12 @@ export default function DashboardPage() {
     // Dummy calculations for metrics
     const avgResponseTime = totalIncidents > 0 ? "35m" : "N/A";
     const avgResolutionTime = totalIncidents > 0 ? "4h 15m" : "N/A";
-    const incidentRate = totalIncidents > 0 ? "1.2/day" : "N/A";
+    const incidentRate = totalIncidents > 0 ? "1.2/día" : "N/A";
     return { totalIncidents, avgResponseTime, avgResolutionTime, incidentRate };
   }, [filteredIncidents]);
 
   const handleDownload = () => {
-    const headers = ["ID", "Service", "Start Time", "Description", "Priority", "Status", "Environment", "Session Link"];
+    const headers = ["ID", "Servicio", "Hora de inicio", "Descripción", "Prioridad", "Estado", "Ambiente", "Link de sesión"];
     const rows = filteredIncidents.map((i) =>
       [
         i.id,
@@ -148,7 +148,7 @@ export default function DashboardPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "incident_report.csv");
+    link.setAttribute("download", "reporte_incidentes.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -158,11 +158,11 @@ export default function DashboardPage() {
     startTransition(async () => {
       let result = '';
       if (period === 'weekly') {
-        setSummaryTitle('Weekly Incident Summary');
+        setSummaryTitle('Resumen Semanal de Incidentes');
         // @ts-ignore
         result = await getWeeklySummary(filteredIncidents);
       } else {
-        setSummaryTitle('Monthly Incident Summary');
+        setSummaryTitle('Resumen Mensual de Incidentes');
         const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
         // @ts-ignore
         result = await getMonthlySummary(currentMonth, filteredIncidents);
@@ -189,7 +189,7 @@ export default function DashboardPage() {
     setNewIncidentService("");
     setNewIncidentDescription("");
     setNewIncidentPriority("P2");
-    setNewIncidentEnvironment("Production");
+    setNewIncidentEnvironment("Producción");
     setNewIncidentSessionLink("");
   };
 
@@ -201,7 +201,7 @@ export default function DashboardPage() {
             <div className="flex h-14 items-center justify-center border-b px-4 lg:h-[60px] lg:px-6">
               <Link href="/" className="flex items-center gap-2 font-semibold">
                 <ShieldAlert className="h-6 w-6" />
-                <span className="sr-only">Incident Insight</span>
+                <span className="sr-only">Gestión de Incidentes</span>
               </Link>
             </div>
             <div className="flex-1">
@@ -213,10 +213,10 @@ export default function DashboardPage() {
                       className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted text-primary transition-colors hover:text-foreground md:h-8 md:w-8"
                     >
                       <Home className="h-5 w-5" />
-                      <span className="sr-only">Dashboard</span>
+                      <span className="sr-only">Panel</span>
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Dashboard</TooltipContent>
+                  <TooltipContent side="right">Panel</TooltipContent>
                 </Tooltip>
                  <Tooltip>
                   <TooltipTrigger asChild>
@@ -225,10 +225,10 @@ export default function DashboardPage() {
                       className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                     >
                       <Users className="h-5 w-5" />
-                      <span className="sr-only">Users</span>
+                      <span className="sr-only">Usuarios</span>
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Users</TooltipContent>
+                  <TooltipContent side="right">Usuarios</TooltipContent>
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -237,10 +237,10 @@ export default function DashboardPage() {
                       className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
                     >
                       <LineChart className="h-5 w-5" />
-                      <span className="sr-only">Analytics</span>
+                      <span className="sr-only">Analíticas</span>
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="right">Analytics</TooltipContent>
+                  <TooltipContent side="right">Analíticas</TooltipContent>
                 </Tooltip>
               </nav>
             </div>
@@ -252,8 +252,8 @@ export default function DashboardPage() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <p className="font-bold">John Doe</p>
-                  <p className="text-sm">Site Reliability Engineer</p>
+                  <p className="font-bold">Juan Pérez</p>
+                  <p className="text-sm">Ingeniero de Confiabilidad</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -262,29 +262,29 @@ export default function DashboardPage() {
         <div className="flex flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
             <div className="w-full flex-1">
-              <h1 className="text-xl font-bold tracking-tight">Incident Insight</h1>
+              <h1 className="text-xl font-bold tracking-tight">Gestión de Incidentes</h1>
             </div>
             <div className="flex flex-1 items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
             <Button variant="outline" size="icon" className="h-8 w-8">
               <Bell className="h-4 w-4" />
-              <span className="sr-only">Toggle notifications</span>
+              <span className="sr-only">Alternar notificaciones</span>
             </Button>
               <Dialog open={isCreateModalOpen} onOpenChange={setCreateModalOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <PlusCircle className="mr-2 h-4 w-4" />
-                    Create Incident
+                    Crear Incidente
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <form onSubmit={handleCreateIncident}>
                     <DialogHeader>
-                      <DialogTitle>Create New Incident</DialogTitle>
+                      <DialogTitle>Crear Nuevo Incidente</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="service" className="text-right">
-                          Service
+                          Servicio
                         </Label>
                         <Input
                           id="service"
@@ -296,7 +296,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="description" className="text-right">
-                          Description
+                          Descripción
                         </Label>
                         <Textarea
                           id="description"
@@ -308,11 +308,11 @@ export default function DashboardPage() {
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="priority" className="text-right">
-                          Priority
+                          Prioridad
                         </Label>
                          <Select onValueChange={(value) => setNewIncidentPriority(value as IncidentPriority)} defaultValue={newIncidentPriority}>
                           <SelectTrigger className="col-span-3">
-                            <SelectValue placeholder="Select priority" />
+                            <SelectValue placeholder="Seleccionar prioridad" />
                           </SelectTrigger>
                           <SelectContent>
                             {priorities.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -321,11 +321,11 @@ export default function DashboardPage() {
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="environment" className="text-right">
-                          Environment
+                          Ambiente
                         </Label>
                         <Select onValueChange={(value) => setNewIncidentEnvironment(value)} defaultValue={newIncidentEnvironment}>
                           <SelectTrigger className="col-span-3">
-                            <SelectValue placeholder="Select environment" />
+                            <SelectValue placeholder="Seleccionar ambiente" />
                           </SelectTrigger>
                           <SelectContent>
                             {environments.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
@@ -334,7 +334,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="sessionLink" className="text-right">
-                          Session Link
+                          Link de Sesión
                         </Label>
                         <Input
                           id="sessionLink"
@@ -346,9 +346,9 @@ export default function DashboardPage() {
                     </div>
                     <DialogFooter>
                       <DialogClose asChild>
-                         <Button type="button" variant="secondary">Cancel</Button>
+                         <Button type="button" variant="secondary">Cancelar</Button>
                       </DialogClose>
-                      <Button type="submit">Create</Button>
+                      <Button type="submit">Crear</Button>
                     </DialogFooter>
                   </form>
                 </DialogContent>
@@ -359,31 +359,31 @@ export default function DashboardPage() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" disabled={isGenerating}>
                       {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                      Generate Summary
+                      Generar Resumen
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => handleGenerateSummary('weekly')}>
-                      Weekly Summary
+                      Resumen Semanal
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleGenerateSummary('monthly')}>
-                      Monthly Summary
+                      Resumen Mensual
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
               <Button variant="outline" onClick={handleDownload}>
                 <Download className="mr-2 h-4 w-4" />
-                Download Report
+                Descargar Reporte
               </Button>
             </div>
           </header>
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
             <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-              <MetricCard title="Total Incidents" value={metrics.totalIncidents} icon={BarChart} />
-              <MetricCard title="Avg. Response Time" value={metrics.avgResponseTime} icon={Clock} />
-              <MetricCard title="Avg. Resolution Time" value={metrics.avgResolutionTime} icon={ShieldAlert} />
-              <MetricCard title="Overall Incident Rate" value={metrics.incidentRate} icon={TriangleAlert} />
+              <MetricCard title="Incidentes Totales" value={metrics.totalIncidents} icon={BarChart} />
+              <MetricCard title="Tiempo Prom. Respuesta" value={metrics.avgResponseTime} icon={Clock} />
+              <MetricCard title="Tiempo Prom. Resolución" value={metrics.avgResolutionTime} icon={ShieldAlert} />
+              <MetricCard title="Tasa General de Incidentes" value={metrics.incidentRate} icon={TriangleAlert} />
             </div>
 
             <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 md:flex-row md:items-center">
@@ -391,7 +391,7 @@ export default function DashboardPage() {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
-                  placeholder="Search by service..."
+                  placeholder="Buscar por servicio..."
                   className="w-full rounded-lg bg-background pl-8"
                   value={search}
                   onChange={(e) => {
@@ -406,10 +406,10 @@ export default function DashboardPage() {
                     setCurrentPage(1);
                   }}>
                   <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Filter by priority" />
+                    <SelectValue placeholder="Filtrar por prioridad" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Priorities</SelectItem>
+                    <SelectItem value="all">Todas las Prioridades</SelectItem>
                     {priorities.map((p) => (
                       <SelectItem key={p} value={p}>{p}</SelectItem>
                     ))}
@@ -420,10 +420,10 @@ export default function DashboardPage() {
                     setCurrentPage(1);
                   }}>
                   <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Filter by status" />
+                    <SelectValue placeholder="Filtrar por estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="all">Todos los Estados</SelectItem>
                     {statuses.map((s) => (
                       <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
@@ -434,10 +434,10 @@ export default function DashboardPage() {
                   setCurrentPage(1);
                 }}>
                   <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Filter by environment" />
+                    <SelectValue placeholder="Filtrar por ambiente" />
                   </SelectTrigger>
                   <SelectContent>
-                      <SelectItem value="all">All Environments</SelectItem>
+                      <SelectItem value="all">Todos los Ambientes</SelectItem>
                       {environments.map((e) => (
                           <SelectItem key={e} value={e}>{e}</SelectItem>
                       ))}
@@ -449,7 +449,7 @@ export default function DashboardPage() {
             <IncidentTable incidents={paginatedIncidents} />
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">
-                Showing page {currentPage} of {totalPages}
+                Mostrando página {currentPage} de {totalPages}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -458,7 +458,7 @@ export default function DashboardPage() {
                   onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
                 >
-                  Previous
+                  Anterior
                 </Button>
                 <Button
                   variant="outline"
@@ -466,7 +466,7 @@ export default function DashboardPage() {
                   onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
                 >
-                  Next
+                  Siguiente
                 </Button>
               </div>
             </div>
@@ -480,7 +480,7 @@ export default function DashboardPage() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogAction onClick={() => setIsSummaryOpen(false)}>Close</AlertDialogAction>
+                  <AlertDialogAction onClick={() => setIsSummaryOpen(false)}>Cerrar</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

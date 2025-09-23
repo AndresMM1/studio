@@ -11,12 +11,12 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateMonthlyIncidentSummaryInputSchema = z.object({
-  month: z.string().describe('The month for which to generate the summary (e.g., YYYY-MM).'),
+  month: z.string().describe('El mes para el cual generar el resumen (por ejemplo, AAAA-MM).'),
 });
 export type GenerateMonthlyIncidentSummaryInput = z.infer<typeof GenerateMonthlyIncidentSummaryInputSchema>;
 
 const GenerateMonthlyIncidentSummaryOutputSchema = z.object({
-  summary: z.string().describe('A summary of notable incident changes for the specified month.'),
+  summary: z.string().describe('Un resumen de los cambios notables en los incidentes para el mes especificado.'),
 });
 export type GenerateMonthlyIncidentSummaryOutput = z.infer<typeof GenerateMonthlyIncidentSummaryOutputSchema>;
 
@@ -28,11 +28,11 @@ const prompt = ai.definePrompt({
   name: 'generateMonthlyIncidentSummaryPrompt',
   input: {schema: GenerateMonthlyIncidentSummaryInputSchema},
   output: {schema: GenerateMonthlyIncidentSummaryOutputSchema},
-  prompt: `You are an incident analyst who specializes in summarizing monthly incident trends.
+  prompt: `Eres un analista de incidentes que se especializa en resumir las tendencias mensuales de incidentes.
 
-  Generate a brief summary of notable incident changes for the month of {{month}}. Focus on key trends and significant changes in incident types, severity, and resolution times.
-  Do not include any data tables in the summary.
-  The summary should be no more than 200 words.
+  Genera un breve resumen de los cambios notables en los incidentes para el mes de {{month}}. Céntrate en las tendencias clave y los cambios significativos en los tipos de incidentes, la gravedad y los tiempos de resolución.
+  No incluyas ninguna tabla de datos en el resumen.
+  El resumen no debe tener más de 200 palabras.
   `,
 });
 

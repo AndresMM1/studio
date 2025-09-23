@@ -6,7 +6,7 @@ import type { Incident } from '@/lib/types';
 
 export async function getWeeklySummary(incidents: Incident[]): Promise<string> {
   if (incidents.length === 0) {
-    return "No incident data available for this week to generate a summary.";
+    return "No hay datos de incidentes disponibles para esta semana para generar un resumen.";
   }
   try {
     const result = await generateWeeklyIncidentSummary({
@@ -14,8 +14,8 @@ export async function getWeeklySummary(incidents: Incident[]): Promise<string> {
     });
     return result.summary;
   } catch (error) {
-    console.error('Error generating weekly summary:', error);
-    return 'An error occurred while generating the weekly summary. Please try again later.';
+    console.error('Error al generar el resumen semanal:', error);
+    return 'Ocurrió un error al generar el resumen semanal. Por favor, inténtalo de nuevo más tarde.';
   }
 }
 
@@ -23,14 +23,14 @@ export async function getMonthlySummary(month: string, incidents: Incident[]): P
   // The provided AI flow for monthly summary does not use incident data directly.
   // It generates a generic summary for the given month.
   if (incidents.filter(i => i.startTime.startsWith(month)).length === 0) {
-      return `No incident data available for ${month} to generate a summary.`
+      return `No hay datos de incidentes disponibles para ${month} para generar un resumen.`
   }
 
   try {
     const result = await generateMonthlyIncidentSummary({ month });
     return result.summary;
   } catch (error) {
-    console.error('Error generating monthly summary:', error);
-    return 'An error occurred while generating the monthly summary. Please try again later.';
+    console.error('Error al generar el resumen mensual:', error);
+    return 'Ocurrió un error al generar el resumen mensual. Por favor, inténtalo de nuevo más tarde.';
   }
 }

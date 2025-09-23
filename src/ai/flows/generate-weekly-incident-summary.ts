@@ -11,12 +11,12 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateWeeklyIncidentSummaryInputSchema = z.object({
-  incidentData: z.string().describe('JSON string of incident data from the last week.  Include service, priority, description, environment and start time.'),
+  incidentData: z.string().describe('Cadena JSON de datos de incidentes de la última semana. Incluir servicio, prioridad, descripción, ambiente y hora de inicio.'),
 });
 export type GenerateWeeklyIncidentSummaryInput = z.infer<typeof GenerateWeeklyIncidentSummaryInputSchema>;
 
 const GenerateWeeklyIncidentSummaryOutputSchema = z.object({
-  summary: z.string().describe('A brief summary of notable incident changes from the last week.'),
+  summary: z.string().describe('Un breve resumen de los cambios y tendencias notables en los incidentes de la última semana.'),
 });
 export type GenerateWeeklyIncidentSummaryOutput = z.infer<typeof GenerateWeeklyIncidentSummaryOutputSchema>;
 
@@ -28,11 +28,11 @@ const prompt = ai.definePrompt({
   name: 'generateWeeklyIncidentSummaryPrompt',
   input: {schema: GenerateWeeklyIncidentSummaryInputSchema},
   output: {schema: GenerateWeeklyIncidentSummaryOutputSchema},
-  prompt: `You are an expert analyst summarizing incident data to identify key trends and changes.
+  prompt: `Eres un analista experto que resume los datos de incidentes para identificar tendencias y cambios clave.
 
-  Based on the following incident data from the last week, generate a brief summary of notable changes and trends. Be concise and focus on high-impact information.
+  Basado en los siguientes datos de incidentes de la última semana, genera un breve resumen de los cambios y tendencias notables. Sé conciso y céntrate en la información de alto impacto.
 
-  Incident Data:
+  Datos del Incidente:
   {{incidentData}}
   `,
 });
