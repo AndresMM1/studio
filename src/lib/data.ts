@@ -51,7 +51,7 @@ export async function getIncidents(): Promise<Incident[]> {
     }
     const data = await response.json();
 
-    const incidentsData = Array.isArray(data) ? data : (data.incidents || data.body || []);
+    const incidentsData = data.value || [];
 
     if (!Array.isArray(incidentsData)) {
       console.error('La respuesta de la API no es un array y no se pudo encontrar un array de incidentes en el objeto de respuesta.', data);
