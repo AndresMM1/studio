@@ -1,4 +1,4 @@
-import type { Incident, IncidentStatus, IncidentUpdate } from "./types";
+import type { Incident, IncidentStatus, IncidentUpdate, IncidentPriority } from "./types";
 
 // Esta es una matriz de respaldo en caso de que la API falle, o para desarrollo sin un backend.
 const fallbackIncidents: Incident[] = [
@@ -71,6 +71,15 @@ export async function getIncidents(): Promise<Incident[]> {
           }
       }
 
+      let status: Incident["status"] = "Abierto";
+       if(item.AFFECT_STATE) {
+          const s = item.AFFECT_STATE.charAt(0).toUpperCase() + item.AFFECT_STATE.slice(1).toLowerCase();
+          if (s === "Abierto" || s === "En espera" || s === "Cerrado" || s === "Cerrada") {
+              status = s;
+          }
+      }
+
+
       return {
         id: item.Id,
         service: service,
@@ -78,7 +87,7 @@ export async function getIncidents(): Promise<Incident[]> {
         startTime: item.AFFECT_START_DATE,
         endDate: item.AFFECT_END_DATE,
         priority: priority,
-        status: item.AFFECT_STATE === "Cerrada" ? "Cerrado" : item.AFFECT_STATE,
+        status: status,
         environment: item.AFFECT_ENVIROMENT || "Producción",
       };
     });
@@ -93,7 +102,7 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
     AFFECT_STATE: 'Abierto',
     AFFECT_DETAILS: `Servicio: ${incident.service} Descripción: ${incident.description}`,
     AFFECT_START_DATE: incident.startTime,
-    PERSON_EMAIL: 'user@example.com', // Placeholder email
+    PERSON_EMAIL: 'user@example.com',
     AFFECT_PRIORITY: incident.priority,
     AFFECT_ENVIRONMENT: incident.environment,
     AFFECT_SERVICE: incident.service,
@@ -112,12 +121,9 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
         console.error('La respuesta de la red no fue correcta. Estado:', response.status, 'Cuerpo:', errorBody);
         throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
     }
-    // Assuming the API returns the created incident object that matches our internal format
-    // If not, we might need to adjust this part.
+    
     const createdIncidentFromApi = await response.json(); 
 
-    // Let's create a full Incident object to return to the app
-    // The API might not return the full object, so we build it
      const newId = createdIncidentFromApi.Id || Math.max(...fallbackIncidents.map(i => i.id)) + 1;
      const createdIncident: Incident = {
         id: newId,
@@ -125,13 +131,11 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
         ...incident
      };
 
-    // Also create the first update
     await addIncidentUpdate(createdIncident.id, 'Incidente creado.');
 
     return createdIncident;
   } catch (error) {
     console.error('Error al crear el incidente:', error);
-    // As a fallback, simulate adding locally if the API fails
     const newId = Math.max(...fallbackIncidents.map(i => i.id)) + 1;
     const createdIncident: Incident = {
         id: newId,
@@ -139,41 +143,49 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
         ...incident
     };
     fallbackIncidents.unshift(createdIncident);
-    // Also create the first update
     addIncidentUpdate(newId, 'Incidente creado.');
     return createdIncident;
   }
 }
 
 export async function getIncidentById(id: number): Promise<Incident | undefined> {
-   try {
-    // TODO: Reemplaza con la URL de tu API real
-    const response = await fetch(`/api/incidents/${id}`);
-    if (!response.ok) {
-      console.warn(`API falló para el incidente ${id}, usando datos de respaldo.`);
-      return fallbackIncidents.find(incident => incident.id === id);
-    }
-    const incident: Incident = await response.json();
-    return incident;
-  } catch (error) {
-    console.error(`Error al obtener el incidente ${id}:`, error);
-    return fallbackIncidents.find(incident => incident.id === id);
-  }
+   const incidents = await getIncidents();
+   return incidents.find(incident => incident.id === id);
 }
 
-export async function getIncidentUpdates(incidentId: number): Promise<IncidentUpdate[]> {
+async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUpdate[]> {
     try {
-        // TODO: Reemplaza con la URL de tu API real
+        // TODO: Reemplaza con la URL de tu API real para obtener actualizaciones
         const response = await fetch(`/api/incidents/${incidentId}/updates`);
         if (!response.ok) {
-            console.warn(`API falló para las actualizaciones del incidente ${incidentId}, usando datos de respaldo.`);
+            console.warn(`API de actualizaciones falló para el incidente ${incidentId}, usando datos de respaldo.`);
             return fallbackUpdates.filter(update => update.incidentId === incidentId);
         }
-        return await response.json();
+        const data = await response.json();
+        const updatesData = data.value || [];
+        if (!Array.isArray(updatesData)) {
+            console.error('La respuesta de la API de actualizaciones no es un array.', data);
+            return fallbackUpdates.filter(update => update.incidentId === incidentId);
+        }
+
+        // Asumiendo una estructura de API similar a getIncidents
+        return updatesData.map((item: any): IncidentUpdate => ({
+            id: item.Id,
+            incidentId: item.AFFECT_Id, // o el campo correcto para el ID del incidente
+            text: item.UPDATE_TEXT, // o el campo correcto para el texto de la actualización
+            timestamp: item.UPDATE_TIMESTAMP, // o el campo correcto para la marca de tiempo
+        }));
+
     } catch (error) {
-        console.error(`Error al obtener las actualizaciones del incidente ${incidentId}:`, error);
+        console.error(`Error al obtener las actualizaciones del incidente ${incidentId} desde la API:`, error);
         return fallbackUpdates.filter(update => update.incidentId === incidentId);
     }
+}
+
+
+export async function getIncidentUpdates(incidentId: number): Promise<IncidentUpdate[]> {
+    // Llama a la nueva función que sabe cómo manejar la respuesta de la API
+    return getIncidentUpdatesFromApi(incidentId);
 }
 
 
@@ -187,12 +199,22 @@ export async function addIncidentUpdate(incidentId: number, text: string): Promi
         const response = await fetch(`/api/incidents/${incidentId}/updates`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newUpdateData),
+            body: JSON.stringify({
+              AFFECT_Id: incidentId, // Mapeado al campo esperado por la API
+              UPDATE_TEXT: text,
+            }),
         });
         if (!response.ok) {
             throw new Error('La respuesta de la red no fue correcta');
         }
-        return await response.json();
+        const createdUpdateFromApi = await response.json();
+        return {
+            id: createdUpdateFromApi.Id,
+            incidentId: incidentId,
+            text: text,
+            timestamp: new Date().toISOString()
+        };
+
     } catch (error) {
         console.error('Error al agregar la actualización del incidente:', error);
         const newId = Math.max(0, ...fallbackUpdates.map(u => u.id)) + 1;
@@ -208,11 +230,10 @@ export async function addIncidentUpdate(incidentId: number, text: string): Promi
 
 export async function updateIncidentStatus(id: number, status: IncidentStatus): Promise<Incident | undefined> {
     try {
-        // TODO: Reemplaza con la URL de tu API real
         const response = await fetch(`/api/incidents/${id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status }),
+            body: JSON.stringify({ AFFECT_STATE: status }),
         });
         if (!response.ok) {
             throw new Error('La respuesta de la red no fue correcta');
@@ -225,7 +246,7 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
         if (!incident) return undefined;
 
         incident.status = status;
-        if (status === 'Cerrado') {
+        if (status === 'Cerrado' || status === 'Cerrada') {
           incident.endDate = new Date().toISOString();
         } else {
           incident.endDate = undefined;
