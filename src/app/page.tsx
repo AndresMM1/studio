@@ -47,6 +47,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 
 const priorities: IncidentPriority[] = ["Crítica", "Alta", "Media", "Baja"];
@@ -205,7 +213,7 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="flex flex-col">
-          <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
+          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
             <h1 className="text-xl font-bold tracking-tight">Gestión de Incidentes</h1>
             <div className="ml-auto flex items-center gap-4">
             <Button variant="outline" size="icon" className="h-8 w-8">
@@ -312,97 +320,104 @@ export default function DashboardPage() {
             </div>
           </header>
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-            <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-              <MetricCard title="Incidentes Totales" value={metrics.totalIncidents} icon={BarChart} />
-              <MetricCard title="Tiempo Prom. Respuesta" value={metrics.avgResponseTime} icon={Clock} />
-              <MetricCard title="Tiempo Prom. Resolución" value={metrics.avgResolutionTime} icon={ShieldAlert} />
-              <MetricCard title="Tasa General de Incidentes" value={metrics.incidentRate} icon={TriangleAlert} />
-            </div>
+            <Card>
+              <CardHeader>
+                <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+                    <MetricCard title="Incidentes Totales" value={metrics.totalIncidents} icon={BarChart} />
+                    <MetricCard title="Tiempo Prom. Respuesta" value={metrics.avgResponseTime} icon={Clock} />
+                    <MetricCard title="Tiempo Prom. Resolución" value={metrics.avgResolutionTime} icon={ShieldAlert} />
+                    <MetricCard title="Tasa General de Incidentes" value={metrics.incidentRate} icon={TriangleAlert} />
+                </div>
+              </CardHeader>
+              <Separator />
+              <CardContent className="pt-6">
+                <div className="flex flex-col gap-4 rounded-lg md:flex-row md:items-center">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="search"
+                      placeholder="Buscar por servicio..."
+                      className="w-full rounded-lg bg-background pl-8"
+                      value={search}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 md:flex md:flex-row md:grid-cols-3">
+                    <Select value={priority} onValueChange={(value) => {
+                        setPriority(value as IncidentPriority | "all");
+                        setCurrentPage(1);
+                      }}>
+                      <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue placeholder="Filtrar por prioridad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas las Prioridades</SelectItem>
+                        {priorities.map((p) => (
+                          <SelectItem key={p} value={p}>{p}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={status} onValueChange={(value) => {
+                        setStatus(value as IncidentStatus | "all");
+                        setCurrentPage(1);
+                      }}>
+                      <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue placeholder="Filtrar por estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos los Estados</SelectItem>
+                        {statuses.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={environment} onValueChange={(value) => {
+                      setEnvironment(value as "all" | string);
+                      setCurrentPage(1);
+                    }}>
+                      <SelectTrigger className="w-full md:w-[180px]">
+                        <SelectValue placeholder="Filtrar por ambiente" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="all">Todos los Ambientes</SelectItem>
+                          {environments.map((e) => (
+                              <SelectItem key={e} value={e}>{e}</SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            <div className="flex flex-col gap-4 rounded-lg border bg-card p-4 md:flex-row md:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Buscar por servicio..."
-                  className="w-full rounded-lg bg-background pl-8"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-4 md:flex md:flex-row md:grid-cols-3">
-                <Select value={priority} onValueChange={(value) => {
-                    setPriority(value as IncidentPriority | "all");
-                    setCurrentPage(1);
-                  }}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Filtrar por prioridad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las Prioridades</SelectItem>
-                    {priorities.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                 <Select value={status} onValueChange={(value) => {
-                    setStatus(value as IncidentStatus | "all");
-                    setCurrentPage(1);
-                  }}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Filtrar por estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los Estados</SelectItem>
-                    {statuses.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={environment} onValueChange={(value) => {
-                  setEnvironment(value as "all" | string);
-                  setCurrentPage(1);
-                }}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <SelectValue placeholder="Filtrar por ambiente" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      <SelectItem value="all">Todos los Ambientes</SelectItem>
-                      {environments.map((e) => (
-                          <SelectItem key={e} value={e}>{e}</SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <IncidentTable incidents={paginatedIncidents} />
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground">
-                Mostrando página {currentPage} de {totalPages}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
+                <IncidentTable incidents={paginatedIncidents} />
+                
+                <div className="flex items-center justify-between mt-4">
+                  <div className="text-sm text-muted-foreground">
+                    Mostrando página {currentPage} de {totalPages}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Siguiente
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
           </main>
         </div>

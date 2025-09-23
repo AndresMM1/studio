@@ -10,13 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert, Link as LinkIcon, HardHat, CheckCircle2, CircleOff, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -41,88 +34,82 @@ const statusMap: Record<IncidentStatus, { icon: React.ElementType; className: st
 
 export function IncidentTable({ incidents }: IncidentTableProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Incidentes</CardTitle>
-        <CardDescription>Una lista de incidentes recientes.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Servicio</TableHead>
-              <TableHead>Prioridad</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Descripción</TableHead>
-              <TableHead>Hora de inicio</TableHead>
-              <TableHead>Link de sesión</TableHead>
-              <TableHead className="text-right">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {incidents.length > 0 ? (
-              incidents.map((incident) => {
-                const PriorityIcon = priorityMap[incident.priority].icon;
-                const priorityClassName = priorityMap[incident.priority].className;
-                const priorityBadgeClassName = priorityMap[incident.priority].badgeClassName;
-                const StatusIcon = statusMap[incident.status].icon;
-                const statusClassName = statusMap[incident.status].className;
-                const statusBadgeClassName = statusMap[incident.status].badgeClassName;
+    <div className="mt-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Servicio</TableHead>
+            <TableHead>Prioridad</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead>Descripción</TableHead>
+            <TableHead>Hora de inicio</TableHead>
+            <TableHead>Link de sesión</TableHead>
+            <TableHead className="text-right">Acciones</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {incidents.length > 0 ? (
+            incidents.map((incident) => {
+              const PriorityIcon = priorityMap[incident.priority].icon;
+              const priorityClassName = priorityMap[incident.priority].className;
+              const priorityBadgeClassName = priorityMap[incident.priority].badgeClassName;
+              const StatusIcon = statusMap[incident.status].icon;
+              const statusClassName = statusMap[incident.status].className;
+              const statusBadgeClassName = statusMap[incident.status].badgeClassName;
 
-                return (
-                  <TableRow key={incident.id}>
-                    <TableCell className="font-medium">{incident.service}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={cn("border-0 font-medium", priorityBadgeClassName)}>
-                        <div className="flex items-center gap-2">
-                          <PriorityIcon className={cn("h-4 w-4", priorityClassName)} />
-                          <span>{incident.priority}</span>
-                        </div>
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={cn("border-0 font-medium", statusBadgeClassName)}>
-                        <div className="flex items-center gap-2">
-                          <StatusIcon className={cn("h-4 w-4", statusClassName)} />
-                          <span>{incident.status}</span>
-                        </div>
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{incident.description}</TableCell>
-                    <TableCell>
-                      {new Date(incident.startTime).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      {incident.sessionLink ? (
-                        <Link href={incident.sessionLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-500 hover:underline">
-                          <LinkIcon size={16} />
-                           Unirse
+              return (
+                <TableRow key={incident.id}>
+                  <TableCell className="font-medium">{incident.service}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={cn("border-0 font-medium", priorityBadgeClassName)}>
+                      <div className="flex items-center gap-2">
+                        <PriorityIcon className={cn("h-4 w-4", priorityClassName)} />
+                        <span>{incident.priority}</span>
+                      </div>
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={cn("border-0 font-medium", statusBadgeClassName)}>
+                      <div className="flex items-center gap-2">
+                        <StatusIcon className={cn("h-4 w-4", statusClassName)} />
+                        <span>{incident.status}</span>
+                      </div>
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{incident.description}</TableCell>
+                  <TableCell>
+                    {new Date(incident.startTime).toLocaleString()}
+                  </TableCell>
+                  <TableCell>
+                    {incident.sessionLink ? (
+                      <Link href={incident.sessionLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-500 hover:underline">
+                        <LinkIcon size={16} />
+                          Unirse
+                      </Link>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/incident/${incident.id}`}>
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Ver
                         </Link>
-                      ) : (
-                        "-"
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <Button asChild variant="outline" size="sm">
-                          <Link href={`/incident/${incident.id}`}>
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            Ver
-                          </Link>
-                        </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No se encontraron incidentes.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+                      </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          ) : (
+            <TableRow>
+              <TableCell colSpan={7} className="h-24 text-center">
+                No se encontraron incidentes.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
