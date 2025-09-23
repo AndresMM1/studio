@@ -1,4 +1,4 @@
-import type { Incident, IncidentStatus, IncidentUpdate, IncidentPriority } from "./types";
+import type { Incident, IncidentStatus, IncidentUpdate, IncidentPriority, Service, ServiceApiResponse } from "./types";
 
 function parseAffectDetails(details: string): { service: string; description: string } {
   const serviceMatch = details.match(/Servicio:\s*(.*?)\s*Descripción:/);
@@ -9,6 +9,31 @@ function parseAffectDetails(details: string): { service: string; description: st
 
   return { service, description };
 }
+
+export async function getServices(): Promise<Service[]> {
+    try {
+        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/a567f422ff1e4c5c9467fae1912dde4a/triggers/manual/paths/invoke/?api-version=1&tenantId=tId&environmentId=045498d8-c2ea-e9f4-994f-58cd02cb99e0&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=UUSBLv0BTlB4DtDpw6ZmI5TX8u4G6-6AGDLIHMK2YyI');
+        if (!response.ok) {
+            console.error('La API de servicios falló con el estado:', response.status);
+            return [];
+        }
+        const data: ServiceApiResponse = await response.json();
+        
+        const servicesData = data.value || [];
+
+        if (!Array.isArray(servicesData)) {
+            console.error('La respuesta de la API de servicios no es un array y no se pudo encontrar un array de servicios en el objeto de respuesta.', data);
+            return [];
+        }
+
+        return servicesData;
+
+    } catch (error) {
+        console.error('Error al obtener los servicios:', error);
+        return [];
+    }
+}
+
 
 export async function getIncidents(): Promise<Incident[]> {
   try {
@@ -97,7 +122,7 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
       ...incident
    };
 
-  await addIncidentUpdate(createdIncident.id, 'Incidente creado.');
+  await addIncidentUpdate(createdIncident.id.toString(), 'Incidente creado.');
 
   return createdIncident;
 }
@@ -150,10 +175,10 @@ export async function getIncidentUpdates(incidentId: number): Promise<IncidentUp
 }
 
 
-export async function addIncidentUpdate(incidentId: number, text: string): Promise<IncidentUpdate> {
+export async function addIncidentUpdate(incidentId: string, text: string): Promise<IncidentUpdate> {
     const timestamp = new Date().toISOString();
     const newUpdateData = {
-        AFFECT_ID: incidentId.toString(),
+        AFFECT_ID: incidentId,
         MONITORING_DATE: timestamp,
         MONITORING_DS: text,
     };
@@ -171,7 +196,7 @@ export async function addIncidentUpdate(incidentId: number, text: string): Promi
         const createdUpdateFromApi = await response.json();
         return {
             id: createdUpdateFromApi.Id || Date.now(),
-            incidentId: incidentId,
+            incidentId: parseInt(incidentId, 10),
             text: text,
             timestamp: timestamp
         };
@@ -195,8 +220,7 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
             console.error('Error al actualizar el estado del incidente. Estado:', response.status, 'Cuerpo:', errorBody);
             throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
         }
-        // Assuming the API returns the updated incident, but if not, we can refetch or just confirm success
-        // For now, we will fetch the incident again to ensure we have the latest data.
+        
         const updatedIncident = await getIncidentById(id);
         return updatedIncident;
 

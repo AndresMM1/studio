@@ -15,8 +15,8 @@ import {
   Users,
   User,
 } from "lucide-react";
-import { getIncidents, addIncident } from "@/lib/data";
-import { type Incident, type IncidentPriority, type IncidentStatus } from "@/lib/types";
+import { getIncidents, addIncident, getServices } from "@/lib/data";
+import { type Incident, type IncidentPriority, type IncidentStatus, type Service } from "@/lib/types";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { IncidentTable } from "@/components/dashboard/incident-table";
 import { Button } from "@/components/ui/button";
@@ -70,23 +70,28 @@ export default function DashboardPage() {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
   // Form state for new incident
-  const [newIncidentService, setNewIncidentService] = useState("");
+  const [newIncidentService, setNewIncidentService] = useState<string | undefined>(undefined);
   const [newIncidentDescription, setNewIncidentDescription] = useState("");
   const [newIncidentPriority, setNewIncidentPriority] = useState<IncidentPriority>("Media");
   const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Producción");
   const [newIncidentStartTime, setNewIncidentStartTime] = useState(new Date().toISOString().slice(0, 16));
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    async function loadIncidents() {
+    async function loadInitialData() {
       setIsLoading(true);
-      const fetchedIncidents = await getIncidents();
+      const [fetchedIncidents, fetchedServices] = await Promise.all([
+        getIncidents(),
+        getServices(),
+      ]);
       setIncidents(fetchedIncidents);
+      setServices(fetchedServices);
       setIsLoading(false);
     }
-    loadIncidents();
+    loadInitialData();
   }, []);
 
 
@@ -120,8 +125,16 @@ export default function DashboardPage() {
   
   const handleCreateIncident = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newIncidentService) {
+        toast({
+            title: "Error de validación",
+            description: "Por favor, selecciona un servicio.",
+            variant: "destructive"
+        });
+        return;
+    }
     try {
-        const newIncidentData = {
+        const newIncidentData: Omit<Incident, 'id' | 'status' | 'endDate'> = {
           service: newIncidentService,
           startTime: new Date(newIncidentStartTime).toISOString(),
           description: newIncidentDescription,
@@ -132,7 +145,7 @@ export default function DashboardPage() {
         setIncidents(prevIncidents => [newIncident, ...prevIncidents]);
         setCreateModalOpen(false);
         // Reset form
-        setNewIncidentService("");
+        setNewIncidentService(undefined);
         setNewIncidentDescription("");
         setNewIncidentPriority("Media");
         setNewIncidentEnvironment("Producción");
@@ -238,13 +251,14 @@ export default function DashboardPage() {
                         <Label htmlFor="service" className="text-right">
                           Servicio
                         </Label>
-                        <Input
-                          id="service"
-                          value={newIncidentService}
-                          onChange={(e) => setNewIncidentService(e.target.value)}
-                          className="col-span-3"
-                          required
-                        />
+                        <Select onValueChange={(value) => setNewIncidentService(value)} value={newIncidentService}>
+                          <SelectTrigger className="col-span-3">
+                            <SelectValue placeholder="Seleccionar servicio" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {services.map((s) => <SelectItem key={s.ID} value={s.SERVICE_NAME}>{s.SERVICE_NAME}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="description" className="text-right">
@@ -423,6 +437,3 @@ export default function DashboardPage() {
     </TooltipProvider>
   );
 }
-
-    
-    

@@ -18,3 +18,12 @@ export interface Incident {
   environment: string;
   status: IncidentStatus;
 }
+
+export interface Service {
+  ID: number;
+  SERVICE_NAME: string;
+}
+
+export interface ServiceApiResponse {
+  value: Service[];
+}
