@@ -78,7 +78,6 @@ export default function DashboardPage() {
   const [newIncidentPriority, setNewIncidentPriority] = useState<IncidentPriority>("Media");
   const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Producción");
   const [newIncidentStartTime, setNewIncidentStartTime] = useState(new Date().toISOString().slice(0, 16));
-  const [newIncidentSessionLink, setNewIncidentSessionLink] = useState("");
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const { toast } = useToast();
 
@@ -127,7 +126,6 @@ export default function DashboardPage() {
       description: newIncidentDescription,
       priority: newIncidentPriority,
       environment: newIncidentEnvironment,
-      sessionLink: newIncidentSessionLink,
     };
     const newIncident = await addIncident(newIncidentData);
     setIncidents(prevIncidents => [newIncident, ...prevIncidents]);
@@ -138,7 +136,6 @@ export default function DashboardPage() {
     setNewIncidentPriority("Media");
     setNewIncidentEnvironment("Producción");
     setNewIncidentStartTime(new Date().toISOString().slice(0, 16));
-    setNewIncidentSessionLink("");
 
     toast({
       title: "Incidente Creado",
@@ -295,17 +292,6 @@ export default function DashboardPage() {
                             {environments.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="sessionLink" className="text-right">
-                          Link de Sesión
-                        </Label>
-                        <Input
-                          id="sessionLink"
-                          value={newIncidentSessionLink}
-                          onChange={(e) => setNewIncidentSessionLink(e.target.value)}
-                          className="col-span-3"
-                        />
                       </div>
                     </div>
                     <DialogFooter>

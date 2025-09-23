@@ -26,10 +26,9 @@ import {
   AlertCircle,
   Info,
   Calendar,
-  Tag,
   Briefcase,
   Layers,
-  Link as LinkIcon
+  CalendarCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -45,6 +44,7 @@ const statusMap = {
   "Abierto": { icon: HardHat, className: "text-green-600", badgeClassName: "bg-green-100 text-green-800" },
   "En espera": { icon: CircleOff, className: "text-gray-500", badgeClassName: "bg-gray-100 text-gray-800" },
   "Cerrado": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800" },
+  "Cerrada": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800" },
 };
 
 export default function IncidentDetailPage() {
@@ -166,8 +166,14 @@ export default function IncidentDetailPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    <span>{new Date(incident.startTime).toLocaleString()}</span>
+                    <span>Inicio: {new Date(incident.startTime).toLocaleString()}</span>
                 </div>
+                 {incident.endDate && (
+                     <div className="flex items-center gap-2">
+                        <CalendarCheck className="h-4 w-4" />
+                        <span>Fin: {new Date(incident.endDate).toLocaleString()}</span>
+                    </div>
+                )}
                 <div className="flex items-center gap-2">
                     <Briefcase className="h-4 w-4" />
                     <span>{incident.service}</span>
@@ -176,14 +182,6 @@ export default function IncidentDetailPage() {
                     <Layers className="h-4 w-4" />
                     <span>{incident.environment}</span>
                 </div>
-                {incident.sessionLink && (
-                     <div className="flex items-center gap-2">
-                        <LinkIcon className="h-4 w-4" />
-                        <Link href={incident.sessionLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                           Unirse a la sesión
-                        </Link>
-                    </div>
-                )}
             </div>
             
             <Separator className="my-6" />

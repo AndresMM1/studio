@@ -12,9 +12,9 @@ export interface Incident {
   id: number;
   service: string;
   startTime: string; // ISO 8601 format
+  endDate?: string; // ISO 8601 format
   description: string;
   priority: IncidentPriority;
   environment: string;
   status: IncidentStatus;
-  sessionLink?: string;
 }

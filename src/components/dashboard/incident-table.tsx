@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Info, ShieldAlert, TriangleAlert, Link as LinkIcon, HardHat, CheckCircle2, CircleOff, ExternalLink } from "lucide-react";
+import { AlertCircle, Info, ShieldAlert, TriangleAlert, HardHat, CheckCircle2, CircleOff, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -30,6 +30,7 @@ const statusMap: Record<IncidentStatus, { icon: React.ElementType; className: st
   "Abierto": { icon: HardHat, className: "text-green-600", badgeClassName: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300" },
   "En espera": { icon: CircleOff, className: "text-gray-500", badgeClassName: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300" },
   "Cerrado": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300" },
+  "Cerrada": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300" },
 };
 
 export function IncidentTable({ incidents }: IncidentTableProps) {
@@ -43,7 +44,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
             <TableHead>Estado</TableHead>
             <TableHead>Descripción</TableHead>
             <TableHead>Hora de inicio</TableHead>
-            <TableHead>Link de sesión</TableHead>
+            <TableHead>Fecha de Finalización</TableHead>
             <TableHead className="text-right">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -81,14 +82,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                     {new Date(incident.startTime).toLocaleString()}
                   </TableCell>
                   <TableCell>
-                    {incident.sessionLink ? (
-                      <Link href={incident.sessionLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-blue-500 hover:underline">
-                        <LinkIcon size={16} />
-                          Unirse
-                      </Link>
-                    ) : (
-                      "-"
-                    )}
+                    {incident.endDate ? new Date(incident.endDate).toLocaleString() : "-"}
                   </TableCell>
                   <TableCell className="text-right">
                       <Button asChild variant="outline" size="sm">

@@ -6,11 +6,11 @@ const fallbackIncidents: Incident[] = [
     id: 1,
     service: "Servicio de Autenticación",
     startTime: "2024-07-22T10:30:00Z",
+    endDate: "2024-07-22T11:30:00Z",
     description: "Los usuarios no pueden iniciar sesión.",
     priority: "Crítica",
     environment: "Producción",
     status: "Abierto",
-    sessionLink: "https://example.zoom.us/j/1234567890",
   },
   {
     id: 2,
@@ -75,10 +75,10 @@ export async function getIncidents(): Promise<Incident[]> {
         service: service,
         description: description,
         startTime: item.AFFECT_START_DATE,
+        endDate: item.AFFECT_END_DATE,
         priority: priority,
         status: item.AFFECT_STATE === "Cerrada" ? "Cerrado" : item.AFFECT_STATE,
         environment: item.AFFECT_ENVIROMENT || "Producción",
-        sessionLink: item.AFFECT_LINK,
       };
     });
   } catch (error) {
@@ -87,7 +87,7 @@ export async function getIncidents(): Promise<Incident[]> {
   }
 }
 
-export async function addIncident(incident: Omit<Incident, 'id' | 'status'>): Promise<Incident> {
+export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'endDate'>): Promise<Incident> {
   const newIncidentData = {
     ...incident,
     status: 'Abierto',
@@ -206,6 +206,11 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
         if (!incident) return undefined;
 
         incident.status = status;
+        if (status === 'Cerrado') {
+          incident.endDate = new Date().toISOString();
+        } else {
+          incident.endDate = undefined;
+        }
         return incident;
     }
 }
