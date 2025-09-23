@@ -44,8 +44,7 @@ function parseAffectDetails(details: string): { service: string; description: st
 
 export async function getIncidents(): Promise<Incident[]> {
   try {
-    // TODO: Reemplaza con la URL de tu API real
-    const response = await fetch('/api/incidents'); 
+    const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/de271aba90734dbfbf3276dc9791b5e0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=BR1gsw9rIACMMFNdaLQ8C6hP-UQVfNcs4uflH_lY0-A'); 
     if (!response.ok) {
        console.warn('La API falló, usando datos de respaldo.');
       return fallbackIncidents;
@@ -53,7 +52,7 @@ export async function getIncidents(): Promise<Incident[]> {
     const data = await response.json();
 
     // Map API response to Incident[]
-    return data.value.map((item: any): Incident => {
+    return data.map((item: any): Incident => {
       const { service, description } = parseAffectDetails(item.AFFECT_DETAILS || "");
       
       let priority: Incident["priority"] = "Baja";
