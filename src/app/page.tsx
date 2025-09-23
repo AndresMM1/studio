@@ -59,7 +59,7 @@ import { Separator } from "@/components/ui/separator";
 
 const priorities: IncidentPriority[] = ["Crítica", "Alta", "Media", "Baja"];
 const statuses: IncidentStatus[] = ["Abierto", "En espera", "Cerrado"];
-const environments = ["Producción", "Staging"];
+const environments = ["Producción", "Contingencia"];
 
 const ITEMS_PER_PAGE = 10;
 

@@ -175,7 +175,7 @@ export default function IncidentDetailPage() {
             <Separator className="my-6" />
 
             <div>
-                <h3 className="text-xl font-semibold mb-4">Línea de tiempo del incidente</h3>
+                <h3 className="text-xl font-semibold mb-4">Línea de tiempo de Avances</h3>
                 <div className="space-y-4">
                     {incident.updates.map((update, index) => (
                         <div key={index} className="flex gap-4">
@@ -190,7 +190,7 @@ export default function IncidentDetailPage() {
                         </div>
                     ))}
                      {incident.updates.length === 0 && (
-                        <p className="text-muted-foreground">Aún no hay actualizaciones.</p>
+                        <p className="text-muted-foreground">Aún no hay avances.</p>
                      )}
                 </div>
             </div>
