@@ -69,7 +69,7 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
     AFFECT_STATE: 'Proceso',
     AFFECT_DETAILS: `Servicio: ${incident.service} Descripción: ${incident.description}`,
     AFFECT_START_DATE: incident.startTime,
-    PERSON_EMAIL: 'user@example.com',
+    PERSON_EMAIL: 'prv_amora@avalvc.com.co',
     AFFECT_PRIORITY: incident.priority,
     AFFECT_ENVIRONMENT: incident.environment,
     AFFECT_SERVICE: incident.service,
