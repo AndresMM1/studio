@@ -46,7 +46,6 @@ import {
   AlertDialogFooter,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { getWeeklySummary, getMonthlySummary } from "@/app/actions";
 import {
   Card,
   CardHeader,
@@ -132,48 +131,7 @@ export default function DashboardPage() {
     return { totalIncidents, avgResponseTime, avgResolutionTime, incidentRate };
   }, [filteredIncidents]);
 
-  const handleDownload = () => {
-    const headers = ["ID", "Servicio", "Hora de inicio", "Descripción", "Prioridad", "Estado", "Ambiente", "Link de sesión"];
-    const rows = filteredIncidents.map((i) =>
-      [
-        i.id,
-        i.service,
-        i.startTime,
-        `"${i.description}"`,
-        i.priority,
-        i.status,
-        i.environment,
-        i.sessionLink,
-      ].join(",")
-    );
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "reporte_incidentes.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
   
-  const handleGenerateSummary = (period: 'weekly' | 'monthly') => {
-    startTransition(async () => {
-      let result = '';
-      if (period === 'weekly') {
-        setSummaryTitle('Resumen Semanal de Incidentes');
-        // @ts-ignore
-        result = await getWeeklySummary(filteredIncidents);
-      } else {
-        setSummaryTitle('Resumen Mensual de Incidentes');
-        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-        // @ts-ignore
-        result = await getMonthlySummary(currentMonth, filteredIncidents);
-      }
-      setSummary(result);
-      setIsSummaryOpen(true);
-    });
-  };
-
   const handleCreateIncident = (e: React.FormEvent) => {
     e.preventDefault();
     const newIncidentData = {
@@ -362,27 +320,9 @@ export default function DashboardPage() {
               </Dialog>
 
               <div className="ml-auto flex-initial">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" disabled={isGenerating}>
-                      {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                      Generar Resumen
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleGenerateSummary('weekly')}>
-                      Resumen Semanal
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleGenerateSummary('monthly')}>
-                      Resumen Mensual
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+               
               </div>
-              <Button variant="outline" onClick={handleDownload}>
-                <Download className="mr-2 h-4 w-4" />
-                Descargar Reporte
-              </Button>
+              
             </div>
           </header>
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
