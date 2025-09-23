@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from "react";
 import Link from 'next/link';
 import {
   BarChart,
-  Bell,
   Clock,
   Home,
   LineChart,
@@ -159,7 +158,7 @@ export default function DashboardPage() {
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center justify-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
               <Link href="/" className="flex items-center gap-2 font-semibold text-sidebar-primary-foreground">
-                <ShieldAlert className="h-6 w-6" />
+                <Clock className="h-6 w-6" />
                 <span className="sr-only">Gestión de Incidentes</span>
               </Link>
             </div>
