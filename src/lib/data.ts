@@ -168,19 +168,18 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
         }
         const data = await response.json();
         const updatesData = data.body?.value || [];
+        
         if (!Array.isArray(updatesData)) {
             console.error('La respuesta de la API de actualizaciones no es un array.', data);
             return fallbackUpdates.filter(update => update.incidentId === incidentId);
         }
 
-        // Asumiendo una estructura de API similar a getIncidents
-        return updatesData
-          .filter((item: any) => item.AFFECT_Id === incidentId)
-          .map((item: any): IncidentUpdate => ({
+        // Map API response to IncidentUpdate[]
+        return updatesData.map((item: any): IncidentUpdate => ({
             id: item.Id,
-            incidentId: item.AFFECT_Id, // o el campo correcto para el ID del incidente
-            text: item.MONITORING_DS, // o el campo correcto para el texto de la actualización
-            timestamp: item.MONITORING_DATE, // o el campo correcto para la marca de tiempo
+            incidentId: item.AFFECT_ID,
+            text: item.MONITORING_DS,
+            timestamp: item.MONITORING_DATE,
         }));
 
     } catch (error) {
