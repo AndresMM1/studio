@@ -1,3 +1,4 @@
+import { Console } from "console";
 import type { Incident, IncidentStatus, IncidentUpdate, IncidentPriority } from "./types";
 
 // Esta es una matriz de respaldo en caso de que la API falle, o para desarrollo sin un backend.
@@ -170,8 +171,9 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
         }
 
         const data = await response.json();
-        const updatesData = data.body?.value || [];
-        
+        const updatesData = data.value || [];
+        console.log(data);
+        console.log(updatesData);
         if (!Array.isArray(updatesData)) {
             console.error('La respuesta de la API de actualizaciones no es un array.', data);
             return fallbackUpdates.filter(update => update.incidentId === incidentId);
@@ -179,7 +181,7 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
 
         // Map API response to IncidentUpdate[]
         return updatesData.map((item: any): IncidentUpdate => ({
-            id: item.Id,
+            id: item.ID,
             incidentId: item.AFFECT_ID,
             text: item.MONITORING_DS,
             timestamp: item.MONITORING_DATE,

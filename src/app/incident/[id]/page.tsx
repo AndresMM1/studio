@@ -141,7 +141,7 @@ export default function IncidentDetailPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-                <CardTitle className="text-3xl font-bold">{incident.service}: {incident.description}</CardTitle>
+                <CardTitle className="text-xl font-bold">{incident.service}: {incident.description}</CardTitle>
                 <CardDescription className="mt-2 text-lg">
                     Incidente #{incident.id}
                 </CardDescription>
