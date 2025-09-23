@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
-import { getIncidentById, updateIncident } from "@/lib/data";
-import { type Incident, type IncidentStatus, type IncidentPriority } from "@/lib/types";
+import { getIncidentById, getIncidentUpdates, addIncidentUpdate, updateIncidentStatus } from "@/lib/data";
+import { type Incident, type IncidentUpdate, type IncidentStatus, type IncidentPriority } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -51,17 +51,22 @@ export default function IncidentDetailPage() {
   const router = useRouter();
   const params = useParams();
   const [incident, setIncident] = useState<Incident | null>(null);
+  const [updates, setUpdates] = useState<IncidentUpdate[]>([]);
   const [newUpdate, setNewUpdate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (params.id) {
       const id = parseInt(params.id as string, 10);
-      async function loadIncident() {
-        const fetchedIncident = await getIncidentById(id);
+      async function loadData() {
+        const [fetchedIncident, fetchedUpdates] = await Promise.all([
+          getIncidentById(id),
+          getIncidentUpdates(id)
+        ]);
         setIncident(fetchedIncident || null);
+        setUpdates(fetchedUpdates || []);
       }
-      loadIncident();
+      loadData();
     }
   }, [params.id]);
 
@@ -88,25 +93,34 @@ export default function IncidentDetailPage() {
     );
   }
 
-  const handleUpdate = async (status: IncidentStatus, updateText: string | null = null) => {
+  const handleAddUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newUpdate.trim() === "" || isSubmitting) return;
+
     setIsSubmitting(true);
-    const updatedIncident = await updateIncident(incident.id, status, updateText);
-    if (updatedIncident) {
-      setIncident({ ...updatedIncident });
-    }
+    const createdUpdate = await addIncidentUpdate(incident.id, newUpdate);
+    setUpdates(prevUpdates => [...prevUpdates, createdUpdate]);
     setNewUpdate("");
     setIsSubmitting(false);
-  };
-
-  const handleStatusChange = (newStatus: IncidentStatus) => {
-    const updateText = `Estado cambiado a ${newStatus}.`;
-    handleUpdate(newStatus, updateText);
   }
+  
+  const handleStatusChange = async (newStatus: IncidentStatus) => {
+    if(isSubmitting) return;
 
-  const handleAddUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newUpdate.trim() === "") return;
-    handleUpdate(incident.status, newUpdate);
+    setIsSubmitting(true);
+    const updateText = `Estado cambiado a ${newStatus}.`;
+    
+    // Create the update first
+    const createdUpdate = await addIncidentUpdate(incident.id, updateText);
+    setUpdates(prevUpdates => [...prevUpdates, createdUpdate]);
+    
+    // Then update the incident status
+    const updatedIncident = await updateIncidentStatus(incident.id, newStatus);
+    if (updatedIncident) {
+      setIncident(updatedIncident);
+    }
+    
+    setIsSubmitting(false);
   }
 
   const PriorityIcon = priorityMap[incident.priority].icon;
@@ -177,8 +191,8 @@ export default function IncidentDetailPage() {
             <div>
                 <h3 className="text-xl font-semibold mb-4">Línea de tiempo del incidente</h3>
                 <div className="space-y-4">
-                    {incident.updates.map((update, index) => (
-                        <div key={index} className="flex gap-4">
+                    {updates.map((update, index) => (
+                        <div key={update.id} className="flex gap-4">
                             <div className="flex flex-col items-center">
                                 <div className="w-3 h-3 bg-primary rounded-full" />
                                 <div className="w-px h-full bg-border" />
@@ -189,7 +203,7 @@ export default function IncidentDetailPage() {
                             </div>
                         </div>
                     ))}
-                     {incident.updates.length === 0 && (
+                     {updates.length === 0 && (
                         <p className="text-muted-foreground">Aún no hay actualizaciones.</p>
                      )}
                 </div>

@@ -2,6 +2,8 @@ export type IncidentPriority = "Crítica" | "Alta" | "Media" | "Baja";
 export type IncidentStatus = "Abierto" | "En espera" | "Cerrado";
 
 export interface IncidentUpdate {
+  id: number;
+  incidentId: number;
   text: string;
   timestamp: string;
 }
@@ -14,6 +16,5 @@ export interface Incident {
   priority: IncidentPriority;
   environment: string;
   status: IncidentStatus;
-  updates: IncidentUpdate[];
   sessionLink?: string;
 }

@@ -10,10 +10,6 @@ const fallbackIncidents: Incident[] = [
     priority: "Crítica",
     environment: "Producción",
     status: "Abierto",
-    updates: [
-      { text: "Incidente declarado, P0 debido al impacto generalizado.", timestamp: "2024-07-22T10:31:00Z" },
-      { text: "Equipo del servicio de autenticación contactado.", timestamp: "2024-07-22T10:35:00Z" }
-    ],
     sessionLink: "https://example.zoom.us/j/1234567890",
   },
   {
@@ -24,13 +20,16 @@ const fallbackIncidents: Incident[] = [
     priority: "Alta",
     environment: "Producción",
     status: "Cerrado",
-    updates: [
-      { text: "Investigando informes de pagos fallidos.", timestamp: "2024-07-22T14:02:00Z" },
-      { text: "Problema identificado con el proveedor ascendente.", timestamp: "2024-07-22T14:30:00Z" },
-      { text: "El proveedor ascendente resolvió el problema. Monitoreando transacciones.", timestamp: "2024-07-22T15:00:00Z" },
-      { text: "Las transacciones han vuelto a la normalidad. Cerrando incidente.", timestamp: "2024-07-22T15:15:00Z" }
-    ],
   },
+];
+
+const fallbackUpdates: IncidentUpdate[] = [
+    { id: 1, incidentId: 1, text: "Incidente declarado, P0 debido al impacto generalizado.", timestamp: "2024-07-22T10:31:00Z" },
+    { id: 2, incidentId: 1, text: "Equipo del servicio de autenticación contactado.", timestamp: "2024-07-22T10:35:00Z" },
+    { id: 3, incidentId: 2, text: "Investigando informes de pagos fallidos.", timestamp: "2024-07-22T14:02:00Z" },
+    { id: 4, incidentId: 2, text: "Problema identificado con el proveedor ascendente.", timestamp: "2024-07-22T14:30:00Z" },
+    { id: 5, incidentId: 2, text: "El proveedor ascendente resolvió el problema. Monitoreando transacciones.", timestamp: "2024-07-22T15:00:00Z" },
+    { id: 6, incidentId: 2, text: "Las transacciones han vuelto a la normalidad. Cerrando incidente.", timestamp: "2024-07-22T15:15:00Z" }
 ];
 
 
@@ -51,11 +50,10 @@ export async function getIncidents(): Promise<Incident[]> {
   }
 }
 
-export async function addIncident(incident: Omit<Incident, 'id' | 'updates' | 'status'>): Promise<Incident> {
+export async function addIncident(incident: Omit<Incident, 'id' | 'status'>): Promise<Incident> {
   const newIncidentData = {
     ...incident,
     status: 'Abierto',
-    updates: [{ text: 'Incidente creado.', timestamp: new Date().toISOString() }],
   };
   
   try {
@@ -71,6 +69,10 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'updates' | 's
       throw new Error('La respuesta de la red no fue correcta');
     }
     const createdIncident: Incident = await response.json();
+    
+    // Also create the first update
+    await addIncidentUpdate(createdIncident.id, 'Incidente creado.');
+
     return createdIncident;
   } catch (error) {
     console.error('Error al crear el incidente:', error);
@@ -81,6 +83,8 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'updates' | 's
         id: newId,
     };
     fallbackIncidents.unshift(createdIncident);
+    // Also create the first update
+    addIncidentUpdate(newId, 'Incidente creado.');
     return createdIncident;
   }
 }
@@ -101,37 +105,70 @@ export async function getIncidentById(id: number): Promise<Incident | undefined>
   }
 }
 
-export async function updateIncident(id: number, status: IncidentStatus, updateText: string | null): Promise<Incident | undefined> {
-    const updates: IncidentUpdate[] = [];
-    if (updateText) {
-        updates.push({ text: updateText, timestamp: new Date().toISOString() });
-    }
-
+export async function getIncidentUpdates(incidentId: number): Promise<IncidentUpdate[]> {
     try {
         // TODO: Reemplaza con la URL de tu API real
-        const response = await fetch(`/api/incidents/${id}`, {
-            method: 'PATCH', // o 'PUT'
+        const response = await fetch(`/api/incidents/${incidentId}/updates`);
+        if (!response.ok) {
+            console.warn(`API falló para las actualizaciones del incidente ${incidentId}, usando datos de respaldo.`);
+            return fallbackUpdates.filter(update => update.incidentId === incidentId);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error(`Error al obtener las actualizaciones del incidente ${incidentId}:`, error);
+        return fallbackUpdates.filter(update => update.incidentId === incidentId);
+    }
+}
+
+
+export async function addIncidentUpdate(incidentId: number, text: string): Promise<IncidentUpdate> {
+    const newUpdateData = {
+        incidentId,
+        text,
+        timestamp: new Date().toISOString()
+    };
+    try {
+        const response = await fetch(`/api/incidents/${incidentId}/updates`, {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status, updates }),
+            body: JSON.stringify(newUpdateData),
         });
         if (!response.ok) {
             throw new Error('La respuesta de la red no fue correcta');
         }
         return await response.json();
     } catch (error) {
-        console.error('Error al actualizar el incidente:', error);
+        console.error('Error al agregar la actualización del incidente:', error);
+        const newId = Math.max(0, ...fallbackUpdates.map(u => u.id)) + 1;
+        const newUpdate: IncidentUpdate = {
+            id: newId,
+            ...newUpdateData
+        };
+        fallbackUpdates.push(newUpdate);
+        return newUpdate;
+    }
+}
+
+
+export async function updateIncidentStatus(id: number, status: IncidentStatus): Promise<Incident | undefined> {
+    try {
+        // TODO: Reemplaza con la URL de tu API real
+        const response = await fetch(`/api/incidents/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status }),
+        });
+        if (!response.ok) {
+            throw new Error('La respuesta de la red no fue correcta');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error al actualizar el estado del incidente:', error);
         
-        // Simulación de respaldo si la API falla
         const incident = fallbackIncidents.find(i => i.id === id);
         if (!incident) return undefined;
 
-        if (updateText) {
-            incident.updates.push({ text: updateText, timestamp: new Date().toISOString() });
-        }
-        if (status !== incident.status) {
-            incident.status = status;
-            incident.updates.push({ text: `El estado del incidente cambió a ${status}.`, timestamp: new Date().toISOString() });
-        }
+        incident.status = status;
         return incident;
     }
 }
