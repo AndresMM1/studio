@@ -41,7 +41,7 @@ const priorityMap: Record<IncidentPriority, { icon: React.ElementType; className
 };
 
 const statusMap = {
-  "Abierto": { icon: HardHat, className: "text-green-600", badgeClassName: "bg-green-100 text-green-800" },
+  "Proceso": { icon: HardHat, className: "text-green-600", badgeClassName: "bg-green-100 text-green-800" },
   "En espera": { icon: CircleOff, className: "text-gray-500", badgeClassName: "bg-gray-100 text-gray-800" },
   "Cerrado": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800" },
   "Cerrada": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800" },
@@ -221,7 +221,7 @@ export default function IncidentDetailPage() {
                 <div className="flex justify-between items-center">
                     <div className="flex gap-2">
                        {incident.status !== 'En espera' && <Button onClick={() => handleStatusChange("En espera")} type="button" variant="outline" disabled={isSubmitting}>Poner en espera</Button>}
-                       {incident.status !== 'Abierto' && <Button onClick={() => handleStatusChange("Abierto")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
+                       {incident.status !== 'Proceso' && <Button onClick={() => handleStatusChange("Proceso")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
                        {incident.status !== 'Cerrado' && <Button onClick={() => handleStatusChange("Cerrado")} type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>}
                     </div>
                      <Button type="submit" disabled={isSubmitting || newUpdate.trim() === ''}>

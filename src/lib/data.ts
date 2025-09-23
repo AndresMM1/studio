@@ -100,7 +100,7 @@ export async function getIncidents(): Promise<Incident[]> {
 
 export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'endDate'>): Promise<Incident> {
   const apiPayload = {
-    AFFECT_STATE: 'Abierto',
+    AFFECT_STATE: 'Proceso',
     AFFECT_DETAILS: `Servicio: ${incident.service} Descripción: ${incident.description}`,
     AFFECT_START_DATE: incident.startTime,
     PERSON_EMAIL: 'user@example.com',
@@ -172,8 +172,6 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
 
         const data = await response.json();
         const updatesData = data.value || [];
-        console.log(data);
-        console.log(updatesData);
         if (!Array.isArray(updatesData)) {
             console.error('La respuesta de la API de actualizaciones no es un array.', data);
             return fallbackUpdates.filter(update => update.incidentId === incidentId);
