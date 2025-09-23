@@ -211,8 +211,8 @@ export default function DashboardPage() {
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <p className="font-bold">Juan Pérez</p>
-                  <p className="text-sm">Ingeniero de Confiabilidad</p>
+                  <p className="font-bold">Andres Mora</p>
+                  <p className="text-sm">Consultor Junior</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -222,10 +222,6 @@ export default function DashboardPage() {
           <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
             <h1 className="text-xl font-bold tracking-tight">Gestión de Incidentes</h1>
             <div className="ml-auto flex items-center gap-4">
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <Bell className="h-4 w-4" />
-              <span className="sr-only">Alternar notificaciones</span>
-            </Button>
               <Dialog open={isCreateModalOpen} onOpenChange={setCreateModalOpen}>
                 <DialogTrigger asChild>
                   <Button>
@@ -429,4 +425,5 @@ export default function DashboardPage() {
   );
 }
 
+    
     
