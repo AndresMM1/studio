@@ -71,6 +71,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
 
 
 const priorities: IncidentPriority[] = ["P0", "P1", "P2", "P3"];
@@ -100,6 +101,7 @@ export default function DashboardPage() {
   const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Producción");
   const [newIncidentSessionLink, setNewIncidentSessionLink] = useState("");
   const [incidents, setIncidents] = useState(allIncidents);
+  const { toast } = useToast();
 
 
   const filteredIncidents = useMemo(() => {
@@ -191,6 +193,11 @@ export default function DashboardPage() {
     setNewIncidentPriority("P2");
     setNewIncidentEnvironment("Producción");
     setNewIncidentSessionLink("");
+
+    toast({
+      title: "Incidente Creado",
+      description: "El nuevo incidente ha sido creado exitosamente.",
+    });
   };
 
   return (
