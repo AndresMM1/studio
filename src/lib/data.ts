@@ -160,14 +160,14 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ AFFECT_Id: incidentId }),
+            body: JSON.stringify({ Id: incidentId }),
         });
         if (!response.ok) {
             console.warn(`API de actualizaciones falló para el incidente ${incidentId}, usando datos de respaldo.`);
             return fallbackUpdates.filter(update => update.incidentId === incidentId);
         }
         const data = await response.json();
-        const updatesData = data.value || [];
+        const updatesData = data.body?.value || [];
         if (!Array.isArray(updatesData)) {
             console.error('La respuesta de la API de actualizaciones no es un array.', data);
             return fallbackUpdates.filter(update => update.incidentId === incidentId);
