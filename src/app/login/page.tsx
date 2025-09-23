@@ -21,19 +21,18 @@ export default function LoginPage() {
   const { login } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(email);
       router.push("/");
     } catch (error) {
       toast({
         title: "Error de inicio de sesión",
-        description: "El correo electrónico o la contraseña son incorrectos. Por favor, inténtelo de nuevo.",
+        description: "El correo electrónico es incorrecto. Por favor, inténtelo de nuevo.",
         variant: "destructive"
       });
       setIsLoading(false);
@@ -61,19 +60,6 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Contraseña</Label>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                 />
               </div>

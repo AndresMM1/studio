@@ -8,7 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
   isLoading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
+  login: (email: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -32,8 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(async (email: string, pass: string) => {
-    // NOTE: The password is not used as per the requirement, but it's kept for future use.
+  const login = useCallback(async (email: string) => {
     const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/531c8430edea42c0bb9b7d94d2bfff69/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=DA4hJOx3nQC7RTZpYIvSHQuHvGCFzA1XwxN2KEGVybo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
