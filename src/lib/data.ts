@@ -51,8 +51,15 @@ export async function getIncidents(): Promise<Incident[]> {
     }
     const data = await response.json();
 
+    const incidentsData = Array.isArray(data) ? data : (data.incidents || data.body || []);
+
+    if (!Array.isArray(incidentsData)) {
+      console.error('La respuesta de la API no es un array y no se pudo encontrar un array de incidentes en el objeto de respuesta.', data);
+      return [];
+    }
+    
     // Map API response to Incident[]
-    return data.map((item: any): Incident => {
+    return incidentsData.map((item: any): Incident => {
       const { service, description } = parseAffectDetails(item.AFFECT_DETAILS || "");
       
       let priority: Incident["priority"] = "Baja";
