@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useEffect } from "react";
 import Link from 'next/link';
 import {
   BarChart,
@@ -15,7 +15,7 @@ import {
   Users,
   User,
 } from "lucide-react";
-import { incidents as allIncidents, addIncident } from "@/lib/data";
+import { getIncidents, addIncident } from "@/lib/data";
 import { type Incident, type IncidentPriority, type IncidentStatus } from "@/lib/types";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { IncidentTable } from "@/components/dashboard/incident-table";
@@ -71,8 +71,16 @@ export default function DashboardPage() {
   const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Producción");
   const [newIncidentStartTime, setNewIncidentStartTime] = useState(new Date().toISOString().slice(0, 16));
   const [newIncidentSessionLink, setNewIncidentSessionLink] = useState("");
-  const [incidents, setIncidents] = useState(allIncidents);
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function loadIncidents() {
+      const fetchedIncidents = await getIncidents();
+      setIncidents(fetchedIncidents);
+    }
+    loadIncidents();
+  }, []);
 
 
   const filteredIncidents = useMemo(() => {
@@ -103,7 +111,7 @@ export default function DashboardPage() {
     return { totalIncidents, avgResponseTime, avgResolutionTime, incidentRate };
   }, [filteredIncidents]);
   
-  const handleCreateIncident = (e: React.FormEvent) => {
+  const handleCreateIncident = async (e: React.FormEvent) => {
     e.preventDefault();
     const newIncidentData = {
       service: newIncidentService,
@@ -113,8 +121,8 @@ export default function DashboardPage() {
       environment: newIncidentEnvironment,
       sessionLink: newIncidentSessionLink,
     };
-    addIncident(newIncidentData);
-    setIncidents([...allIncidents]);
+    const newIncident = await addIncident(newIncidentData);
+    setIncidents(prevIncidents => [newIncident, ...prevIncidents]);
     setCreateModalOpen(false);
     // Reset form
     setNewIncidentService("");
@@ -404,5 +412,3 @@ export default function DashboardPage() {
     </TooltipProvider>
   );
 }
-
-    

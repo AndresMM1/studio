@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
-import { getIncidentById, updateIncident, incidents as allIncidents } from "@/lib/data";
+import { getIncidentById, updateIncident } from "@/lib/data";
 import { type Incident, type IncidentStatus, type IncidentPriority } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -57,8 +57,11 @@ export default function IncidentDetailPage() {
   useEffect(() => {
     if (params.id) {
       const id = parseInt(params.id as string, 10);
-      const fetchedIncident = getIncidentById(id);
-      setIncident(fetchedIncident || null);
+      async function loadIncident() {
+        const fetchedIncident = await getIncidentById(id);
+        setIncident(fetchedIncident || null);
+      }
+      loadIncident();
     }
   }, [params.id]);
 
@@ -85,17 +88,14 @@ export default function IncidentDetailPage() {
     );
   }
 
-  const handleUpdate = (status: IncidentStatus, updateText: string | null = null) => {
+  const handleUpdate = async (status: IncidentStatus, updateText: string | null = null) => {
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      const updatedIncident = updateIncident(incident.id, status, updateText);
-      if (updatedIncident) {
-        setIncident({ ...updatedIncident });
-      }
-      setNewUpdate("");
-      setIsSubmitting(false);
-    }, 500);
+    const updatedIncident = await updateIncident(incident.id, status, updateText);
+    if (updatedIncident) {
+      setIncident({ ...updatedIncident });
+    }
+    setNewUpdate("");
+    setIsSubmitting(false);
   };
 
   const handleStatusChange = (newStatus: IncidentStatus) => {
