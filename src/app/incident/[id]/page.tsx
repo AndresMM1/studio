@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
 import { getIncidentById, updateIncident, incidents as allIncidents } from "@/lib/data";
-import { type Incident, type IncidentStatus } from "@/lib/types";
+import { type Incident, type IncidentStatus, type IncidentPriority } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -34,11 +34,11 @@ import {
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
-const priorityMap = {
-  P0: { icon: ShieldAlert, className: "text-red-500", badgeClassName: "bg-red-100 text-red-800" },
-  P1: { icon: TriangleAlert, className: "text-orange-500", badgeClassName: "bg-orange-100 text-orange-800" },
-  P2: { icon: AlertCircle, className: "text-yellow-500", badgeClassName: "bg-yellow-100 text-yellow-800" },
-  P3: { icon: Info, className: "text-blue-500", badgeClassName: "bg-blue-100 text-blue-800" },
+const priorityMap: Record<IncidentPriority, { icon: React.ElementType; className: string; badgeClassName: string }> = {
+  "Crítica": { icon: ShieldAlert, className: "text-red-500", badgeClassName: "bg-red-100 text-red-800" },
+  "Alta": { icon: TriangleAlert, className: "text-orange-500", badgeClassName: "bg-orange-100 text-orange-800" },
+  "Media": { icon: AlertCircle, className: "text-yellow-500", badgeClassName: "bg-yellow-100 text-yellow-800" },
+  "Baja": { icon: Info, className: "text-blue-500", badgeClassName: "bg-blue-100 text-blue-800" },
 };
 
 const statusMap = {

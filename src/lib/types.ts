@@ -1,4 +1,4 @@
-export type IncidentPriority = "P0" | "P1" | "P2" | "P3";
+export type IncidentPriority = "Crítica" | "Alta" | "Media" | "Baja";
 export type IncidentStatus = "Abierto" | "En espera" | "Cerrado";
 
 export interface IncidentUpdate {

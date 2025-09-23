@@ -74,7 +74,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 
-const priorities: IncidentPriority[] = ["P0", "P1", "P2", "P3"];
+const priorities: IncidentPriority[] = ["Crítica", "Alta", "Media", "Baja"];
 const statuses: IncidentStatus[] = ["Abierto", "En espera", "Cerrado"];
 const environments = ["Producción", "Staging"];
 
@@ -97,8 +97,9 @@ export default function DashboardPage() {
   // Form state for new incident
   const [newIncidentService, setNewIncidentService] = useState("");
   const [newIncidentDescription, setNewIncidentDescription] = useState("");
-  const [newIncidentPriority, setNewIncidentPriority] = useState<IncidentPriority>("P2");
+  const [newIncidentPriority, setNewIncidentPriority] = useState<IncidentPriority>("Media");
   const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Producción");
+  const [newIncidentStartTime, setNewIncidentStartTime] = useState(new Date().toISOString().slice(0, 16));
   const [newIncidentSessionLink, setNewIncidentSessionLink] = useState("");
   const [incidents, setIncidents] = useState(allIncidents);
   const { toast } = useToast();
@@ -178,7 +179,7 @@ export default function DashboardPage() {
     e.preventDefault();
     const newIncidentData = {
       service: newIncidentService,
-      startTime: new Date().toISOString(),
+      startTime: new Date(newIncidentStartTime).toISOString(),
       description: newIncidentDescription,
       priority: newIncidentPriority,
       environment: newIncidentEnvironment,
@@ -190,8 +191,9 @@ export default function DashboardPage() {
     // Reset form
     setNewIncidentService("");
     setNewIncidentDescription("");
-    setNewIncidentPriority("P2");
+    setNewIncidentPriority("Media");
     setNewIncidentEnvironment("Producción");
+    setNewIncidentStartTime(new Date().toISOString().slice(0, 16));
     setNewIncidentSessionLink("");
 
     toast({
@@ -309,6 +311,19 @@ export default function DashboardPage() {
                           id="description"
                           value={newIncidentDescription}
                           onChange={(e) => setNewIncidentDescription(e.target.value)}
+                          className="col-span-3"
+                          required
+                        />
+                      </div>
+                       <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="startTime" className="text-right">
+                          Hora de inicio
+                        </Label>
+                        <Input
+                          id="startTime"
+                          type="datetime-local"
+                          value={newIncidentStartTime}
+                          onChange={(e) => setNewIncidentStartTime(e.target.value)}
                           className="col-span-3"
                           required
                         />
