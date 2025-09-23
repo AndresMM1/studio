@@ -155,8 +155,13 @@ export async function getIncidentById(id: number): Promise<Incident | undefined>
 
 async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUpdate[]> {
     try {
-        // TODO: Reemplaza con la URL de tu API real para obtener actualizaciones
-        const response = await fetch(`/api/incidents/${incidentId}/updates`);
+        const response = await fetch(`https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3e000975fbe940c591ac1b834c53d0c2/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6_2Ws-GkXV-gq9MAgeQMJ8taCuL8Y7LO6glAOBui3d4`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ AFFECT_Id: incidentId }),
+        });
         if (!response.ok) {
             console.warn(`API de actualizaciones falló para el incidente ${incidentId}, usando datos de respaldo.`);
             return fallbackUpdates.filter(update => update.incidentId === incidentId);
@@ -169,11 +174,13 @@ async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUp
         }
 
         // Asumiendo una estructura de API similar a getIncidents
-        return updatesData.map((item: any): IncidentUpdate => ({
+        return updatesData
+          .filter((item: any) => item.AFFECT_Id === incidentId)
+          .map((item: any): IncidentUpdate => ({
             id: item.Id,
             incidentId: item.AFFECT_Id, // o el campo correcto para el ID del incidente
-            text: item.UPDATE_TEXT, // o el campo correcto para el texto de la actualización
-            timestamp: item.UPDATE_TIMESTAMP, // o el campo correcto para la marca de tiempo
+            text: item.MONITORING_DS, // o el campo correcto para el texto de la actualización
+            timestamp: item.MONITORING_DATE, // o el campo correcto para la marca de tiempo
         }));
 
     } catch (error) {
@@ -201,7 +208,7 @@ export async function addIncidentUpdate(incidentId: number, text: string): Promi
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               AFFECT_Id: incidentId, // Mapeado al campo esperado por la API
-              UPDATE_TEXT: text,
+              MONITORING_DS: text,
             }),
         });
         if (!response.ok) {
