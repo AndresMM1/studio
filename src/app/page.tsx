@@ -64,6 +64,8 @@ import { Badge } from '@/components/ui/badge';
 const severities: IncidentSeverity[] = ["Emergency", "High", "Medium", "Low"];
 const statuses: IncidentStatus[] = ["New", "In Progress", "Resolved"];
 
+const ITEMS_PER_PAGE = 10;
+
 export default function DashboardPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<IncidentStatus | "all">("all");
@@ -74,6 +76,8 @@ export default function DashboardPage() {
   const [summaryTitle, setSummaryTitle] = useState<string>("");
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [isGenerating, startTransition] = useTransition();
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   const countries = useMemo(() => {
     const uniqueCountries = new Set(allIncidents.map((i) => i.location.country));
@@ -90,6 +94,14 @@ export default function DashboardPage() {
       );
     });
   }, [search, status, severity, country]);
+
+  const paginatedIncidents = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredIncidents.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredIncidents, currentPage]);
+
+  const totalPages = Math.ceil(filteredIncidents.length / ITEMS_PER_PAGE);
+
 
   const metrics = useMemo(() => {
     const totalIncidents = filteredIncidents.length;
@@ -241,11 +253,17 @@ export default function DashboardPage() {
                 placeholder="Search by reference..."
                 className="w-full rounded-lg bg-background pl-8"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
             <div className="grid grid-cols-2 gap-4 md:flex md:flex-row">
-              <Select value={status} onValueChange={(value) => setStatus(value as IncidentStatus | "all")}>
+              <Select value={status} onValueChange={(value) => {
+                  setStatus(value as IncidentStatus | "all");
+                  setCurrentPage(1);
+                }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
@@ -256,7 +274,10 @@ export default function DashboardPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={severity} onValueChange={(value) => setSeverity(value as IncidentSeverity | "all")}>
+              <Select value={severity} onValueChange={(value) => {
+                setSeverity(value as IncidentSeverity | "all");
+                setCurrentPage(1);
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by severity" />
                 </SelectTrigger>
@@ -267,7 +288,10 @@ export default function DashboardPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={country} onValueChange={(value) => setCountry(value)}>
+              <Select value={country} onValueChange={(value) => {
+                setCountry(value);
+                setCurrentPage(1);
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Filter by country" />
                 </SelectTrigger>
@@ -280,7 +304,30 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <IncidentTable incidents={filteredIncidents} />
+          <IncidentTable incidents={paginatedIncidents} />
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              Showing page {currentPage} of {totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
 
           <AlertDialog open={isSummaryOpen} onOpenChange={setIsSummaryOpen}>
             <AlertDialogContent>
@@ -300,3 +347,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

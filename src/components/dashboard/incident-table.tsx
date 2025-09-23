@@ -14,9 +14,11 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -98,3 +100,5 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
     </Card>
   );
 }
+
+    
