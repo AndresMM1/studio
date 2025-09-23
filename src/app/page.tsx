@@ -19,7 +19,7 @@ import {
   User,
 } from "lucide-react";
 import { incidents as allIncidents, addIncident } from "@/lib/data";
-import { type Incident, type IncidentPriority } from "@/lib/types";
+import { type Incident, type IncidentPriority, type IncidentStatus } from "@/lib/types";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { IncidentTable } from "@/components/dashboard/incident-table";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,7 @@ import {
 
 
 const priorities: IncidentPriority[] = ["P0", "P1", "P2", "P3"];
+const statuses: IncidentStatus[] = ["Open", "On Hold", "Closed"];
 const environments = ["Production", "Staging"];
 
 const ITEMS_PER_PAGE = 10;
@@ -81,6 +82,7 @@ const ITEMS_PER_PAGE = 10;
 export default function DashboardPage() {
   const [search, setSearch] = useState("");
   const [priority, setPriority] = useState<IncidentPriority | "all">("all");
+  const [status, setStatus] = useState<IncidentStatus | "all">("all");
   const [environment, setEnvironment] = useState<string>("all");
   
   const [summary, setSummary] = useState<string>("");
@@ -105,10 +107,11 @@ export default function DashboardPage() {
       return (
         (search === "" || incident.service.toLowerCase().includes(search.toLowerCase())) &&
         (priority === "all" || incident.priority === priority) &&
+        (status === "all" || incident.status === status) &&
         (environment === "all" || incident.environment === environment)
       );
     });
-  }, [search, priority, environment, incidents]);
+  }, [search, priority, status, environment, incidents]);
 
   const paginatedIncidents = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -128,13 +131,15 @@ export default function DashboardPage() {
   }, [filteredIncidents]);
 
   const handleDownload = () => {
-    const headers = ["Service", "Start Time", "Description", "Priority", "Environment", "Session Link"];
+    const headers = ["ID", "Service", "Start Time", "Description", "Priority", "Status", "Environment", "Session Link"];
     const rows = filteredIncidents.map((i) =>
       [
+        i.id,
         i.service,
         i.startTime,
         `"${i.description}"`,
         i.priority,
+        i.status,
         i.environment,
         i.sessionLink,
       ].join(",")
@@ -169,7 +174,7 @@ export default function DashboardPage() {
 
   const handleCreateIncident = (e: React.FormEvent) => {
     e.preventDefault();
-    const newIncident: Incident = {
+    const newIncidentData = {
       service: newIncidentService,
       startTime: new Date().toISOString(),
       description: newIncidentDescription,
@@ -177,7 +182,7 @@ export default function DashboardPage() {
       environment: newIncidentEnvironment,
       sessionLink: newIncidentSessionLink,
     };
-    addIncident(newIncident);
+    addIncident(newIncidentData);
     setIncidents([...allIncidents]);
     setCreateModalOpen(false);
     // Reset form
@@ -395,7 +400,7 @@ export default function DashboardPage() {
                   }}
                 />
               </div>
-              <div className="grid grid-cols-1 gap-4 md:flex md:flex-row md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:flex md:flex-row md:grid-cols-3">
                 <Select value={priority} onValueChange={(value) => {
                     setPriority(value as IncidentPriority | "all");
                     setCurrentPage(1);
@@ -407,6 +412,20 @@ export default function DashboardPage() {
                     <SelectItem value="all">All Priorities</SelectItem>
                     {priorities.map((p) => (
                       <SelectItem key={p} value={p}>{p}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                 <Select value={status} onValueChange={(value) => {
+                    setStatus(value as IncidentStatus | "all");
+                    setCurrentPage(1);
+                  }}>
+                  <SelectTrigger className="w-full md:w-[180px]">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    {statuses.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
