@@ -11,7 +11,7 @@ const fallbackIncidents: Incident[] = [
     description: "Los usuarios no pueden iniciar sesión.",
     priority: "Crítica",
     environment: "Producción",
-    status: "Abierto",
+    status: "Proceso",
   },
   {
     id: 2,
@@ -72,10 +72,10 @@ export async function getIncidents(): Promise<Incident[]> {
           }
       }
 
-      let status: Incident["status"] = "Abierto";
+      let status: Incident["status"] = "Proceso";
        if(item.AFFECT_STATE) {
           const s = item.AFFECT_STATE.charAt(0).toUpperCase() + item.AFFECT_STATE.slice(1).toLowerCase();
-          if (s === "Abierto" || s === "En espera" || s === "Cerrado" || s === "Cerrada") {
+          if (s === "Proceso" || s === "En espera" || s === "Cerrado" || s === "Cerrada") {
               status = s;
           }
       }
@@ -128,7 +128,7 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
      const newId = createdIncidentFromApi.Id || Math.max(...fallbackIncidents.map(i => i.id)) + 1;
      const createdIncident: Incident = {
         id: newId,
-        status: 'Abierto',
+        status: 'Proceso',
         ...incident
      };
 
@@ -140,7 +140,7 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
     const newId = Math.max(...fallbackIncidents.map(i => i.id)) + 1;
     const createdIncident: Incident = {
         id: newId,
-        status: 'Abierto',
+        status: 'Proceso',
         ...incident
     };
     fallbackIncidents.unshift(createdIncident);

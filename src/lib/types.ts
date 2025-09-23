@@ -1,5 +1,5 @@
 export type IncidentPriority = "Crítica" | "Alta" | "Media" | "Baja";
-export type IncidentStatus = "Abierto" | "En espera" | "Cerrado" | "Cerrada";
+export type IncidentStatus = "Proceso" | "En espera" | "Cerrado" | "Cerrada";
 
 export interface IncidentUpdate {
   id: number;
