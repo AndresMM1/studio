@@ -206,10 +206,8 @@ export default function DashboardPage() {
         </div>
         <div className="flex flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
-            <div className="w-full flex-1">
-              <h1 className="text-xl font-bold tracking-tight">Gestión de Incidentes</h1>
-            </div>
-            <div className="flex flex-1 items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+            <h1 className="text-xl font-bold tracking-tight">Gestión de Incidentes</h1>
+            <div className="ml-auto flex items-center gap-4">
             <Button variant="outline" size="icon" className="h-8 w-8">
               <Bell className="h-4 w-4" />
               <span className="sr-only">Alternar notificaciones</span>
