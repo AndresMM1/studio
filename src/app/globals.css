@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Lato', sans-serif;
+
 }
 
 @layer base {
@@ -67,7 +68,11 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --sidebar-background: 221 83% 49%;
+    --sidebar-background: linear-gradient(
+  135deg,
+  hsl(221 83% 49%) 0%,
+  hsl(221 83% 65%) 100%
+);
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 210 40% 98%;
     --sidebar-primary-foreground: 221 83% 49%;

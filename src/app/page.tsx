@@ -10,6 +10,9 @@ import {
   Loader2,
   PlusCircle,
   Search,
+  AlertOctagon,
+  GitPullRequestIcon,
+  Cog,
   ShieldAlert,
   TriangleAlert,
   Users,
@@ -181,9 +184,9 @@ function DashboardPage() {
         <div className="grid min-h-screen w-full md:grid-cols-[60px_1fr] lg:grid-cols-[60px_1fr]">
           <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
             <div className="flex h-full max-h-screen flex-col gap-2">
-              <div className="flex h-14 items-center justify-center border-b border-sidebar-border px-4 lg:h-[60px] lg:px-6">
+              <div className="flex h-14 items-center justify-center  border-sidebar-border lg:h-[60px] px-4">
                 <Link href="/" className="flex items-center gap-2 font-semibold text-sidebar-primary-foreground">
-                  <Clock className="h-6 w-6" />
+                  <img src="https://www.goupayments.com.co/o/theme-gou/images/favicon.ico" className="h-8 w-8" />
                   <span className="sr-only">Gestión de Incidentes</span>
                 </Link>
               </div>
@@ -195,11 +198,11 @@ function DashboardPage() {
                         href="#"
                         className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
                       >
-                        <Home className="h-5 w-5" />
-                        <span className="sr-only">Panel</span>
+                        <AlertOctagon className="h-5 w-5" />
+                        <span className="sr-only">Incidentes</span>
                       </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Panel</TooltipContent>
+                    <TooltipContent side="right">Incidentes</TooltipContent>
                   </Tooltip>
                    <Tooltip>
                     <TooltipTrigger asChild>
@@ -207,11 +210,11 @@ function DashboardPage() {
                         href="#"
                         className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
                       >
-                        <Users className="h-5 w-5" />
-                        <span className="sr-only">Usuarios</span>
+                        <GitPullRequestIcon className="h-5 w-5" />
+                        <span className="sr-only">Cambios</span>
                       </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Usuarios</TooltipContent>
+                    <TooltipContent side="right">Cambios</TooltipContent>
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -219,11 +222,11 @@ function DashboardPage() {
                         href="#"
                         className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
                       >
-                        <LineChart className="h-5 w-5" />
-                        <span className="sr-only">Analíticas</span>
+                        <Cog className="h-5 w-5" />
+                        <span className="sr-only">Toil</span>
                       </Link>
                     </TooltipTrigger>
-                    <TooltipContent side="right">Analíticas</TooltipContent>
+                    <TooltipContent side="right">Toil</TooltipContent>
                   </Tooltip>
                 </nav>
               </div>
@@ -243,7 +246,7 @@ function DashboardPage() {
             </div>
           </div>
           <div className="flex flex-col">
-            <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+            <header className="flex h-14 items-center gap-4  bg-muted/40 px-4 lg:h-[60px] lg:px-6">
               <h1 className="text-xl font-bold tracking-tight">Gestión de Incidentes</h1>
               <div className="ml-auto flex items-center gap-4">
                 <Dialog open={isCreateModalOpen} onOpenChange={setCreateModalOpen}>
