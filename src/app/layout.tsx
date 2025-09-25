@@ -5,7 +5,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
   title: 'Gestión de Incidentes',
-  
+  description: 'Aplicación para gestionar incidentes',
 };
 
 export default function RootLayout({
