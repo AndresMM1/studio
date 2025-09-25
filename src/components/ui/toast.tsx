@@ -56,7 +56,11 @@ const Toast = React.forwardRef<
       className={cn(toastVariants({ variant }), className)}
       {...props}
     >
-      <Image src={imageSrc} alt="" width={60} height={60} className="mr-2 brightness-0" />
+      <Image src={imageSrc} alt="" width={60} height={60} className={
+          variant === "destructive"
+            ? "mr-2 invert brightness-0"
+            : "mr-2"
+        } />
       <div className="flex flex-col flex-1">
         {children}
       </div>
