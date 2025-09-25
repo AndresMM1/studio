@@ -48,7 +48,7 @@ const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
     VariantProps<typeof toastVariants>
->(({ className, variant, ...props }, ref) => {
+>(({ className, variant, children, ...props }, ref) => {
   const imageSrc = variant === "destructive" ? imagenFailure : imagenSucces;
   return (
     <ToastPrimitives.Root
@@ -56,8 +56,10 @@ const Toast = React.forwardRef<
       className={cn(toastVariants({ variant }), className)}
       {...props}
     >
-      <Image src={imageSrc} alt="" width={32} height={32} className="mr-2" />
-      {/* ...rest of your toast content... */}
+      <Image src={imageSrc} alt="" width={60} height={60} className="mr-2 brightness-0" />
+      <div className="flex flex-col flex-1">
+        {children}
+      </div>
     </ToastPrimitives.Root>
   );
 })
@@ -114,7 +116,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-sm opacity-90", className)}
+    className={cn("text-sm ", className)}
     {...props}
   />
 ))
