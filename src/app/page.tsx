@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Link from 'next/link';
 import {
   BarChart,
@@ -87,6 +87,9 @@ function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // Keep track of previous incident IDs
+  const prevIncidentIdsRef = useRef<Set<number>>(new Set());
+
   useEffect(() => {
     async function loadInitialData() {
       setIsLoading(true);
@@ -101,6 +104,39 @@ function DashboardPage() {
     loadInitialData();
   }, []);
 
+  useEffect(() => {
+    // Request notification permission on mount
+    if (typeof window !== "undefined" && Notification && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+
+    const pollIncidents = async () => {
+      const fetchedIncidents = await getIncidents();
+      setIncidents(fetchedIncidents);
+
+      // Detect new incidents
+      const prevIds = prevIncidentIdsRef.current;
+      const newIncidents = fetchedIncidents.filter(i => !prevIds.has(i.id));
+      if (newIncidents.length > 0 && Notification.permission === "granted") {
+        newIncidents.forEach(incident => {
+          new Notification("Nuevo incidente", {
+            body: `${incident.service}: ${incident.description}`,
+            icon: "/AbejaLogin.png", // Cambia la ruta si tienes un icono
+          });
+        });
+      }
+      // Update the ref for next poll
+      prevIncidentIdsRef.current = new Set(fetchedIncidents.map(i => i.id));
+    };
+
+    // Initial load
+    pollIncidents();
+
+    // Poll every minute
+    const interval = setInterval(pollIncidents, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredIncidents = useMemo(() => {
     return incidents.filter((incident) => {
