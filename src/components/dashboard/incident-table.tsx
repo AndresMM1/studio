@@ -62,7 +62,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
               return (
                 <TableRow 
                   key={incident.id}
-                  className={cn(isOpen && "bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30")}
+                  className={cn(isOpen && "bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 animate-pulse")}
                 >
                   <TableCell className="font-medium">{incident.service}</TableCell>
                   <TableCell>
