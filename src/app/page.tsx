@@ -74,6 +74,7 @@ function DashboardPage() {
   
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isCreatingIncident, setIsCreatingIncident] = useState(false);
 
   // Form state for new incident
   const [newIncidentService, setNewIncidentService] = useState<string | undefined>(undefined);
@@ -131,12 +132,14 @@ function DashboardPage() {
   
   const handleCreateIncident = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsCreatingIncident(true); // <-- Set loading state here
     if (!newIncidentService) {
         toast({
             title: "Error de validación",
             description: "Por favor, selecciona un servicio.",
             variant: "destructive"
         });
+        setIsCreatingIncident(false);
         return;
     }
     if (!user) {
@@ -145,6 +148,7 @@ function DashboardPage() {
             description: "No has iniciado sesión.",
             variant: "destructive"
         });
+        setIsCreatingIncident(false);
         return;
     }
     try {
@@ -175,6 +179,8 @@ function DashboardPage() {
             description: "No se pudo crear el incidente. Por favor, inténtelo de nuevo.",
             variant: "destructive"
         })
+    } finally {
+        setIsCreatingIncident(false);
     }
   };
 
@@ -331,7 +337,10 @@ function DashboardPage() {
                         <DialogClose asChild>
                            <Button type="button" variant="secondary">Cancelar</Button>
                         </DialogClose>
-                        <Button type="submit">Crear</Button>
+                         <Button type="submit" disabled={isCreatingIncident}>
+                           {isCreatingIncident && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                           {isCreatingIncident ? "Creando..." : "Crear"}
+                        </Button>
                       </DialogFooter>
                     </form>
                   </DialogContent>
