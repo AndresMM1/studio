@@ -80,7 +80,7 @@ export default function IncidentDetailPage() {
     if (!incident || newUpdate.trim() === "" || isSubmitting) return;
 
     setIsSubmitting(true);
-    const createdUpdate = await addIncidentUpdate(incident.id, newUpdate);
+    const createdUpdate = await addIncidentUpdate(incident.id.toString(), newUpdate);
     setUpdates(prevUpdates => [createdUpdate, ...prevUpdates].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
     setNewUpdate("");
     setIsSubmitting(false);
@@ -93,8 +93,8 @@ export default function IncidentDetailPage() {
     const updateText = `Estado cambiado a ${newStatus}.`;
     
     // Create the update first
-    const createdUpdate = await addIncidentUpdate(incident.id, updateText);
-    setUpdates(prevUpdates => [createdUpdate, ...prevUpdates].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+    const createdUpdate = await addIncidentUpdate(incident.id.toString(), updateText);
+      setUpdates(prevUpdates => [createdUpdate, ...prevUpdates].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
     
     // Then update the incident status
     const updatedIncident = await updateIncidentStatus(incident.id, newStatus);

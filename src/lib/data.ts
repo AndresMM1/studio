@@ -178,7 +178,7 @@ export async function getIncidentUpdates(incidentId: number): Promise<IncidentUp
 export async function addIncidentUpdate(incidentId: string, text: string): Promise<IncidentUpdate> {
     const timestamp = new Date().toISOString();
     const newUpdateData = {
-        AFFECT_ID: incidentId,
+        AFFECT_ID: incidentId.toString( ),
         MONITORING_DATE: timestamp,
         MONITORING_DS: text,
     };
