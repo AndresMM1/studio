@@ -9,14 +9,20 @@ interface MetricCardProps {
 
 export function MetricCard({ title, value, icon: Icon }: MetricCardProps) {
   return (
-    <Card  className="bg-gray-100 text-black">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className=" text-blue-500 h-8 w-8 " />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
+    <Card className="bg-gray-100 text-black">
+      <div className="flex">
+        <div className="flex-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{value}</div>
+          </CardContent>
+        </div>
+        <div className="flex items-center justify-center px-4">
+          <Icon className="text-blue-500 h-8 w-8" />
+        </div>
+      </div>
     </Card>
   );
 }

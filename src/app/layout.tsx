@@ -5,7 +5,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 
 export const metadata: Metadata = {
   title: 'Gestión de Incidentes',
-  description: 'Generado por Firebase Studio',
+  
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="antialiased bg-muted/40">
+      <body className="bg-gradient-to-br from-white to-blue-100 ">
         <AuthProvider>
           {children}
           <Toaster />

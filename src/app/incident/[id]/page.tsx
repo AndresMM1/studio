@@ -1,5 +1,6 @@
 "use client";
-
+import Image from "next/image";
+import imagen from '@/public/AbejaEmpty.png';
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
@@ -119,7 +120,9 @@ export default function IncidentDetailPage() {
                 <CardHeader>
                     <CardTitle>Incidente no encontrado</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className=" flex flex-col items-center">
+    <Image src={imagen} alt="Logo" width={170} height={170}         className=" justify-center opacity-50  hover:opacity-100 transition " />
+
                     <p>El incidente que estás buscando no existe.</p>
                 </CardContent>
                 <CardFooter>
@@ -153,7 +156,7 @@ export default function IncidentDetailPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-                <CardTitle className="text-xl font-bold whitespace-pre-wrap">{incident.service}: {incident.description}</CardTitle>
+                <CardTitle className="text-lg font-bold whitespace-pre-wrap">{incident.service}: {incident.description}</CardTitle>
                 <CardDescription className="mt-2 text-lg">
                     Incidente #{incident.id}
                 </CardDescription>
@@ -215,7 +218,10 @@ export default function IncidentDetailPage() {
                             </div>
                         ))
                     ) : (
-                        <p className="text-muted-foreground">Aún no hay actualizaciones.</p>
+                      <div className=" flex flex-col items-center"><Image src={imagen} alt="Logo" width={170} height={170}         className=" top-10 opacity-50  hover:opacity-100 transition " />
+                      
+                        <p className="text-muted-foreground">Aún no hay avances.</p></div>
+                          
                     )}
                 </div>
             </div>
@@ -223,7 +229,7 @@ export default function IncidentDetailPage() {
             <Separator className="my-6" />
             
             <form onSubmit={handleAddUpdate}>
-                <h3 className="text-xl font-semibold mb-4">Agregar Actualización</h3>
+                <h3 className="text-xl font-semibold mb-4">Agregar Avances</h3>
                 <Textarea 
                     value={newUpdate}
                     onChange={(e) => setNewUpdate(e.target.value)}
@@ -238,7 +244,7 @@ export default function IncidentDetailPage() {
                        {incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && <Button onClick={() => handleStatusChange("Cerrado")} type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>}
                     </div>
                      <Button type="submit" disabled={isSubmitting || newUpdate.trim() === ''}>
-                        {isSubmitting ? "Enviando..." : "Agregar Actualización"}
+                        {isSubmitting ? "Enviando..." : "Agregar Avances"}
                     </Button>
                 </div>
             </form>

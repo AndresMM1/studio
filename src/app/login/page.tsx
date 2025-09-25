@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -12,10 +13,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/auth-context";  
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-
+import imagen from '@/public/AbejaLogin.png';
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
@@ -40,10 +41,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
+    <div className="bg-gradient-to-br from-white to-blue-100/90 flex min-h-screen items-center justify-center " >
+    <Image src={imagen} alt="Logo" width={170} height={170}         className=" top-10 opacity-50  hover:opacity-100 transition " />
+
+      <Card className=" relative ml-4 max-w-sm">
+
+        <CardHeader className="z-10">
+          <CardTitle className="text-2xl z-10">Iniciar Sesión</CardTitle>
           <CardDescription>
             Ingresa tu correo electrónico para iniciar sesión en tu cuenta
           </CardDescription>
@@ -56,7 +60,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@ejemplo.com"
+                  placeholder="ejemplo@seti.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

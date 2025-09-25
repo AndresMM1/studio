@@ -1,4 +1,8 @@
 "use client"
+import Image from "next/image"
+import imagenSucces from '@/public/AbejaSucess.png';
+import imagenFailure from '@/public/AbejaFail.png';
+
 
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
@@ -45,13 +49,17 @@ const Toast = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
     VariantProps<typeof toastVariants>
 >(({ className, variant, ...props }, ref) => {
+  const imageSrc = variant === "destructive" ? imagenFailure : imagenSucces;
   return (
     <ToastPrimitives.Root
       ref={ref}
       className={cn(toastVariants({ variant }), className)}
       {...props}
-    />
-  )
+    >
+      <Image src={imageSrc} alt="" width={32} height={32} className="mr-2" />
+      {/* ...rest of your toast content... */}
+    </ToastPrimitives.Root>
+  );
 })
 Toast.displayName = ToastPrimitives.Root.displayName
 
