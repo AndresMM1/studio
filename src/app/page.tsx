@@ -225,7 +225,7 @@ function DashboardPage() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Link
-                        href="/toil"
+                        href="/"
                         className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
                       >
                         <Cog className="h-5 w-5" />
