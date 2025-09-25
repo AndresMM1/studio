@@ -133,6 +133,7 @@ export async function getIncidentById(id: number): Promise<Incident | undefined>
 }
 
 async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUpdate[]> {
+    
     try {
         const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3e000975fbe940c591ac1b834c53d0c2/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6_2Ws-GkXV-gq9MAgeQMJ8taCuL8Y7LO6glAOBui3d4', {
             method: 'POST',

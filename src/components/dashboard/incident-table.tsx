@@ -57,9 +57,13 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
               const StatusIcon = statusMap[incident.status].icon;
               const statusClassName = statusMap[incident.status].className;
               const statusBadgeClassName = statusMap[incident.status].badgeClassName;
+              const isOpen = incident.status === "Proceso" || incident.status === "En espera";
 
               return (
-                <TableRow key={incident.id}>
+                <TableRow 
+                  key={incident.id}
+                  className={cn(isOpen && "bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30")}
+                >
                   <TableCell className="font-medium">{incident.service}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn("border-0 font-medium", priorityBadgeClassName)}>
