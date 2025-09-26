@@ -75,7 +75,7 @@ export default function RegistrarIniciativaForm({ onSuccess, actividades }: Regi
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto pr-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto pr-4">
             <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="id-actividad">Actividades TOIL a Automatizar</Label>
                 <Controller

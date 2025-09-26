@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -60,9 +59,9 @@ export default function ToilDashboardPage() {
 
     return (
         <div className="flex flex-col h-full">
-            <header className="flex h-14 items-center justify-between border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+            <header className="flex h-14 items-center justify-between   mt-4 px-4 lg:h-[60px] lg:px-6">
                 <h1 className="text-xl font-bold tracking-tight">Gestión de TOIL</h1>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                     <Dialog open={isCreateActividadOpen} onOpenChange={setIsCreateActividadOpen}>
                         <DialogTrigger asChild>
                             <Button size="sm">
@@ -70,7 +69,7 @@ export default function ToilDashboardPage() {
                                 Definir Actividad
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
+                        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>Definir Nueva Actividad TOIL</DialogTitle>
                                 <DialogDescription>
@@ -80,7 +79,6 @@ export default function ToilDashboardPage() {
                             <DefinirActividadForm onSuccess={handleSuccess} gruposCelula={gruposCelula} />
                         </DialogContent>
                     </Dialog>
-
                     <Dialog open={isCreateIniciativaOpen} onOpenChange={setIsCreateIniciativaOpen}>
                         <DialogTrigger asChild>
                             <Button size="sm" variant="outline">
@@ -98,10 +96,9 @@ export default function ToilDashboardPage() {
                             <RegistrarIniciativaForm onSuccess={handleSuccess} actividades={actividades} />
                         </DialogContent>
                     </Dialog>
-
                     <Dialog open={isCreateProyectoOpen} onOpenChange={setIsCreateProyectoOpen}>
                         <DialogTrigger asChild>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" className="mr-4">
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Crear Proyecto
                             </Button>
