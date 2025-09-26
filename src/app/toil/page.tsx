@@ -1,139 +1,146 @@
-"use client";
+
+"use client"
+
+import { useState, useEffect } from 'react';
+import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoAutomatizacion } from '@/lib/types';
+import { getActividadesDefinicion, getIniciativasAutomatizacion, getProyectosAutomatizacion } from '@/lib/data';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ActividadesTable from './_components/actividades-table';
+import IniciativasTable from './_components/iniciativas-table';
+import ProyectosTable from './_components/proyectos-table';
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { BarChart as BarChartIcon, FolderKanban, Activity, ArrowRight } from "lucide-react";
-import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { PlusCircle } from "lucide-react";
-import Link from "next/link";
-import { BarChart, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, Bar } from "recharts";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import DefinirActividadForm from "./_components/definir-actividad-form";
+import RegistrarIniciativaForm from "./_components/registrar-iniciativa-form";
+import CrearProyectoForm from "./_components/crear-proyecto-form";
 
-const savingsData = [
-  { month: "Ene", manualHours: 120, savedHours: 20 },
-  { month: "Feb", manualHours: 140, savedHours: 45 },
-  { month: "Mar", manualHours: 130, savedHours: 60 },
-  { month: "Abr", manualHours: 160, savedHours: 70 },
-  { month: "May", manualHours: 150, savedHours: 90 },
-  { month: "Jun", manualHours: 170, savedHours: 110 },
-];
+type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };
 
-const chartConfig = {
-  manualHours: {
-    label: "Horas Manuales",
-    color: "hsl(var(--chart-2))",
-  },
-  savedHours: {
-    label: "Horas Ahorradas",
-    color: "hsl(var(--chart-1))",
-  },
-};
+export default function ToilDashboardPage() {
+    const [actividades, setActividades] = useState<ActividadDefinicion[]>([]);
+    const [iniciativas, setIniciativas] = useState<IniciativaAutomatizacion[]>([]);
+    const [proyectos, setProyectos] = useState<ProyectoConNombre[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-function ToilPage() {
-  return (
-    <>
-      <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
-        <h1 className="text-xl font-bold tracking-tight">Gestión de TOIL</h1>
-        <div className="ml-auto">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Registrar
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Fases de Automatización</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/toil/definir-actividad">1. Definir Actividad TOIL</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/toil/registrar-iniciativa">2. Registrar Iniciativa</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/toil/crear-proyecto">3. Crear Proyecto</Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>Mediciones</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/toil/medir-actividad">Medir Actividad</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
-      <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-        <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Ahorro por Automatización (Horas/Mes)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
-                        <BarChart data={savingsData} accessibilityLayer>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
-                            <YAxis />
-                            <Tooltip content={<ChartTooltipContent />} />
-                            <Legend />
-                            <Bar dataKey="manualHours" name="Horas Manuales" fill="var(--color-manualHours)" radius={4} />
-                            <Bar dataKey="savedHours" name="Horas Ahorradas" fill="var(--color-savedHours)" radius={4} />
-                        </BarChart>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
-            <div className="grid gap-6 md:grid-rows-3">
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-medium">Actividades Definidas</CardTitle>
-                        <Activity className="h-6 w-6 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">12</div>
-                        <p className="text-xs text-muted-foreground">Actividades manuales y repetitivas identificadas.</p>
-                    </CardContent>
-                     <CardFooter>
-                        <Button asChild size="sm" variant="outline">
-                            <Link href="/toil/actividades">Ver Actividades <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                        </Button>
-                    </CardFooter>
-                </Card>
+    const [isCreateActividadOpen, setIsCreateActividadOpen] = useState(false);
+    const [isCreateIniciativaOpen, setIsCreateIniciativaOpen] = useState(false);
+    const [isCreateProyectoOpen, setIsCreateProyectoOpen] = useState(false);
+
+    async function loadData() {
+        setIsLoading(true);
+        try {
+            const [actividadesData, iniciativasData, proyectosData] = await Promise.all([
+                getActividadesDefinicion(),
+                getIniciativasAutomatizacion(),
+                getProyectosAutomatizacion()
+            ]);
+            setActividades(actividadesData);
+            setIniciativas(iniciativasData);
+            setProyectos(proyectosData);
+        } catch (error) {
+            console.error("Error al cargar los datos de TOIL:", error);
+            // Optionally, show a toast notification for the error
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const handleSuccess = () => {
+        setIsCreateActividadOpen(false);
+        setIsCreateIniciativaOpen(false);
+        setIsCreateProyectoOpen(false);
+        loadData(); // Recargar los datos después de un registro exitoso
+    };
+
+    return (
+        <div className="flex flex-col h-full">
+            <header className="flex h-14 items-center justify-between border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+                <h1 className="text-xl font-bold tracking-tight">Gestión de TOIL</h1>
+                <div className="flex items-center gap-2">
+                    <Dialog open={isCreateActividadOpen} onOpenChange={setIsCreateActividadOpen}>
+                        <DialogTrigger asChild>
+                            <Button size="sm">
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Definir Actividad
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader>
+                                <DialogTitle>Definir Nueva Actividad TOIL</DialogTitle>
+                                <DialogDescription>
+                                    Registra una nueva actividad manual y repetitiva para su posterior análisis.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DefinirActividadForm onSuccess={handleSuccess} />
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isCreateIniciativaOpen} onOpenChange={setIsCreateIniciativaOpen}>
+                        <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Registrar Iniciativa
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader>
+                                <DialogTitle>Registrar Nueva Iniciativa</DialogTitle>
+                                <DialogDescription>
+                                    Propón una nueva iniciativa de automatización para una o más actividades TOIL.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <RegistrarIniciativaForm onSuccess={handleSuccess} />
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isCreateProyectoOpen} onOpenChange={setIsCreateProyectoOpen}>
+                        <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Crear Proyecto
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader>
+                                <DialogTitle>Crear Nuevo Proyecto de Automatización</DialogTitle>
+                                <DialogDescription>
+                                    Convierte una iniciativa aprobada en un proyecto tangible.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <CrearProyectoForm onSuccess={handleSuccess} />
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </header>
+            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-medium">Iniciativas Propuestas</CardTitle>
-                        <FolderKanban className="h-6 w-6 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">8</div>
-                        <p className="text-xs text-muted-foreground">Iniciativas de automatización en evaluación o aprobadas.</p>
+                    <CardContent className="pt-6">
+                        <Tabs defaultValue="actividades">
+                            <TabsList className="grid w-full grid-cols-3">
+                                <TabsTrigger value="actividades">Actividades</TabsTrigger>
+                                <TabsTrigger value="iniciativas">Iniciativas</TabsTrigger>
+                                <TabsTrigger value="proyectos">Proyectos</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="actividades">
+                                <ActividadesTable actividades={actividades} isLoading={isLoading} />
+                            </TabsContent>
+                            <TabsContent value="iniciativas">
+                                <IniciativasTable iniciativas={iniciativas} isLoading={isLoading} />
+                            </TabsContent>
+                            <TabsContent value="proyectos">
+                                <ProyectosTable proyectos={proyectos} isLoading={isLoading} />
+                            </TabsContent>
+                        </Tabs>
                     </CardContent>
-                    <CardFooter>
-                       <Button asChild size="sm" variant="outline">
-                            <Link href="/toil/iniciativas">Ver Iniciativas <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                        </Button>
-                    </CardFooter>
                 </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-medium">Proyectos en Ejecución</CardTitle>
-                        <BarChartIcon className="h-6 w-6 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">3</div>
-                        <p className="text-xs text-muted-foreground">Proyectos de automatización activos.</p>
-                    </CardContent>
-                     <CardFooter>
-                       <Button asChild size="sm" variant="outline">
-                            <Link href="/toil/proyectos">Ver Proyectos <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                        </Button>
-                    </CardFooter>
-                </Card>
-            </div>
+            </main>
         </div>
-      </main>
-    </>
-  );
+    );
 }
-
-export default ToilPage;
+  

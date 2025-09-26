@@ -3,9 +3,12 @@ import Link from "next/link";
 import { AlertOctagon, GitPullRequestIcon, Cog, User } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/auth-context";
+import { usePathname } from "next/navigation";
 
 export function DashboardSidebar() {
   const { user } = useAuth();
+  const pathname = usePathname();
+
   return (
     <TooltipProvider>
       <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
@@ -21,8 +24,10 @@ export function DashboardSidebar() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    href="#"
-                    className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
+                    href="/"
+                    className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
+                      ${pathname === "/" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
+                    `}
                   >
                     <AlertOctagon className="h-5 w-5" />
                     <span className="sr-only">Incidentes</span>
@@ -33,8 +38,10 @@ export function DashboardSidebar() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    href="#"
-                    className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
+                    href="/"
+                    className={`mt-2 flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
+                      ${pathname === "/" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
+                    `}
                   >
                     <GitPullRequestIcon className="h-5 w-5" />
                     <span className="sr-only">Cambios</span>
@@ -46,7 +53,9 @@ export function DashboardSidebar() {
                 <TooltipTrigger asChild>
                   <Link
                     href="/toil"
-                    className="mt-2 flex h-9 w-9 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:text-sidebar-primary-foreground md:h-8 md:w-8"
+                    className={`mt-2 flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
+                      ${pathname === "/toil" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
+                    `}
                   >
                     <Cog className="h-5 w-5" />
                     <span className="sr-only">Toil</span>
