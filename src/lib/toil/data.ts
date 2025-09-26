@@ -1,7 +1,7 @@
 
 import { Users, Code, Database, Server, Component, Settings } from 'lucide-react';
 import type { ElementType } from "react";
-import type { ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ProyectoConNombre } from "./types";
+import type { ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ProyectoConNombre, EstadoProyecto } from "./types";
 
 
 export async function addActividadDefinicion(data: Omit<ActividadDefinicion, 'id_actividad'>): Promise<any> {
@@ -144,31 +144,81 @@ export async function getGruposCelula(): Promise<GrupoCelula[]> {
     }
 }
 
-const mockIniciativas: IniciativaAutomatizacion[] = [
-    { id_iniciativa: 1, id_actividades: [1], nombre_iniciativa: "Automatización de Análisis de Logs con Elastic", objetivo_iniciativa: "Reducir el tiempo de análisis de logs en un 90%.", alcance: "Implementar un dashboard en Kibana para visualizar errores comunes.", descripcion_problema: "La revisión manual es lenta y propensa a errores.", solucion_propuesta: "Usar Filebeat para enviar logs a Elasticsearch y crear dashboards.", beneficios_esperados: "Ahorro de 3.5 horas por incidente, resolución más rápida.", prioridad: "Alta", estado: "Aprobada", responsable_celula: "Célula SRE" },
-    { id_iniciativa: 2, id_actividades: [2], nombre_iniciativa: "Reporte automático de Cobertura con SonarQube", objetivo_iniciativa: "Generar y enviar el reporte de cobertura automáticamente tras cada build.", alcance: "Integrar SonarQube con el pipeline de CI/CD.", descripcion_problema: "El reporte manual se olvida o se hace de forma inconsistente.", solucion_propuesta: "Configurar webhook en Jenkins para ejecutar análisis de SonarQube.", beneficios_esperados: "Ahorro de 2 horas semanales y visibilidad constante.", prioridad: "Media", estado: "Propuesta", responsable_celula: "Chapter de Frontend" },
-];
-
-const mockProyectos: ProyectoAutomatizacion[] = [
-    { id_proyecto: 1, id_iniciativa: 1, fecha_inicio: "2024-07-01", fecha_fin_estimada: "2024-08-15", responsable_celula: "Célula SRE", responsable_tecnico: "Juan Pérez", presupuesto_usd: 5000, estado_proyecto: "En Ejecución", url_documentacion: "https://confluence.example.com/elastic-project", tecnologia_utilizada: "Elasticsearch, Kibana, Filebeat", beneficios_estado: "En desarrollo. Se espera un ahorro de 14 horas/mes." },
-    { id_proyecto: 2, id_iniciativa: 2, fecha_inicio: "2024-09-01", fecha_fin_estimada: "2024-09-30", responsable_celula: "Chapter de Frontend", responsable_tecnico: "Ana Gómez", presupuesto_usd: 2500, estado_proyecto: "Planificado", url_documentacion: "https://confluence.example.com/sonarqube-project", tecnologia_utilizada: "SonarQube, Jenkins", beneficios_estado: "Pendiente de inicio." },
-];
+const mapEstadoIniciativa = (estado: string | null): EstadoIniciativa => {
+    switch (estado) {
+        case "SI": return "Aprobada";
+        case "NO": return "Rechazada";
+        default: return "Propuesta";
+    }
+};
 
 export async function getIniciativasAutomatizacion(): Promise<IniciativaAutomatizacion[]> {
-    return Promise.resolve(mockIniciativas);
+    try {
+        const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/cdea0d29fc704e4fa03e1774f3caff42/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=A82k7X-RyUZ6ZrB_2d3ZZyT4gQBRNexzz6cabnUgiSs');
+        if (!response.ok) {
+            console.error('La API de iniciativas falló con el estado:', response.status);
+            return [];
+        }
+        const data = await response.json();
+        const iniciativasData = data.value || [];
+
+        if (!Array.isArray(iniciativasData)) {
+            console.error('La respuesta de la API de iniciativas no es un array.', data);
+            return [];
+        }
+
+        return iniciativasData.map((item: any): IniciativaAutomatizacion => ({
+            id_iniciativa: item.ID,
+            id_actividades: item.Id_x0020_ProyectoId ? [item.Id_x0020_ProyectoId] : [],
+            nombre_iniciativa: item.Nombre_x0020_Iniciativa || "Iniciativa sin nombre",
+            objetivo_iniciativa: item.Objetivo_x0020_Solucion || "No definido",
+            alcance: "No definido", // Dato no disponible en la API
+            descripcion_problema: "No definido", // Dato no disponible en la API
+            solucion_propuesta: item.Solucion_x0020_Planteada || item.Descripcion_x0020_Solucion || "No definida",
+            beneficios_esperados: "No definidos", // Dato no disponible en la API
+            prioridad: "Media", // Dato no disponible en la API, se usa valor por defecto
+            estado: mapEstadoIniciativa(item.Estado),
+            responsable_celula: "No definido", // Dato no disponible en la API
+        }));
+    } catch (error) {
+        console.error("Error al obtener las iniciativas:", error);
+        return [];
+    }
 }
 
-export async function getProyectosAutomatizacion(): Promise<ProyectoConNombre[]> {
-    
-    const proyectosConNombres = mockProyectos.map(proyecto => {
-        const iniciativa = mockIniciativas.find(i => i.id_iniciativa === proyecto.id_iniciativa);
-        return {
-            ...proyecto,
-            nombre_iniciativa: iniciativa ? iniciativa.nombre_iniciativa : "Iniciativa no encontrada",
-        };
-    });
 
-    return Promise.resolve(proyectosConNombres);
+export async function getProyectosAutomatizacion(): Promise<ProyectoConNombre[]> {
+    try {
+        const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/5f7a21bba65d47119d4b909be9a98889/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Gvzl4O3H20UWyLprc2n-9OdW6TWv5GtX-bJsSxDFycQ');
+        if (!response.ok) {
+            console.error('La API de proyectos falló con el estado:', response.status);
+            return [];
+        }
+        const data = await response.json();
+        const proyectosData = data.value || [];
+
+        if (!Array.isArray(proyectosData)) {
+            console.error('La respuesta de la API de proyectos no es un array.', data);
+            return [];
+        }
+
+        return proyectosData.map((item: any): ProyectoConNombre => ({
+            id_proyecto: item.ID,
+            nombre_iniciativa: item.Title || `Proyecto #${item.ID}`,
+            id_iniciativa: 0, // No disponible en esta API
+            fecha_inicio: item.Fecha_x0020_Inicio || new Date(0).toISOString(),
+            fecha_fin_estimada: item.Fecha_x0020_Finalizacion || new Date(0).toISOString(),
+            responsable_celula: "No definido", // No disponible en la API
+            responsable_tecnico: "No definido", // No disponible en la API
+            presupuesto_usd: 0, // No disponible en la API
+            estado_proyecto: "Planificado", // No disponible en la API
+            tecnologia_utilizada: item.Tecnolog_x00ed_a || "No especificada",
+            beneficios_estado: item.Beneficios_x0020_Estado || "No definido",
+        }));
+    } catch (error) {
+        console.error("Error al obtener los proyectos:", error);
+        return [];
+    }
 }
 
 export async function getProyectoById(id: number): Promise<ProyectoConNombre | undefined> {

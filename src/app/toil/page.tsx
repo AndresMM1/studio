@@ -95,7 +95,7 @@ export default function ToilDashboardPage() {
                                     Propón una nueva iniciativa de automatización para una o más actividades TOIL.
                                 </DialogDescription>
                             </DialogHeader>
-                            <RegistrarIniciativaForm onSuccess={handleSuccess} />
+                            <RegistrarIniciativaForm onSuccess={handleSuccess} actividades={actividades} />
                         </DialogContent>
                     </Dialog>
 

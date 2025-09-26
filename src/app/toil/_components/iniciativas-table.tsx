@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Eye } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
 import type { IniciativaAutomatizacion } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerIniciativaDetalle from './ver-iniciativa-detalle';
@@ -113,6 +113,7 @@ export default function IniciativasTable({ iniciativas, isLoading }: Iniciativas
      if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-24 w-24 animate-spin text-primary opacity-50" />
             </div>
         );
     }

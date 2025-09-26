@@ -11,7 +11,7 @@ import { useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IniciativaAutomatizacionSchema } from "@/lib/toil/schemas";
-import type { IniciativaAutomatizacion } from "@/lib/toil/types";
+import type { ActividadDefinicion, IniciativaAutomatizacion } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
 import { addIniciativaAutomatizacion } from "@/lib/toil/data";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
@@ -23,9 +23,10 @@ type IniciativaAutomatizacionForm = Omit<IniciativaAutomatizacion, 'id_iniciativ
 
 interface RegistrarIniciativaFormProps {
     onSuccess: () => void;
+    actividades: ActividadDefinicion[];
 }
 
-export default function RegistrarIniciativaForm({ onSuccess }: RegistrarIniciativaFormProps) {
+export default function RegistrarIniciativaForm({ onSuccess, actividades }: RegistrarIniciativaFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
@@ -66,13 +67,11 @@ export default function RegistrarIniciativaForm({ onSuccess }: RegistrarIniciati
         }
     }
     
-    // Mock data for activities, in a real app this would come from an API
-    const actividadOptions: MultiSelectOption[] = useMemo(() => [
-        { value: "1", label: "Actividad 1: Reporte manual de ventas" },
-        { value: "2", label: "Actividad 2: Conciliación de datos" },
-        { value: "3", label: "Actividad 3: Creación de usuarios" },
-        { value: "4", label: "Actividad 4: Revisión de logs" },
-    ], []);
+    const actividadOptions: MultiSelectOption[] = useMemo(() => 
+        actividades.map(act => ({
+            value: act.id_actividad.toString(),
+            label: `${act.id_actividad}: ${act.actividad_detalle}`
+        })), [actividades]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

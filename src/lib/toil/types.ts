@@ -43,14 +43,14 @@ export interface IniciativaAutomatizacion {
   id_iniciativa: number;
   id_actividades: number[];
   nombre_iniciativa: string;
-  objetivo_iniciativa: string;
-  alcance: string;
-  descripcion_problema: string;
-  solucion_propuesta: string;
-  beneficios_esperados: string;
+  objetivo_iniciativa?: string;
+  alcance?: string;
+  descripcion_problema?: string;
+  solucion_propuesta?: string;
+  beneficios_esperados?: string;
   prioridad: PrioridadIniciativa;
   estado: EstadoIniciativa;
-  responsable_celula: string;
+  responsable_celula?: string;
 }
 
 export interface ProyectoAutomatizacion {
@@ -58,13 +58,13 @@ export interface ProyectoAutomatizacion {
     id_iniciativa: number;
     fecha_inicio: string;
     fecha_fin_estimada: string;
-    responsable_celula: string;
+    responsable_celula?: string;
     responsable_tecnico: string;
-    presupuesto_usd: number;
+    presupuesto_usd?: number;
     estado_proyecto: EstadoProyecto;
     url_documentacion?: string;
     tecnologia_utilizada: string;
-    beneficios_estado: string;
+    beneficios_estado?: string;
 }
 
 export type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };

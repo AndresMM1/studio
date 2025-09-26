@@ -16,8 +16,7 @@ import { type ActividadDefinicion, type GrupoCelula } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
 import { addActividadDefinicion } from "@/lib/toil/data";
 
-const impactoOptions = ["Bajo", "Medio", "Alto"];
-const complejidadOptions = ["Baja", "Media", "Alta"];
+const complejidadOptions: ActividadDefinicion['complejidad_ejecucion'][] = ["Baja", "Media", "Alta"];
 
 type ActividadDefinicionForm = Omit<ActividadDefinicion, 'id_actividad'>;
 
@@ -145,43 +144,27 @@ export default function DefinirActividadForm({ onSuccess, gruposCelula }: Defini
                     <Textarea id="impacto-operacion-desc" placeholder="Describe cómo impacta a la operación..." {...register("impacto_operacion_desc")} />
                     {errors.impacto_operacion_desc && <p className="text-sm text-destructive">{errors.impacto_operacion_desc.message}</p>}
                 </div>
-                    <div className="space-y-2">
-                    <Label htmlFor="impacto-negocio">Impacto de Negocio</Label>
-                    <Controller
-                        name="impacto_negocio"
-                        control={control}
-                        render={({ field }) => (
-                            <Select onValueChange={(v) => field.onChange(parseInt(v))} defaultValue={String(field.value)}>
-                                <SelectTrigger id="impacto-negocio">
-                                    <SelectValue placeholder="Seleccionar impacto" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="1">Bajo</SelectItem>
-                                    <SelectItem value="5">Medio</SelectItem>
-                                    <SelectItem value="9">Alto</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        )}
-                        />
+                <div className="space-y-2">
+                    <Label htmlFor="impacto-negocio">Impacto de Negocio (1-10)</Label>
+                    <Input
+                        id="impacto-negocio"
+                        type="number"
+                        min="1"
+                        max="10"
+                        {...register("impacto_negocio", { valueAsNumber: true })}
+                    />
+                    {errors.impacto_negocio && <p className="text-sm text-destructive">{errors.impacto_negocio.message}</p>}
                 </div>
-                    <div className="space-y-2">
-                    <Label htmlFor="impacto-operacion">Impacto de Operación</Label>
-                        <Controller
-                        name="impacto_operacion"
-                        control={control}
-                        render={({ field }) => (
-                             <Select onValueChange={(v) => field.onChange(parseInt(v))} defaultValue={String(field.value)}>
-                                <SelectTrigger id="impacto-operacion">
-                                    <SelectValue placeholder="Seleccionar impacto" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="1">Bajo</SelectItem>
-                                    <SelectItem value="5">Medio</SelectItem>
-                                    <SelectItem value="9">Alto</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        )}
-                        />
+                <div className="space-y-2">
+                    <Label htmlFor="impacto-operacion">Impacto de Operación (1-10)</Label>
+                    <Input
+                        id="impacto-operacion"
+                        type="number"
+                        min="1"
+                        max="10"
+                        {...register("impacto_operacion", { valueAsNumber: true })}
+                    />
+                    {errors.impacto_operacion && <p className="text-sm text-destructive">{errors.impacto_operacion.message}</p>}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="complejidad-ejecucion">Complejidad de Ejecución</Label>

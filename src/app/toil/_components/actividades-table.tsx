@@ -16,14 +16,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Eye, ChevronsUpDown } from "lucide-react";
+import { Eye, ChevronsUpDown, Loader2 } from "lucide-react";
 import type { ActividadDefinicion, GrupoCelula } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerActividadDetalle from './ver-actividad-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { cn } from '@/lib/utils';
 
 const impactoColors: { [key: string]: string } = {
     "Alto": "bg-red-100 text-red-800",
@@ -142,7 +141,8 @@ export default function ActividadesTable({ actividades, gruposCelula, isLoading 
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
-                </div>
+                <Loader2 className="h-24 w-24 animate-spin text-primary opacity-50" />
+            </div>
         );
     }
     
