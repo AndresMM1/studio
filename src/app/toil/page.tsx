@@ -69,7 +69,7 @@ export default function ToilDashboardPage() {
                                 Definir Actividad
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                                 <DialogTitle>Definir Nueva Actividad TOIL</DialogTitle>
                                 <DialogDescription>
