@@ -11,9 +11,10 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ActividadDefinicionSchema, type ActividadDefinicion } from "@/lib/schemas";
+import { ActividadDefinicionSchema } from "@/lib/toil/schemas";
+import { type ActividadDefinicion, type GrupoCelula } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
-import { addActividadDefinicion } from "@/lib/data";
+import { addActividadDefinicion } from "@/lib/toil/data";
 
 const impactoOptions = ["Bajo", "Medio", "Alto"];
 const complejidadOptions = ["Baja", "Media", "Alta"];
@@ -21,10 +22,11 @@ const complejidadOptions = ["Baja", "Media", "Alta"];
 type ActividadDefinicionForm = Omit<ActividadDefinicion, 'id_actividad'>;
 
 interface DefinirActividadFormProps {
+  gruposCelula: GrupoCelula[];
   onSuccess: () => void;
 }
 
-export default function DefinirActividadForm({ onSuccess }: DefinirActividadFormProps) {
+export default function DefinirActividadForm({ onSuccess, gruposCelula }: DefinirActividadFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
@@ -38,8 +40,8 @@ export default function DefinirActividadForm({ onSuccess }: DefinirActividadForm
             origen_alcance: "",
             impacto_negocio_desc: "",
             impacto_operacion_desc: "",
-            impacto_negocio: "Bajo",
-            impacto_operacion: "Bajo",
+            impacto_negocio: 1,
+            impacto_operacion: 1,
             complejidad_ejecucion: "Baja",
             automatizable: false,
             es_toil: true,
@@ -81,9 +83,17 @@ export default function DefinirActividadForm({ onSuccess }: DefinirActividadForm
                                     <SelectValue placeholder="Seleccionar un grupo" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="1">Chapter de Datos</SelectItem>
-                                    <SelectItem value="2">Chapter de Frontend</SelectItem>
-                                    <SelectItem value="3">Célula de Pagos</SelectItem>
+                                    {gruposCelula.map(grupo => {
+                                        const Icon = grupo.icon;
+                                        return (
+                                            <SelectItem key={grupo.ID} value={grupo.ID.toString()}>
+                                                <div className="flex items-center gap-2">
+                                                    {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                                                    <span>{grupo.Title}</span>
+                                                </div>
+                                            </SelectItem>
+                                        );
+                                    })}
                                 </SelectContent>
                             </Select>
                         )}
@@ -141,12 +151,14 @@ export default function DefinirActividadForm({ onSuccess }: DefinirActividadForm
                         name="impacto_negocio"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={(v) => field.onChange(parseInt(v))} defaultValue={String(field.value)}>
                                 <SelectTrigger id="impacto-negocio">
                                     <SelectValue placeholder="Seleccionar impacto" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {impactoOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                    <SelectItem value="1">Bajo</SelectItem>
+                                    <SelectItem value="5">Medio</SelectItem>
+                                    <SelectItem value="9">Alto</SelectItem>
                                 </SelectContent>
                             </Select>
                         )}
@@ -158,12 +170,14 @@ export default function DefinirActividadForm({ onSuccess }: DefinirActividadForm
                         name="impacto_operacion"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                             <Select onValueChange={(v) => field.onChange(parseInt(v))} defaultValue={String(field.value)}>
                                 <SelectTrigger id="impacto-operacion">
                                     <SelectValue placeholder="Seleccionar impacto" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {impactoOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                    <SelectItem value="1">Bajo</SelectItem>
+                                    <SelectItem value="5">Medio</SelectItem>
+                                    <SelectItem value="9">Alto</SelectItem>
                                 </SelectContent>
                             </Select>
                         )}

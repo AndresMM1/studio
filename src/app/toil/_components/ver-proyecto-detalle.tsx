@@ -1,5 +1,5 @@
 
-import type { ProyectoAutomatizacion } from '@/lib/types';
+import type { ProyectoConNombre } from '@/lib/toil/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,6 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Calendar, DollarSign, Users, User, Wrench, TrendingUp, Link as LinkIcon, CalendarCheck, Flag } from "lucide-react";
 
-
-type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa?: string };
 
 interface VerProyectoDetalleProps {
     proyecto: ProyectoConNombre;

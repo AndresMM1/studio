@@ -1,39 +1,6 @@
-export type IncidentPriority = "Crítica" | "Alta" | "Media" | "Baja";
-export type IncidentStatus = "Proceso" | "En espera" | "Cerrado" | "Cerrada";
+
 import type { ElementType } from "react";
 
-export interface IncidentUpdate {
-  id: number;
-  incidentId: number;
-  text: string;
-  timestamp: string;
-}
-
-export interface Incident {
-  id: number;
-  service: string;
-  startTime: string; // ISO 8601 format
-  endDate?: string; // ISO 8601 format
-  description: string;
-  priority: IncidentPriority;
-  environment: string;
-  status: IncidentStatus;
-}
-
-export interface Service {
-  ID: number;
-  SERVICE_NAME: string;
-}
-
-export interface ServiceApiResponse {
-  value: Service[];
-}
-
-export interface User {
-  name: string;
-  email: string;
-}
-export type Impacto = "Bajo" | "Medio" | "Alto";
 export type Complejidad = "Baja" | "Media" | "Alta";
 export type FrecuenciaMedicion = "Diaria" | "Semanal" | "Mensual" | "Bimestral" | "Trimestral" | "Semestral" | "Anual";
 export type PrioridadIniciativa = "Baja" | "Media" | "Alta" | "Crítica";
@@ -41,7 +8,12 @@ export type EstadoIniciativa = "Propuesta" | "Aprobada" | "Rechazada" | "En prog
 export type EstadoProyecto = "Planificado" | "En Ejecución" | "Finalizado" | "En Pausa" | "Cancelado";
 
 
-// Corresponde a la tabla: ACTIVIDAD_DEFINICION
+export interface GrupoCelula {
+  ID: number;
+  Title: string;
+  icon?: ElementType;
+}
+
 export interface ActividadDefinicion {
   id_actividad: number;
   id_grupo_celula: number;
@@ -51,14 +23,13 @@ export interface ActividadDefinicion {
   origen_alcance: string;
   impacto_negocio_desc: string;
   impacto_operacion_desc: string;
-  impacto_negocio: number | Impacto;
-  impacto_operacion: number | Impacto;
+  impacto_negocio: number;
+  impacto_operacion: number;
   complejidad_ejecucion: Complejidad;
   automatizable: boolean;
   es_toil: boolean;
 }
 
-// Corresponde a la tabla: ACTIVIDAD_MEDICION
 export interface ActividadMedicion {
     id_medicion: number;
     id_actividad: number;
@@ -68,8 +39,6 @@ export interface ActividadMedicion {
     cantidad_personas: number;
 }
 
-
-// Corresponde a la tabla: INICIATIVA_AUTOMATIZACION
 export interface IniciativaAutomatizacion {
   id_iniciativa: number;
   id_actividades: number[];
@@ -84,7 +53,6 @@ export interface IniciativaAutomatizacion {
   responsable_celula: string;
 }
 
-// Corresponde a la tabla: PROYECTOS_AUTOMATIZACION
 export interface ProyectoAutomatizacion {
     id_proyecto: number;
     id_iniciativa: number;
@@ -98,9 +66,5 @@ export interface ProyectoAutomatizacion {
     tecnologia_utilizada: string;
     beneficios_estado: string;
 }
-export interface GrupoCelula {
-  ID: number;
-  Title: string;
-  icon?: ElementType;
 
-}
+export type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };

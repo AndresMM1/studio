@@ -2,9 +2,9 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoAutomatizacion } from '@/lib/types';
-import { getActividadesDefinicion, getIniciativasAutomatizacion, getProyectosAutomatizacion } from '@/lib/data';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ProyectoConNombre } from '@/lib/toil/types';
+import { getActividadesDefinicion, getIniciativasAutomatizacion, getProyectosAutomatizacion, getGruposCelula } from '@/lib/toil/data';
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ActividadesTable from './_components/actividades-table';
 import IniciativasTable from './_components/iniciativas-table';
@@ -16,12 +16,11 @@ import DefinirActividadForm from "./_components/definir-actividad-form";
 import RegistrarIniciativaForm from "./_components/registrar-iniciativa-form";
 import CrearProyectoForm from "./_components/crear-proyecto-form";
 
-type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };
-
 export default function ToilDashboardPage() {
     const [actividades, setActividades] = useState<ActividadDefinicion[]>([]);
     const [iniciativas, setIniciativas] = useState<IniciativaAutomatizacion[]>([]);
     const [proyectos, setProyectos] = useState<ProyectoConNombre[]>([]);
+    const [gruposCelula, setGruposCelula] = useState<GrupoCelula[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const [isCreateActividadOpen, setIsCreateActividadOpen] = useState(false);
@@ -31,17 +30,18 @@ export default function ToilDashboardPage() {
     async function loadData() {
         setIsLoading(true);
         try {
-            const [actividadesData, iniciativasData, proyectosData] = await Promise.all([
+            const [actividadesData, iniciativasData, proyectosData, gruposData] = await Promise.all([
                 getActividadesDefinicion(),
                 getIniciativasAutomatizacion(),
-                getProyectosAutomatizacion()
+                getProyectosAutomatizacion(),
+                getGruposCelula()
             ]);
             setActividades(actividadesData);
             setIniciativas(iniciativasData);
             setProyectos(proyectosData);
+            setGruposCelula(gruposData);
         } catch (error) {
             console.error("Error al cargar los datos de TOIL:", error);
-            // Optionally, show a toast notification for the error
         } finally {
             setIsLoading(false);
         }
@@ -55,7 +55,7 @@ export default function ToilDashboardPage() {
         setIsCreateActividadOpen(false);
         setIsCreateIniciativaOpen(false);
         setIsCreateProyectoOpen(false);
-        loadData(); // Recargar los datos después de un registro exitoso
+        loadData(); 
     };
 
     return (
@@ -77,7 +77,7 @@ export default function ToilDashboardPage() {
                                     Registra una nueva actividad manual y repetitiva para su posterior análisis.
                                 </DialogDescription>
                             </DialogHeader>
-                            <DefinirActividadForm onSuccess={handleSuccess} />
+                            <DefinirActividadForm onSuccess={handleSuccess} gruposCelula={gruposCelula} />
                         </DialogContent>
                     </Dialog>
 
@@ -128,7 +128,7 @@ export default function ToilDashboardPage() {
                                 <TabsTrigger value="proyectos">Proyectos</TabsTrigger>
                             </TabsList>
                             <TabsContent value="actividades">
-                                <ActividadesTable actividades={actividades} isLoading={isLoading} />
+                                <ActividadesTable actividades={actividades} gruposCelula={gruposCelula} isLoading={isLoading} />
                             </TabsContent>
                             <TabsContent value="iniciativas">
                                 <IniciativasTable iniciativas={iniciativas} isLoading={isLoading} />
@@ -143,4 +143,3 @@ export default function ToilDashboardPage() {
         </div>
     );
 }
-  

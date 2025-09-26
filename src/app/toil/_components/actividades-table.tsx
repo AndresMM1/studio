@@ -17,12 +17,13 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Eye, ChevronsUpDown } from "lucide-react";
-import type { ActividadDefinicion } from '@/lib/types';
+import type { ActividadDefinicion, GrupoCelula } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerActividadDetalle from './ver-actividad-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { cn } from '@/lib/utils';
 
 const impactoColors: { [key: string]: string } = {
     "Alto": "bg-red-100 text-red-800",
@@ -39,23 +40,19 @@ const mapImpactoToLabel = (value: number | string): "Bajo" | "Medio" | "Alto" =>
     return "Bajo";
 };
 
-
-const grupoCelulaMap: { [key: number]: string } = {
-    1: "Chapter de Datos",
-    2: "Chapter de Frontend",
-    3: "Célula de Pagos"
-};
-
 interface ActividadesTableProps {
     actividades: ActividadDefinicion[];
+    gruposCelula: GrupoCelula[];
     isLoading: boolean;
 }
 
-export default function ActividadesTable({ actividades, isLoading }: ActividadesTableProps) {
+export default function ActividadesTable({ actividades, gruposCelula, isLoading }: ActividadesTableProps) {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedActividad, setSelectedActividad] = useState<ActividadDefinicion | null>(null);
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+    const grupoCelulaMap = new Map(gruposCelula.map(g => [g.ID, g]));
 
     const handleViewDetails = (actividad: ActividadDefinicion) => {
         setSelectedActividad(actividad);
@@ -76,7 +73,17 @@ export default function ActividadesTable({ actividades, isLoading }: Actividades
         {
             accessorKey: "id_grupo_celula",
             header: ({ column }) => <DataTableColumnHeader column={column} title="Grupo Célula" />,
-            cell: ({ row }) => <div>{grupoCelulaMap[row.getValue("id_grupo_celula") as number] || 'N/A'}</div>,
+            cell: ({ row }) => {
+                const grupo = grupoCelulaMap.get(row.getValue("id_grupo_celula") as number);
+                if (!grupo) return 'N/A';
+                const Icon = grupo.icon;
+                return (
+                    <div className="flex items-center gap-2">
+                        {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+                        <span>{grupo.Title}</span>
+                    </div>
+                )
+            },
             filterFn: (row, id, value) => {
                 return value.includes(row.getValue(id))
             },
@@ -135,15 +142,10 @@ export default function ActividadesTable({ actividades, isLoading }: Actividades
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
-            </div>
+                </div>
         );
     }
     
-    const grupoCelulaOptions = Object.entries(grupoCelulaMap).map(([id, label]) => ({
-        value: Number(id),
-        label,
-    }));
-
     return (
         <>
         <div className="space-y-4">
@@ -157,19 +159,20 @@ export default function ActividadesTable({ actividades, isLoading }: Actividades
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        {grupoCelulaOptions.map((option) => (
+                        {gruposCelula.map((option) => (
                           <DropdownMenuCheckboxItem
-                            key={option.value}
-                            checked={(table.getColumn("id_grupo_celula")?.getFilterValue() as number[] | undefined)?.includes(option.value)}
+                            key={option.ID}
+                            checked={(table.getColumn("id_grupo_celula")?.getFilterValue() as number[] | undefined)?.includes(option.ID)}
                             onCheckedChange={(checked) => {
                               const currentFilter = (table.getColumn("id_grupo_celula")?.getFilterValue() as number[] | undefined) || [];
                               const newFilter = checked
-                                ? [...currentFilter, option.value]
-                                : currentFilter.filter((v) => v !== option.value);
+                                ? [...currentFilter, option.ID]
+                                : currentFilter.filter((v) => v !== option.ID);
                               table.getColumn("id_grupo_celula")?.setFilterValue(newFilter.length ? newFilter : undefined);
                             }}
                           >
-                            {option.label}
+                             {option.icon && <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />}
+                            {option.Title}
                           </DropdownMenuCheckboxItem>
                         ))}
                          <DropdownMenuSeparator />
@@ -265,12 +268,10 @@ export default function ActividadesTable({ actividades, isLoading }: Actividades
                                 Información completa de la actividad TOIL registrada.
                             </DialogDescription>
                         </DialogHeader>
-                        <VerActividadDetalle actividad={selectedActividad} />
+                        <VerActividadDetalle actividad={selectedActividad} gruposCelula={gruposCelula} />
                     </DialogContent>
                 </Dialog>
             )}
         </>
     )
 }
-
-    

@@ -1,4 +1,6 @@
-import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion } from "./types";
+import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion ,GrupoCelula} from "./types";
+import { Users, Code, Database, Server, Component, Settings } from 'lucide-react';
+import type { ElementType } from "react";
 
 type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };
 function parseAffectDetails(details: string): { service: string; description: string } {
@@ -379,4 +381,24 @@ export async function getProyectoById(id: number): Promise<ProyectoConNombre | u
 
     
 
-    
+    export async function getGruposCelula(): Promise<GrupoCelula[]> {
+    try {
+        const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/b0efb844dc1847fe99fae7983095a17b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=APZ908nzc7TUqNhXzVUBYDXmEVi0OUmpmmA3KZ_um5c');
+        if (!response.ok) {
+            console.error('La API de grupos de célula falló con el estado:', response.status);
+            return [];
+        }
+        const data = await response.json();
+        const gruposData = data.value || [];
+
+        if (!Array.isArray(gruposData)) {
+            console.error('La respuesta de la API de grupos de célula no es un array.', data);
+            return [];
+        }
+
+        return gruposData;
+    } catch (error) {
+        console.error("Error al obtener los grupos de célula:", error);
+        return [];
+    }
+}

@@ -10,9 +10,10 @@ import { Loader2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IniciativaAutomatizacionSchema, type IniciativaAutomatizacion } from "@/lib/schemas";
+import { IniciativaAutomatizacionSchema } from "@/lib/toil/schemas";
+import type { IniciativaAutomatizacion } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
-import { addIniciativaAutomatizacion } from "@/lib/data";
+import { addIniciativaAutomatizacion } from "@/lib/toil/data";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 
 const prioridadOptions = ["Baja", "Media", "Alta", "Crítica"];

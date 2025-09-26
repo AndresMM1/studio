@@ -17,13 +17,11 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Eye } from "lucide-react";
-import type { ProyectoAutomatizacion } from '@/lib/types';
+import type { ProyectoConNombre } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerProyectoDetalle from './ver-proyecto-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
-
-type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };
 
 interface ProyectosTableProps {
     proyectos: ProyectoConNombre[];

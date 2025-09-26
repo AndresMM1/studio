@@ -10,9 +10,11 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ProyectoAutomatizacionSchema, type ProyectoAutomatizacion } from "@/lib/schemas";
+import { ProyectoAutomatizacionSchema } from "@/lib/toil/schemas";
+import { addProyectoAutomatizacion } from "@/lib/toil/data";
+import type { ProyectoAutomatizacion } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
-import { addProyectoAutomatizacion } from "@/lib/data";
+
 
 const estadoOptions = ["Planificado", "En Ejecución", "Finalizado", "En Pausa", "Cancelado"];
 

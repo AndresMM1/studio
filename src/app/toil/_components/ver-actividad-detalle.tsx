@@ -1,13 +1,14 @@
 
-import type { ActividadDefinicion } from '@/lib/types';
+import type { ActividadDefinicion, GrupoCelula } from '@/lib/toil/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
 interface VerActividadDetalleProps {
     actividad: ActividadDefinicion;
+    gruposCelula: GrupoCelula[];
 }
 
-export default function VerActividadDetalle({ actividad }: VerActividadDetalleProps) {
+export default function VerActividadDetalle({ actividad, gruposCelula }: VerActividadDetalleProps) {
 
     const impactoColors: { [key: string]: string } = {
         "Alto": "bg-red-100 text-red-800",
@@ -21,11 +22,10 @@ export default function VerActividadDetalle({ actividad }: VerActividadDetallePr
         "Baja": "border-green-500",
     }
 
-    const grupoCelulaMap: { [key: number]: string } = {
-        1: "Chapter de Datos",
-        2: "Chapter de Frontend",
-        3: "Célula de Pagos"
-    };
+    const grupoCelulaMap = new Map(gruposCelula.map(g => [g.ID, g]));
+    const grupo = grupoCelulaMap.get(actividad.id_grupo_celula);
+    const IconoGrupo = grupo?.icon;
+
 
     const actividadPracticaMap: { [key: string]: string } = {
         "gestion-incidentes": "Gestión de Incidentes",
@@ -53,7 +53,10 @@ export default function VerActividadDetalle({ actividad }: VerActividadDetallePr
                 </div>
                 <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Grupo Célula/Chapter</h3>
-                    <p>{grupoCelulaMap[actividad.id_grupo_celula] || 'N/A'}</p>
+                    <div className="flex items-center gap-2">
+                        {IconoGrupo && <IconoGrupo className="h-4 w-4 text-muted-foreground" />}
+                        <p>{grupo?.Title || 'N/A'}</p>
+                    </div>
                 </div>
                 <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Actividad Práctica</h3>
@@ -121,5 +124,3 @@ export default function VerActividadDetalle({ actividad }: VerActividadDetallePr
         </div>
     );
 }
-
-    

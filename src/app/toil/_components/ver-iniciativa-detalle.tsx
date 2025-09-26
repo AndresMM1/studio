@@ -1,5 +1,5 @@
 
-import type { IniciativaAutomatizacion } from '@/lib/types';
+import type { IniciativaAutomatizacion } from '@/lib/toil/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
