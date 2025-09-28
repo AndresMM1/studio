@@ -144,11 +144,13 @@ export default function IncidentDetailPage() {
   return (
     <div className="container mx-auto max-w-4xl p-4 md:p-8">
       <div className="mb-6">
-        <Button asChild variant="outline" size="sm">
+        <Button asChild className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors hover:bg-slate-200">
             <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver al Panel
+                <ArrowLeft className="h-5 w-5" />
+                
             </Link>
+            
+       
         </Button>
       </div>
 
