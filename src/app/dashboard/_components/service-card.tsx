@@ -1,6 +1,6 @@
 "use client";
 
-import { Flame, Box, FileBarChart, ChartLine, Search as SearchIcon } from "lucide-react";
+import { Fire, BoxSeam, FileEarmarkBarGraph, BarChartLine, Search as SearchIcon } from "lucide-react";
 import type { Servicio } from "@/lib/dashboard/api";
 
 interface ServiceCardProps {

@@ -1,4 +1,4 @@
-const SERVICIOS_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/a567f422ff1e4c5c9467fae1912dde4a/triggers/manual/paths/invoke/?api-version=1&tenantId=tId&environmentId=045498d8-c2ea-e9f4-994f-58cd02cb99e0&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=UUSBLv0BTlB4DtDpw6ZmI5TX8u4G6-6AGDLIHMK2YyI";
+const SERVICIOS_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/0376b3cf91154958866177a0f39a0b44/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=tm_ANSoCLo92i6Mra2NacJ60UQVeRNh7YE_iE8XzL7Y";
 const SERVICIO_DETALLE_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/797b27ba20d145cdab54331cff9ed52b/triggers/manual/paths/invoke/?api-version=1&tenantId=tId&environmentId=045498d8-c2ea-e9f4-994f-58cd02cb99e0&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Z4fAOO9BTJo-D7kZLPUt5Lgqo9lLQh6jedIdz2Xm1gA";
 const APLICACIONES_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/b3c4381279e44c48915f401a3ed84771/triggers/manual/paths/invoke/?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=82Ai3CUUINN3DNKf12X8SSmP-6awvLRk0kZDttQ8ClI";
 const BASES_DATOS_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/ba78715cb1844afc8678b3ee60abb3d8/triggers/manual/paths/invoke/?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=XIXoAPzUvqYUBpiJ4A6cJo6GK8nJ-xYul11zOZ9uifA";
@@ -31,8 +31,13 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
 }
 
 export async function fetchServicios(): Promise<Servicio[]> {
-  const json = await fetchJson<{ value?: Servicio[] }>(SERVICIOS_URL);
-  return json.value ?? [];
+  const json = await fetchJson<{ value?: any[] }>(SERVICIOS_URL);
+  const services = json.value ?? [];
+  return services.map((service) => ({
+    SERVICE_NAME: service.SERVICE_NAME,
+    ID: service.ID,
+    SERVICE_CHANNEL: service.SERVICE_CHANNEL,
+  }));
 }
 
 export async function fetchServicioDetalle(servicio: string): Promise<ServicioDetalle | null> {
