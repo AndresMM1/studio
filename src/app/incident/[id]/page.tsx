@@ -1,6 +1,5 @@
 "use client";
-import Image from "next/image";
-import imagen from '@/public/AbejaEmpty.png';
+import { AbejaEmpty } from "@/components/icons/AbejaEmpty";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
@@ -35,6 +34,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
+const MAX_RETRIES = 5;
+const RETRY_DELAY = 1000; // 1 second
+
 const priorityMap: Record<IncidentPriority, { icon: React.ElementType; className: string; badgeClassName: string }> = {
   "Crítica": { icon: ShieldAlert, className: "text-red-500", badgeClassName: "bg-red-100 text-red-800" },
   "Alta": { icon: TriangleAlert, className: "text-orange-500", badgeClassName: "bg-orange-100 text-orange-800" },
@@ -61,17 +63,25 @@ export default function IncidentDetailPage() {
   useEffect(() => {
     if (params.id) {
       const id = parseInt(params.id as string, 10);
-      async function loadData() {
-        setIsLoading(true);
-        const [fetchedIncident, fetchedUpdates] = await Promise.all([
-          getIncidentById(id),
-          getIncidentUpdates(id)
-        ]);
-        setIncident(fetchedIncident || null);
-        setUpdates(fetchedUpdates || []);
-        setIsLoading(false);
+      
+      async function loadDataWithRetry(retries: number) {
+        const fetchedIncident = await getIncidentById(id);
+
+        if (fetchedIncident) {
+          const fetchedUpdates = await getIncidentUpdates(id);
+          setIncident(fetchedIncident);
+          setUpdates(fetchedUpdates || []);
+          setIsLoading(false);
+        } else if (retries > 0) {
+          setTimeout(() => loadDataWithRetry(retries - 1), RETRY_DELAY);
+        } else {
+          setIsLoading(false);
+          setIncident(null); // Give up and show "Not Found"
+        }
       }
-      loadData();
+
+      setIsLoading(true);
+      loadDataWithRetry(MAX_RETRIES);
     }
   }, [params.id]);
 
@@ -121,7 +131,7 @@ export default function IncidentDetailPage() {
                     <CardTitle>Incidente no encontrado</CardTitle>
                 </CardHeader>
                 <CardContent className=" flex flex-col items-center">
-    <Image src={imagen} alt="Logo" width={170} height={170}         className=" justify-center opacity-50  hover:opacity-100 transition " />
+    <AbejaEmpty className="h-44 w-44 text-blue-300 transition-colors hover:text-blue-400 blue-100" />
 
                     <p>El incidente que estás buscando no existe.</p>
                 </CardContent>
@@ -220,7 +230,7 @@ export default function IncidentDetailPage() {
                             </div>
                         ))
                     ) : (
-                      <div className=" flex flex-col items-center"><Image src={imagen} alt="Logo" width={170} height={170}         className=" top-10 opacity-50  hover:opacity-100 transition " />
+                      <div className=" flex flex-col items-center"><AbejaEmpty className="h-44 w-44 text-slate-300 transition-colors hover:text-slate-400" />
                       
                         <p className="text-muted-foreground">Aún no hay avances.</p></div>
                           

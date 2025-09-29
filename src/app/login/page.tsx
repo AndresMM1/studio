@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";  
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import imagen from '@/public/AbejaLogin.png';
+import { AbejaFilled } from "@/components/icons/AbejaLoggin";
+
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
@@ -42,7 +43,7 @@ export default function LoginPage() {
 
   return (
     <div className="bg-gradient-to-br from-white to-blue-100/90 flex min-h-screen items-center justify-center " >
-    <Image src={imagen} alt="Logo" width={170} height={170}         className=" top-10 opacity-50  hover:opacity-100 transition " />
+    <AbejaFilled className="h-44 w-44 text-blue-300 transition-colors hover:text-blue-400 blue-100" />
 
       <Card className=" relative ml-4 max-w-sm">
 
