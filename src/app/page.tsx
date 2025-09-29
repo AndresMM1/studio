@@ -17,6 +17,8 @@ import {
   TriangleAlert,
   Users,
   User,
+  Check,
+  ChevronsUpDown,
 } from "lucide-react";
 import { getIncidents, addIncident, getServices } from "@/lib/data";
 import { type Incident, type IncidentPriority, type IncidentStatus, type Service } from "@/lib/types";
@@ -31,6 +33,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import {
   Dialog,
   DialogContent,
@@ -57,6 +71,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAuth } from "@/contexts/auth-context";
+import { cn } from "@/lib/utils";
 
 
 const priorities: IncidentPriority[] = ["Crítica", "Alta", "Media", "Baja"];
@@ -75,6 +90,7 @@ function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isCreatingIncident, setIsCreatingIncident] = useState(false);
+  const [isServiceComboboxOpen, setServiceComboboxOpen] = useState(false);
 
   // Form state for new incident
   const [newIncidentService, setNewIncidentService] = useState<string | undefined>(undefined);
@@ -208,14 +224,47 @@ function DashboardPage() {
                         <Label htmlFor="service" className="text-right">
                           Servicio
                         </Label>
-                        <Select onValueChange={(value) => setNewIncidentService(value)} value={newIncidentService}>
-                          <SelectTrigger className="col-span-3">
-                            <SelectValue placeholder="Seleccionar servicio" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {services.map((s) => <SelectItem key={s.ID} value={s.SERVICE_NAME}>{s.SERVICE_NAME}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <Popover open={isServiceComboboxOpen} onOpenChange={setServiceComboboxOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={isServiceComboboxOpen}
+                              className="col-span-3 justify-between"
+                            >
+                              {newIncidentService
+                                ? services.find((s) => s.SERVICE_NAME === newIncidentService)?.SERVICE_NAME
+                                : "Seleccionar servicio..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[300px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Buscar servicio..." />
+                              <CommandEmpty>No se encontró el servicio.</CommandEmpty>
+                              <CommandGroup>
+                                {services.map((s) => (
+                                  <CommandItem
+                                    key={s.ID}
+                                    value={s.SERVICE_NAME}
+                                    onSelect={(currentValue) => {
+                                      setNewIncidentService(currentValue === newIncidentService ? "" : currentValue);
+                                      setServiceComboboxOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        newIncidentService === s.SERVICE_NAME ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {s.SERVICE_NAME}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="description" className="text-right">
