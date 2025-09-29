@@ -22,8 +22,10 @@ import {
   fetchCambios,
   fetchAplicaciones,
   fetchBasesDatos,
+  fetchServicioInfo, // Import the new fetch function
   type Servicio,
   type ServicioDetalle,
+  type ServicioInfo, // Import the new type
   type DataRow,
 } from "@/lib/dashboard/api";
 import { IncidentsLineChart } from "./incidents-line-chart";
@@ -69,6 +71,7 @@ interface DetailViewProps {
 
 export function DetailView({ service, onBack }: DetailViewProps) {
   const [detalle, setDetalle] = useState<ServicioDetalle | null>(null);
+  const [servicioInfo, setServicioInfo] = useState<ServicioInfo | null>(null);
   const [incidentes, setIncidentes] = useState<DataRow[]>([]);
   const [cambios, setCambios] = useState<DataRow[]>([]);
   const [aplicaciones, setAplicaciones] = useState<DataRow[]>([]);
@@ -81,14 +84,16 @@ export function DetailView({ service, onBack }: DetailViewProps) {
       setIsLoading(true);
       setError(null);
       try {
-        const [detalleData, incidentesData, cambiosData, aplicacionesData, basesDatosData] = await Promise.all([
+        const [detalleData, servicioInfoData, incidentesData, cambiosData, aplicacionesData, basesDatosData] = await Promise.all([
           fetchServicioDetalle(service.SERVICE_NAME),
+          fetchServicioInfo(service.SERVICE_NAME),
           fetchIncidentes(service.SERVICE_NAME),
           fetchCambios(service.SERVICE_NAME),
           fetchAplicaciones(service.SERVICE_NAME),
           fetchBasesDatos(service.SERVICE_NAME),
         ]);
         setDetalle(detalleData);
+        setServicioInfo(servicioInfoData);
         // Use transformers for all data types
         setIncidentes(incidentesData.slice(-1).map(transformIncidente));
         setCambios(cambiosData.slice(-1).map(transformCambio));
@@ -132,11 +137,15 @@ export function DetailView({ service, onBack }: DetailViewProps) {
             <DataTable rows={cambios} type="cambios" />
           </DetailsCard>
           
+          {/* New Service Info Card */}
+          <DetailsCard title="Descripción del Servicio" icon={<FileText className="h-5 w-5 text-cyan-500" />}>
+            <ServiceInfoDisplay info={servicioInfo} />
+          </DetailsCard>
+
           {/* Architecture Diagram Card - Now a standard size card */}
           <DetailsCard title="Arquitectura del Servicio" icon={<Share2 className="h-5 w-5 text-indigo-500" />}>
             <ArchitectureDiagram />
           </DetailsCard>
-
           <DetailsCard title="Información" icon={<Info className="h-5 w-5 text-gray-500" />}>
             <DefinitionList data={detalle} />
           </DetailsCard>
@@ -158,6 +167,34 @@ function DetailsCard({ title, icon, children }: { title: string; icon: React.Rea
       <h2 className="mb-4 border-b pb-3 text-xl font-semibold text-gray-700">{title}</h2>
       <div className="space-y-4">{children}</div>
       </div>
+  );
+}
+
+function ServiceInfoDisplay({ info }: { info: ServicioInfo | null }) {
+  if (!info) {
+    return <p className="text-sm text-muted-foreground">No hay información disponible.</p>;
+  }
+
+  const infoMap = {
+    SERVICE_DESCRIPTION: "Descripción",
+    SERVICE_IMPACT: "Impacto",
+    SERVICE_IMPORTANCE: "Importancia",
+    SERVICE_WIF: "Para que es",
+  };
+
+  return (
+    <div className="space-y-6">
+      {Object.entries(infoMap).map(([key, title]) => {
+        const value = info[key];
+        if (!value) return null;
+        return (
+          <div key={key}>
+            <h3 className="text-md font-semibold text-slate-600">{title}</h3>
+            <p className="mt-1 whitespace-pre-line text-sm text-slate-500">{value}</p>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

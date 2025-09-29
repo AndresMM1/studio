@@ -4,6 +4,7 @@ const APLICACIONES_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.
 const BASES_DATOS_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/ba78715cb1844afc8678b3ee60abb3d8/triggers/manual/paths/invoke/?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=XIXoAPzUvqYUBpiJ4A6cJo6GK8nJ-xYul11zOZ9uifA";
 const CAMBIOS_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/07fc86f031ea4181bbb2c9da185be890/triggers/manual/paths/invoke/?api-version=1&tenantId=tId&environmentId=045498d8-c2ea-e9f4-994f-58cd02cb99e0&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=cd1Ifb_lKmCQ76ZWMEel6d2mZD-jbXubdwRW0YJtlNA";
 const INCIDENTES_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/3a7c196642574e5fa089f3d3e69d43d0/triggers/manual/paths/invoke/?api-version=1&tenantId=tId&environmentId=045498d8-c2ea-e9f4-994f-58cd02cb99e0&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Gu_MaLwadu9P5uxj2X9vGBJfAQrr0iFtaQrk0U8tGTE";
+const SERVICIO_INFO_URL = "https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/55731eb645b7443e957976aeb2781017/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=jyw7ZupF7MDSzIWZqg9NLP8fSvcgTxEt1agAoNez9nw";
 
 export interface Servicio {
   SERVICE_NAME: string;
@@ -11,6 +12,7 @@ export interface Servicio {
 }
 
 export type ServicioDetalle = Record<string, unknown>;
+export type ServicioInfo = Record<string, string>;
 export type DataRow = Record<string, unknown>;
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -42,6 +44,11 @@ export async function fetchServicios(): Promise<Servicio[]> {
 
 export async function fetchServicioDetalle(servicio: string): Promise<ServicioDetalle | null> {
   const json = await postJson<{ value?: ServicioDetalle[] }>(SERVICIO_DETALLE_URL, { servicio });
+  return json.value?.[0] ?? null;
+}
+
+export async function fetchServicioInfo(servicio: string): Promise<ServicioInfo | null> {
+  const json = await postJson<{ value?: ServicioInfo[] }>(SERVICIO_INFO_URL, { servicio });
   return json.value?.[0] ?? null;
 }
 

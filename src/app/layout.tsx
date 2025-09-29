@@ -5,7 +5,7 @@ import { AuthProvider } from '@/contexts/auth-context';
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 
 export const metadata: Metadata = {
-  title: 'Gestión de Incidentes',
+  title: 'Ecosistema de Gestion',
   description: 'Aplicación para gestionar incidentes',
 };
 
