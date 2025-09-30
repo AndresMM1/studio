@@ -95,7 +95,7 @@ export async function getIncidents(): Promise<Incident[]> {
 export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'endDate'>, userEmail: string): Promise<Incident> {
   const apiPayload = {
     AFFECT_STATE: 'Proceso',
-    AFFECT_DETAILS: `Servicio: ${incident.service} Descripción: ${incident.description}`,
+    AFFECT_DETAILS: incident.description,
     AFFECT_START_DATE: incident.startTime,
     PERSON_EMAIL: userEmail,
     AFFECT_PRIORITY: incident.priority,
