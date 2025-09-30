@@ -1,12 +1,16 @@
 "use client";
-import { AbejaEmpty } from "@/components/icons/AbejaEmpty";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
-import { getIncidentById, getIncidentUpdates, addIncidentUpdate, updateIncidentStatus } from "@/lib/data";
+import { getIncidentById, getIncidentUpdates, addIncidentUpdate, updateIncidentStatus, sendClosureDocumentation } from "@/lib/data";
 import { type Incident, type IncidentUpdate, type IncidentStatus, type IncidentPriority } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import {
   Card,
   CardContent,
@@ -34,9 +38,6 @@ import {
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
-const MAX_RETRIES = 5;
-const RETRY_DELAY = 1000; // 1 second
-
 const priorityMap: Record<IncidentPriority, { icon: React.ElementType; className: string; badgeClassName: string }> = {
   "Crítica": { icon: ShieldAlert, className: "text-red-500", badgeClassName: "bg-red-100 text-red-800" },
   "Alta": { icon: TriangleAlert, className: "text-orange-500", badgeClassName: "bg-orange-100 text-orange-800" },
@@ -51,6 +52,22 @@ const statusMap = {
   "Cerrada": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800" },
 };
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1500; // 1.5 segundos
+
+const getGmt5DateString = () => {
+    const now = new Date();
+    // Adjust for GMT-5
+    now.setHours(now.getHours() - 5);
+    const year = now.getUTCFullYear();
+    const month = (now.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = now.getUTCDate().toString().padStart(2, '0');
+    const hours = now.getUTCHours().toString().padStart(2, '0');
+    const minutes = now.getUTCMinutes().toString().padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+
 export default function IncidentDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -59,31 +76,50 @@ export default function IncidentDetailPage() {
   const [newUpdate, setNewUpdate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+
+  // State for the close incident form
+  const [solution, setSolution] = useState('');
+  const [endTime, setEndTime] = useState(getGmt5DateString());
+  const [generatedAlerts, setGeneratedAlerts] = useState(false);
+  const [docResponsible, setDocResponsible] = useState('');
+  const [domainResponsible, setDomainResponsible] = useState('');
+
+
+  const fetchIncidentWithRetries = useCallback(async (id: number, retries: number) => {
+    try {
+      const fetchedIncident = await getIncidentById(id);
+      if (fetchedIncident) {
+        const fetchedUpdates = await getIncidentUpdates(id);
+        setIncident(fetchedIncident);
+        setUpdates(fetchedUpdates || []);
+        setIsLoading(false);
+        setError(null);
+      } else if (retries > 0) {
+        setTimeout(() => fetchIncidentWithRetries(id, retries - 1), RETRY_DELAY);
+      } else {
+        setError("El incidente que estás buscando no existe.");
+        setIsLoading(false);
+      }
+    } catch (e) {
+        setError("Ocurrió un error al cargar el incidente.");
+        setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (params.id) {
       const id = parseInt(params.id as string, 10);
-      
-      async function loadDataWithRetry(retries: number) {
-        const fetchedIncident = await getIncidentById(id);
-
-        if (fetchedIncident) {
-          const fetchedUpdates = await getIncidentUpdates(id);
-          setIncident(fetchedIncident);
-          setUpdates(fetchedUpdates || []);
-          setIsLoading(false);
-        } else if (retries > 0) {
-          setTimeout(() => loadDataWithRetry(retries - 1), RETRY_DELAY);
-        } else {
-          setIsLoading(false);
-          setIncident(null); // Give up and show "Not Found"
-        }
+      if (!isNaN(id)) {
+        setIsLoading(true);
+        fetchIncidentWithRetries(id, MAX_RETRIES);
+      } else {
+        setError("ID de incidente no válido.");
+        setIsLoading(false);
       }
-
-      setIsLoading(true);
-      loadDataWithRetry(MAX_RETRIES);
     }
-  }, [params.id]);
+  }, [params.id, fetchIncidentWithRetries]);
 
   const handleAddUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,14 +135,18 @@ export default function IncidentDetailPage() {
   const handleStatusChange = async (newStatus: IncidentStatus) => {
     if(!incident || isSubmitting) return;
 
+    if (newStatus === "Cerrado") {
+        setEndTime(getGmt5DateString());
+        setIsCloseDialogOpen(true);
+        return;
+    }
+
     setIsSubmitting(true);
     const updateText = `Estado cambiado a ${newStatus}.`;
     
-    // Create the update first
     const createdUpdate = await addIncidentUpdate(incident.id.toString(), updateText);
-      setUpdates(prevUpdates => [createdUpdate, ...prevUpdates].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
+    setUpdates(prevUpdates => [createdUpdate, ...prevUpdates].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
     
-    // Then update the incident status
     const updatedIncident = await updateIncidentStatus(incident.id, newStatus);
     if (updatedIncident) {
       setIncident(updatedIncident);
@@ -115,25 +155,69 @@ export default function IncidentDetailPage() {
     setIsSubmitting(false);
   }
 
+  const handleCloseIncident = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!incident || isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    try {
+        await Promise.all([
+            sendClosureDocumentation({
+                incidentId: incident.id,
+                startTime: incident.startTime,
+                endTime: endTime,
+                service: incident.service,
+                description: incident.description,
+                solution: solution,
+                generatedAlerts: generatedAlerts,
+                docResponsible: docResponsible,
+                domainResponsible: domainResponsible,
+            }),
+            updateIncidentStatus(incident.id, "Cerrado")
+        ]);
+
+        const [fetchedUpdates, updatedIncident] = await Promise.all([
+            getIncidentUpdates(incident.id),
+            getIncidentById(incident.id)
+        ]);
+        
+        setUpdates(fetchedUpdates || []);
+        if (updatedIncident) {
+          setIncident(updatedIncident);
+        }
+
+    } catch (error) {
+        console.error("Error al cerrar el incidente:", error);
+    } finally {
+        // Reset form and close dialog
+        setIsSubmitting(false);
+        setIsCloseDialogOpen(false);
+        setSolution('');
+        setEndTime(getGmt5DateString());
+        setGeneratedAlerts(false);
+        setDocResponsible('');
+        setDomainResponsible('');
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        <Loader2 className="h-24 w-24 animate-spin text-primary opacity-50" />
       </div>
     );
   }
 
-  if (!incident) {
+  if (error || !incident) {
     return (
         <div className="flex min-h-screen items-center justify-center">
             <Card>
                 <CardHeader>
                     <CardTitle>Incidente no encontrado</CardTitle>
                 </CardHeader>
-                <CardContent className=" flex flex-col items-center">
-    <AbejaEmpty className="h-44 w-44 text-blue-300 transition-colors hover:text-blue-400 blue-100" />
-
-                    <p>El incidente que estás buscando no existe.</p>
+                <CardContent>
+                    <p>{error || "El incidente que estás buscando no existe."}</p>
                 </CardContent>
                 <CardFooter>
                      <Button asChild>
@@ -154,13 +238,11 @@ export default function IncidentDetailPage() {
   return (
     <div className="container mx-auto max-w-4xl p-4 md:p-8">
       <div className="mb-6">
-        <Button asChild className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition-colors hover:bg-slate-200">
+        <Button asChild variant="outline" size="sm">
             <Link href="/">
-                <ArrowLeft className="h-5 w-5" />
-                
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Volver al Panel
             </Link>
-            
-       
         </Button>
       </div>
 
@@ -168,7 +250,7 @@ export default function IncidentDetailPage() {
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div>
-                <CardTitle className="text-lg font-bold whitespace-pre-wrap">{incident.service}: {incident.description}</CardTitle>
+                <CardTitle className="text-xl font-bold whitespace-pre-wrap">{incident.service}: {incident.description}</CardTitle>
                 <CardDescription className="mt-2 text-lg">
                     Incidente #{incident.id}
                 </CardDescription>
@@ -230,10 +312,7 @@ export default function IncidentDetailPage() {
                             </div>
                         ))
                     ) : (
-                      <div className=" flex flex-col items-center"><AbejaEmpty className="h-44 w-44 text-slate-300 transition-colors hover:text-slate-400" />
-                      
-                        <p className="text-muted-foreground">Aún no hay avances.</p></div>
-                          
+                        <p className="text-muted-foreground">Aún no hay actualizaciones.</p>
                     )}
                 </div>
             </div>
@@ -241,7 +320,7 @@ export default function IncidentDetailPage() {
             <Separator className="my-6" />
             
             <form onSubmit={handleAddUpdate}>
-                <h3 className="text-xl font-semibold mb-4">Agregar Avances</h3>
+                <h3 className="text-xl font-semibold mb-4">Agregar Actualización</h3>
                 <Textarea 
                     value={newUpdate}
                     onChange={(e) => setNewUpdate(e.target.value)}
@@ -253,10 +332,54 @@ export default function IncidentDetailPage() {
                     <div className="flex gap-2">
                        {incident.status !== 'En espera' && incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && <Button onClick={() => handleStatusChange("En espera")} type="button" variant="outline" disabled={isSubmitting}>Poner en espera</Button>}
                        {(incident.status === 'En espera' || incident.status === 'Cerrado' || incident.status === 'Cerrada') && <Button onClick={() => handleStatusChange("Proceso")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
-                       {incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && <Button onClick={() => handleStatusChange("Cerrado")} type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>}
+                       {incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && (
+                           <Dialog open={isCloseDialogOpen} onOpenChange={setIsCloseDialogOpen}>
+                               <DialogTrigger asChild>
+                                    <Button type="button" variant="destructive" disabled={isSubmitting}>Cerrar Incidente</Button>
+                               </DialogTrigger>
+                               <DialogContent className="sm:max-w-[425px]">
+                                   <DialogHeader>
+                                       <DialogTitle>Cerrar Incidente</DialogTitle>
+                                       <DialogDescription>
+                                           Proporcione los detalles finales para cerrar este incidente.
+                                       </DialogDescription>
+                                   </DialogHeader>
+                                   <form onSubmit={handleCloseIncident}>
+                                    <div className="grid gap-4 py-4">
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="solution" className="text-right">Solución</Label>
+                                            <Textarea id="solution" value={solution} onChange={e => setSolution(e.target.value)} className="col-span-3" required />
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="endTime" className="text-right">Hora de Fin</Label>
+                                            <Input id="endTime" type="datetime-local" value={endTime} onChange={e => setEndTime(e.target.value)} className="col-span-3" required />
+                                        </div>
+                                         <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="alerts" className="text-right">¿Generó Alertas?</Label>
+                                            <Switch id="alerts" checked={generatedAlerts} onCheckedChange={setGeneratedAlerts} className="col-span-3" />
+                                        </div>
+                                        <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="docResponsible" className="text-right">Resp. Documentación</Label>
+                                            <Input id="docResponsible" value={docResponsible} onChange={e => setDocResponsible(e.target.value)} className="col-span-3" required />
+                                        </div>
+                                         <div className="grid grid-cols-4 items-center gap-4">
+                                            <Label htmlFor="domainResponsible" className="text-right">Resp. Dominio</Label>
+                                            <Input id="domainResponsible" value={domainResponsible} onChange={e => setDomainResponsible(e.target.value)} className="col-span-3" required />
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="button" variant="outline" onClick={() => setIsCloseDialogOpen(false)}>Cancelar</Button>
+                                        <Button type="submit" variant="destructive" disabled={isSubmitting}>
+                                            {isSubmitting ? 'Cerrando...' : 'Confirmar Cierre'}
+                                        </Button>
+                                    </DialogFooter>
+                                   </form>
+                               </DialogContent>
+                           </Dialog>
+                       )}
                     </div>
                      <Button type="submit" disabled={isSubmitting || newUpdate.trim() === ''}>
-                        {isSubmitting ? "Enviando..." : "Agregar Avances"}
+                        {isSubmitting ? "Enviando..." : "Agregar Actualización"}
                     </Button>
                 </div>
             </form>

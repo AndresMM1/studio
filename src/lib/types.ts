@@ -104,3 +104,14 @@ export interface GrupoCelula {
   icon?: ElementType;
 
 }
+export interface ClosureData {
+    incidentId: number;
+    startTime: string;
+    endTime: string;
+    service: string;
+    description: string;
+    solution: string;
+    generatedAlerts: boolean;
+    docResponsible: string;
+    domainResponsible: string;
+}

@@ -1,4 +1,4 @@
-import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion ,GrupoCelula} from "./types";
+import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion ,GrupoCelula,ClosureData} from "./types";
 import { Users, Code, Database, Server, Component, Settings } from 'lucide-react';
 import type { ElementType } from "react";
 
@@ -400,5 +400,34 @@ export async function getProyectoById(id: number): Promise<ProyectoConNombre | u
     } catch (error) {
         console.error("Error al obtener los grupos de célula:", error);
         return [];
+    }
+}
+export async function sendClosureDocumentation(data: ClosureData): Promise<void> {
+    const apiPayload = {
+       incidentId: data.incidentId,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        service: data.service,
+        description: data.description,
+        solution: data.solution,
+        generatedAlerts: data.generatedAlerts? "Sí" : "No",
+        docResponsible: data.docResponsible,
+        domainResponsible: data.domainResponsible,
+    };
+    try {
+        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/45310103ab6d4cc18942218058bdf454/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=KAaT25wLBOqTuOFlnkmdPmTtTA5j-_sGAJzfpixk74c', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(apiPayload)
+        });
+        if (!response.ok) {
+            const errorBody = await response.text();
+            console.error('Error al enviar la documentación de cierre. Estado:', response.status, 'Cuerpo:', errorBody);
+            throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
+        }
+    } catch(error) {
+        console.error('Error al enviar la documentación de cierre:', error);
     }
 }
