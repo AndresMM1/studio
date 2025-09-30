@@ -10,6 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert, HardHat, CheckCircle2, CircleOff, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -81,7 +87,18 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                       </div>
                     </Badge>
                   </TableCell>
-                  <TableCell>{incident.description}</TableCell>
+                  <TableCell className="max-w-sm">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger className="truncate block w-full text-left">
+                          {incident.description}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-md">{incident.description}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
                   <TableCell>
                     {new Date(incident.startTime).toLocaleString()}
                   </TableCell>
@@ -92,7 +109,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/incident/${incident.id}`}>
                           <ExternalLink className="mr-2 h-4 w-4" />
-                          Ver
+                          
                         </Link>
                       </Button>
                   </TableCell>
