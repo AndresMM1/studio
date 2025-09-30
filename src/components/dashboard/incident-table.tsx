@@ -100,10 +100,22 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                     </TooltipProvider>
                   </TableCell>
                   <TableCell>
-                    {new Date(incident.startTime).toLocaleString()}
+                    <div>{new Date(incident.startTime).toLocaleDateString()}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(incident.startTime).toLocaleTimeString()}
+                    </div>
                   </TableCell>
                   <TableCell>
-                    {incident.endDate ? new Date(incident.endDate).toLocaleString() : "-"}
+                    {incident.endDate ? (
+                      <div>
+                        <div>{new Date(incident.endDate).toLocaleDateString()}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {new Date(incident.endDate).toLocaleTimeString()}
+                        </div>
+                      </div>
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                       <Button asChild variant="outline" size="sm">
