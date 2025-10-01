@@ -101,6 +101,7 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
     AFFECT_PRIORITY: incident.priority,
     AFFECT_ENVIRONMENT: incident.environment,
     AFFECT_SERVICE: incident.service,
+    AFFECT_LINK: incident.teamsLink || ''
   };
   
   const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ef5686f87ba64be5b5eddf78a326b9f9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JNjQ7w17Wf2W6KASNfz0IuKddW_Zd3bSMK8ysI0RZeY', {
@@ -435,14 +436,14 @@ export async function sendClosureDocumentation(data: ClosureData): Promise<void>
 
 export async function generateTeamsMeetingLink(serviceName: string): Promise<string> {
     // IMPORTANT: Replace with your actual API endpoint for generating a Teams link
-    const TEAMS_LINK_ENDPOINT = 'https://YOUR_API_ENDPOINT/generate-teams-link';
+    const TEAMS_LINK_ENDPOINT = 'https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/f30c59b512a143feb378af616fbccd1b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=dve5mMpvN9aVfh90IAPd3vm0d-FnA8Qcea6frrmcbGM';
     try {
         const response = await fetch(TEAMS_LINK_ENDPOINT, { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ servicio: serviceName }) // Pass service name in the body
+            body: JSON.stringify({ service: serviceName }) // Pass service name in the body
         });
         if (!response.ok) {
             throw new Error('Failed to generate Teams meeting link');

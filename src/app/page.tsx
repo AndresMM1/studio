@@ -186,6 +186,7 @@ function DashboardPage() {
           description: newIncidentDescription,
           priority: newIncidentPriority,
           environment: newIncidentEnvironment,
+          teamsLink: newIncidentTeamsLink,
         };
         const newIncident = await addIncident(newIncidentData, user.email);
         setIncidents(prevIncidents => [newIncident, ...prevIncidents]);

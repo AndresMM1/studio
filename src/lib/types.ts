@@ -18,6 +18,7 @@ export interface Incident {
   priority: IncidentPriority;
   environment: string;
   status: IncidentStatus;
+  teamsLink?: string;
 }
 
 export interface Service {
