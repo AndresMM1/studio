@@ -19,8 +19,9 @@ import {
   User,
   Check,
   ChevronsUpDown,
+  Link2,
 } from "lucide-react";
-import { getIncidents, addIncident, getServices } from "@/lib/data";
+import { getIncidents, addIncident, getServices, generateTeamsMeetingLink } from "@/lib/data";
 import { type Incident, type IncidentPriority, type IncidentStatus, type Service } from "@/lib/types";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { IncidentTable } from "@/components/dashboard/incident-table";
@@ -75,10 +76,19 @@ import { cn } from "@/lib/utils";
 
 
 const priorities: IncidentPriority[] = ["Crítica", "Alta", "Media", "Baja"];
-const statuses: IncidentStatus[] = ["Proceso", "En espera", "Cerrado", "Cerrada"];
+const statuses: IncidentStatus[] = ["Proceso", "En espera", "Cerrada", "Cerrada"];
 const environments = ["Producción", "Contingencia"];
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 5;
+
+// Helper function to get local date-time string in the correct format
+const getLocalDateTimeString = () => {
+  const now = new Date();
+  // Adjust for timezone offset
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  // Return as ISO string slice
+  return now.toISOString().slice(0, 16);
+};
 
 function DashboardPage() {
   const { user } = useAuth();
@@ -91,13 +101,15 @@ function DashboardPage() {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isCreatingIncident, setIsCreatingIncident] = useState(false);
   const [isServiceComboboxOpen, setServiceComboboxOpen] = useState(false);
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
 
   // Form state for new incident
   const [newIncidentService, setNewIncidentService] = useState<string | undefined>(undefined);
   const [newIncidentDescription, setNewIncidentDescription] = useState("");
   const [newIncidentPriority, setNewIncidentPriority] = useState<IncidentPriority>("Media");
   const [newIncidentEnvironment, setNewIncidentEnvironment] = useState("Producción");
-  const [newIncidentStartTime, setNewIncidentStartTime] = useState(new Date().toISOString().slice(0, 16));
+  const [newIncidentStartTime, setNewIncidentStartTime] = useState(getLocalDateTimeString());
+  const [newIncidentTeamsLink, setNewIncidentTeamsLink] = useState("");
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -183,7 +195,8 @@ function DashboardPage() {
         setNewIncidentDescription("");
         setNewIncidentPriority("Media");
         setNewIncidentEnvironment("Producción");
-        setNewIncidentStartTime(new Date().toISOString().slice(0, 16));
+        setNewIncidentStartTime(getLocalDateTimeString());
+        setNewIncidentTeamsLink("");
 
         toast({
           title: "Incidente Creado",
@@ -197,6 +210,34 @@ function DashboardPage() {
         })
     } finally {
         setIsCreatingIncident(false);
+    }
+  };
+
+  const handleGenerateLink = async () => {
+    if (!newIncidentService) {
+      toast({
+        title: "Servicio no seleccionado",
+        description: "Por favor, seleccione un servicio antes de generar el link.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsGeneratingLink(true);
+    try {
+      const link = await generateTeamsMeetingLink(newIncidentService);
+      setNewIncidentTeamsLink(link);
+      toast({
+        title: "Link de Teams Generado",
+        description: "El link se ha copiado en el campo correspondiente.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error al generar el link",
+        description: "No se pudo crear el link de la reunión. Por favor, créelo manualmente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingLink(false);
     }
   };
 
@@ -277,6 +318,22 @@ function DashboardPage() {
                           className="col-span-3"
                           required
                         />
+                      </div>
+                      <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="teamsLink" className="text-right">
+                          Link de Teams
+                        </Label>
+                        <div className="col-span-3 flex items-center gap-2">
+                          <Input
+                            id="teamsLink"
+                            value={newIncidentTeamsLink}
+                            onChange={(e) => setNewIncidentTeamsLink(e.target.value)}
+                            placeholder="Genere o pegue el link aquí"
+                          />
+                          <Button type="button" variant="outline" size="sm" onClick={handleGenerateLink} disabled={isGeneratingLink || !newIncidentService}>
+                            {isGeneratingLink ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                          </Button>
+                        </div>
                       </div>
                        <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="startTime" className="text-right">

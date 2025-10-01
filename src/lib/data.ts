@@ -415,19 +415,46 @@ export async function sendClosureDocumentation(data: ClosureData): Promise<void>
         domainResponsible: data.domainResponsible,
     };
     try {
+        // NOTE: Replace with the actual documentation endpoint URL
         const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/45310103ab6d4cc18942218058bdf454/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=KAaT25wLBOqTuOFlnkmdPmTtTA5j-_sGAJzfpixk74c', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(apiPayload)
+            body: JSON.stringify(apiPayload),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send closure documentation');
+        }
+    } catch (error) {
+        console.error("Error sending closure documentation:", error);
+        throw error;
+    }
+}
+
+export async function generateTeamsMeetingLink(serviceName: string): Promise<string> {
+    // IMPORTANT: Replace with your actual API endpoint for generating a Teams link
+    const TEAMS_LINK_ENDPOINT = 'https://YOUR_API_ENDPOINT/generate-teams-link';
+    try {
+        const response = await fetch(TEAMS_LINK_ENDPOINT, { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ servicio: serviceName }) // Pass service name in the body
         });
         if (!response.ok) {
-            const errorBody = await response.text();
-            console.error('Error al enviar la documentación de cierre. Estado:', response.status, 'Cuerpo:', errorBody);
-            throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
+            throw new Error('Failed to generate Teams meeting link');
         }
-    } catch(error) {
-        console.error('Error al enviar la documentación de cierre:', error);
+        const data = await response.json();
+        // Assuming the API returns a JSON object like { "link": "https://teams.microsoft.com/..." }
+        if (!data.link) {
+            throw new Error('API response did not contain a link.');
+        }
+        return data.link;
+    } catch (error) {
+        console.error("Error generating Teams link:", error);
+        throw error;
     }
 }
