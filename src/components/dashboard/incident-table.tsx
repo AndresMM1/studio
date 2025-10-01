@@ -121,7 +121,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                       <Button asChild variant="outline" size="sm">
                         <Link href={`/incident/${incident.id}`}>
                           <ExternalLink className="mr-2 h-4 w-4" />
-                          
+                          Ver detalle
                         </Link>
                       </Button>
                   </TableCell>
