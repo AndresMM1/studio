@@ -221,6 +221,13 @@ function DashboardPage() {
         setNewIncidentStartTime(getLocalDateTimeString());
         setNewIncidentTeamsLink("");
 
+        // Reset filters to show the new incident
+        setSearch("");
+        setPriority("all");
+        setStatus("all");
+        setEnvironment("all");
+        setCurrentPage(1);
+
         toast({
           title: "Incidente Creado",
           description: "El nuevo incidente ha sido creado exitosamente.",

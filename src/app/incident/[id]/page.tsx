@@ -162,7 +162,10 @@ export default function IncidentDetailPage() {
     setIsSubmitting(true);
 
     try {
+        const solutionUpdateText = `Solución aplicada: ${solution}`;
+        
         await Promise.all([
+            addIncidentUpdate(incident.id.toString(), solutionUpdateText),
             sendClosureDocumentation({
                 incidentId: incident.id,
                 startTime: incident.startTime,

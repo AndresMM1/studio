@@ -56,8 +56,6 @@ export async function getIncidents(): Promise<Incident[]> {
     
     // Map API response to Incident[]
     return incidentsData.map((item: any): Incident => {
-      const { service, description } = parseAffectDetails(item.AFFECT_DETAILS || "");
-      
       let priority: Incident["priority"] = "Baja";
       if(item.AFFECT_PRIORITY) {
           const p = item.AFFECT_PRIORITY.charAt(0).toUpperCase() + item.AFFECT_PRIORITY.slice(1).toLowerCase();
@@ -77,13 +75,14 @@ export async function getIncidents(): Promise<Incident[]> {
 
       return {
         id: item.Id,
-        service: service,
-        description: description,
+        service: item.AFFECT_SERVICE || "N/A",
+        description: item.AFFECT_DETAILS || "",
         startTime: item.AFFECT_START_DATE,
         endDate: item.AFFECT_END_DATE,
         priority: priority,
         status: status,
         environment: item.AFFECT_ENVIROMENT || "Producción",
+        teamsLink: item.AFFECT_LINK,
       };
     });
   } catch (error) {
