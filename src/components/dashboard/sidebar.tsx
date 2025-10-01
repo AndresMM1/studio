@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { AlertOctagon, GitPullRequestIcon, Cog, User, LayoutDashboard } from "lucide-react";
+import { AlertOctagon, GitPullRequestIcon, Cog, User, LayoutDashboard, BarChart3 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/auth-context";
 import { usePathname } from "next/navigation";
@@ -76,6 +76,20 @@ export function DashboardSidebar() {
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right">Toil</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/informes"
+                    className={`mt-2 flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
+                      ${pathname === "/informes" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
+                    `}
+                  >
+                    <BarChart3 className="h-5 w-5" />
+                    <span className="sr-only">Informes</span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">Informes</TooltipContent>
               </Tooltip>
             </nav>
           </div>

@@ -116,14 +116,29 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
       throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
   }
   
-  const createdIncidentFromApi = await response.json(); 
+  const createdIncidentFromApi = await response.json();
 
-   const newId = createdIncidentFromApi.Id || Date.now();
-   const createdIncident: Incident = {
-      id: newId,
-      status: 'Proceso',
-      ...incident
-   };
+  // The API returns the full incident object, let's use it directly.
+  // We'll parse it just like we do in getIncidents to ensure consistency.
+  let priority: Incident["priority"] = "Baja";
+  if(createdIncidentFromApi.AFFECT_PRIORITY) {
+      const p = createdIncidentFromApi.AFFECT_PRIORITY.charAt(0).toUpperCase() + createdIncidentFromApi.AFFECT_PRIORITY.slice(1).toLowerCase();
+      if (p === "Crítica" || p === "Alta" || p === "Media" || p === "Baja") {
+          priority = p;
+      }
+  }
+
+  const createdIncident: Incident = {
+    id: createdIncidentFromApi.Id,
+    service: createdIncidentFromApi.AFFECT_SERVICE || "N/A",
+    description: createdIncidentFromApi.AFFECT_DETAILS || "",
+    startTime: createdIncidentFromApi.AFFECT_START_DATE,
+    endDate: createdIncidentFromApi.AFFECT_END_DATE,
+    priority: priority,
+    status: "Proceso",
+    environment: createdIncidentFromApi.AFFECT_ENVIROMENT || "Producción",
+    teamsLink: createdIncidentFromApi.AFFECT_LINK,
+  };
 
   await addIncidentUpdate(createdIncident.id.toString(), 'Incidente creado.');
 
