@@ -16,9 +16,7 @@ export default function InformesPage() {
       <Card>
         <CardHeader>
           <CardTitle>Informe de Power BI</CardTitle>
-          <CardDescription>
-            Este es un informe interactivo de Power BI embebido en la aplicación.
-          </CardDescription>
+        
         </CardHeader>
         <CardContent>
           <div className="aspect-video w-full">
