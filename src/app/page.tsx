@@ -118,16 +118,38 @@ function DashboardPage() {
   useEffect(() => {
     async function loadInitialData() {
       setIsLoading(true);
-      const [fetchedIncidents, fetchedServices] = await Promise.all([
-        getIncidents(),
-        getServices(),
-      ]);
-      setIncidents(fetchedIncidents);
-      setServices(fetchedServices);
-      setIsLoading(false);
+      try {
+        const [fetchedIncidents, fetchedServices] = await Promise.all([
+          getIncidents(),
+          getServices(),
+        ]);
+        setIncidents(fetchedIncidents);
+        setServices(fetchedServices);
+      } catch (error) {
+        toast({
+          title: "Error al cargar datos",
+          description: "No se pudieron cargar los datos iniciales. Intente refrescar la página.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
+
     loadInitialData();
-  }, []);
+
+    const intervalId = setInterval(async () => {
+      try {
+        const fetchedIncidents = await getIncidents();
+        setIncidents(fetchedIncidents);
+      } catch (error) {
+        console.error("Failed to refresh incidents:", error);
+        // Optionally, show a non-intrusive toast notification
+      }
+    }, 60000); // Refresh every 60 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on component unmount
+  }, [toast]);
 
 
   const filteredIncidents = useMemo(() => {
