@@ -1,22 +1,23 @@
 
+
 import { Users, Code, Database, Server, Component, Settings } from 'lucide-react';
 import type { ElementType } from "react";
-import type { ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ProyectoConNombre, EstadoProyecto } from "./types";
+import type { ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ProyectoConNombre, EstadoProyecto, ServiceDetails } from "./types";
+import type { Service } from '../types';
 
 
 export async function addActividadDefinicion(data: Omit<ActividadDefinicion, 'id_actividad'>): Promise<any> {
-  const response = await fetch('https://your-power-automate-url-for-actividad-definicion', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
+  // Simulación: en un caso real, aquí iría la llamada a Power Automate.
+  console.log("Creando nueva actividad:", data);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return { ...data, id_actividad: Date.now() }; // Retorna el objeto con un ID simulado.
+}
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Error al crear la actividad: ${errorBody}`);
-  }
-
-  return response.json();
+export async function updateActividadDefinicion(data: ActividadDefinicion): Promise<any> {
+  // Simulación: en un caso real, aquí iría la llamada a Power Automate para actualizar.
+  console.log("Actualizando actividad:", data);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return data; // Retorna el objeto actualizado.
 }
 
 export async function addActividadMedicion(data: Omit<ActividadMedicion, 'id_medicion'>): Promise<any> {
@@ -34,35 +35,29 @@ export async function addActividadMedicion(data: Omit<ActividadMedicion, 'id_med
     return response.json();
   }
   
-  export async function addIniciativaAutomatizacion(data: Omit<IniciativaAutomatizacion, 'id_iniciativa'>): Promise<any> {
-    const response = await fetch('https://your-power-automate-url-for-iniciativa-automatizacion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+export async function addIniciativaAutomatizacion(data: Omit<IniciativaAutomatizacion, 'id_iniciativa'>): Promise<any> {
+    console.log("Creando nueva iniciativa:", data);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return { ...data, id_iniciativa: Date.now() };
+}
+
+export async function updateIniciativaAutomatizacion(data: IniciativaAutomatizacion): Promise<any> {
+    console.log("Actualizando iniciativa:", data);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return data;
+}
   
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Error al crear la iniciativa: ${errorBody}`);
-    }
-  
-    return response.json();
-  }
-  
-  export async function addProyectoAutomatizacion(data: Omit<ProyectoAutomatizacion, 'id_proyecto'>): Promise<any> {
-    const response = await fetch('https://your-power-automate-url-for-proyecto-automatizacion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-  
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Error al crear el proyecto: ${errorBody}`);
-    }
-  
-    return response.json();
-  }
+export async function addProyectoAutomatizacion(data: Omit<ProyectoAutomatizacion, 'id_proyecto'>): Promise<any> {
+    console.log("Creando nuevo proyecto:", data);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return { ...data, id_proyecto: Date.now() };
+}
+
+export async function updateProyectoAutomatizacion(data: ProyectoAutomatizacion): Promise<any> {
+    console.log("Actualizando proyecto:", data);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return data;
+}
 
 const mapActividadPractica = (id: number): string => {
     switch (id) {
@@ -172,13 +167,13 @@ export async function getIniciativasAutomatizacion(): Promise<IniciativaAutomati
             id_actividades: item.Id_x0020_ProyectoId ? [item.Id_x0020_ProyectoId] : [],
             nombre_iniciativa: item.Nombre_x0020_Iniciativa || "Iniciativa sin nombre",
             objetivo_iniciativa: item.Objetivo_x0020_Solucion || "No definido",
-            alcance: "No definido", // Dato no disponible en la API
-            descripcion_problema: "No definido", // Dato no disponible en la API
+            alcance: "No definido", 
+            descripcion_problema: "No definido", 
             solucion_propuesta: item.Solucion_x0020_Planteada || item.Descripcion_x0020_Solucion || "No definida",
-            beneficios_esperados: "No definidos", // Dato no disponible en la API
-            prioridad: "Media", // Dato no disponible en la API, se usa valor por defecto
+            beneficios_esperados: "No definidos", 
+            prioridad: "Media", 
             estado: mapEstadoIniciativa(item.Estado),
-            responsable_celula: "No definido", // Dato no disponible en la API
+            responsable_celula: "No definido", 
         }));
     } catch (error) {
         console.error("Error al obtener las iniciativas:", error);
@@ -205,13 +200,13 @@ export async function getProyectosAutomatizacion(): Promise<ProyectoConNombre[]>
         return proyectosData.map((item: any): ProyectoConNombre => ({
             id_proyecto: item.ID,
             nombre_iniciativa: item.Title || `Proyecto #${item.ID}`,
-            id_iniciativa: 0, // No disponible en esta API
-            fecha_inicio: item.Fecha_x0020_Inicio || new Date(0).toISOString(),
-            fecha_fin_estimada: item.Fecha_x0020_Finalizacion || new Date(0).toISOString(),
-            responsable_celula: "No definido", // No disponible en la API
-            responsable_tecnico: "No definido", // No disponible en la API
-            presupuesto_usd: 0, // No disponible en la API
-            estado_proyecto: "Planificado", // No disponible en la API
+            id_iniciativa: 0, // Este campo no parece venir de la API, se deja valor por defecto
+            fecha_inicio: item.Fecha_x0020_Inicio || new Date().toISOString(),
+            fecha_fin_estimada: item.Fecha_x0020_Finalizacion || new Date().toISOString(),
+            responsable_celula: "No definido", // No existe en la API
+            responsable_tecnico: "No definido", // No existe en la API
+            presupuesto_usd: 0, // No existe en la API
+            estado_proyecto: "Planificado", // No existe en la API, se asigna un valor por defecto
             tecnologia_utilizada: item.Tecnolog_x00ed_a || "No especificada",
             beneficios_estado: item.Beneficios_x0020_Estado || "No definido",
         }));
@@ -225,3 +220,100 @@ export async function getProyectoById(id: number): Promise<ProyectoConNombre | u
     const proyectos = await getProyectosAutomatizacion();
     return proyectos.find(p => p.id_proyecto === id);
 }
+
+// Mock data for a single service, as there's no API for it yet.
+export const mockServiceDetails: ServiceDetails[] = [
+    {
+        id: 1,
+        name: "API de Facturación",
+        description: "Servicio encargado de la generación y gestión de facturas para clientes. Se integra con sistemas contables y de pago.",
+        purpose: "Centralizar y automatizar todo el ciclo de vida de la facturación, desde la creación hasta el registro del pago, asegurando la consistencia y reduciendo errores manuales.",
+        failureImpact: "La facturación se detiene, afectando directamente el flujo de caja de la empresa. Los clientes no pueden recibir sus facturas, lo que genera retrasos en los pagos e insatisfacción.",
+        owner: "Equipo Core",
+        squad: "Finanzas Tech",
+        contacts: {
+            technicalLead: { name: "Ana Torres", email: "atorres@example.com" },
+            productOwner: { name: "Carlos Luna", email: "cluna@example.com" },
+        },
+        repositories: [
+            { name: "billing-api", url: "https://github.com/example/billing-api" },
+            { name: "billing-frontend", url: "https://github.com/example/billing-frontend" },
+        ],
+        technologies: ["Node.js", "TypeScript", "PostgreSQL", "Docker", "Kubernetes"],
+        cloudInfrastructure: {
+            provider: "GCP",
+            region: "us-central1",
+            resources: [
+                { type: "GKE Cluster", name: "main-cluster" },
+                { type: "Cloud SQL", name: "billing-db-instance" },
+                { type: "Cloud Storage", name: "billing-assets-bucket" },
+            ],
+        },
+        diagrams: [
+            { name: "Diagrama de Arquitectura", url: "https://picsum.photos/seed/arch1/800/600" },
+            { name: "Flujo de Datos", url: "https://picsum.photos/seed/flow1/800/600" },
+        ]
+    },
+    {
+        id: 2,
+        name: "Servicio de Autenticación",
+        description: "Gestiona el inicio de sesión, registro y tokens de acceso para todas las aplicaciones de la plataforma.",
+        purpose: "Proveer un punto único y seguro para la gestión de identidades y accesos, protegiendo las cuentas de los usuarios y los recursos de la plataforma.",
+        failureImpact: "Los usuarios no pueden iniciar sesión ni registrarse en ninguna aplicación. Las sesiones activas podrían expirar sin posibilidad de renovación, bloqueando el acceso a toda la plataforma.",
+        owner: "Equipo de Plataforma",
+        squad: "Identidad",
+        contacts: {
+          technicalLead: { name: "David Chen", email: "dchen@example.com" },
+          productOwner: { name: "Eva Martinez", email: "emartinez@example.com" },
+        },
+        repositories: [
+          { name: "auth-service", url: "https://github.com/example/auth-service" },
+        ],
+        technologies: ["Go", "gRPC", "OAuth 2.0", "JWT", "Redis"],
+        cloudInfrastructure: {
+            provider: "AWS",
+            region: "us-east-1",
+            resources: [
+                { type: "EKS Cluster", name: "platform-cluster" },
+                { type: "ElastiCache", name: "auth-redis-cache" },
+            ],
+        },
+        diagrams: [
+            { name: "Diagrama de Flujo de Autenticación", url: "https://picsum.photos/seed/authflow/800/600" },
+        ]
+      }
+];
+
+export async function getServiceById(id: number, services: Service[]): Promise<ServiceDetails | undefined> {
+    // Find the basic service info from the API list
+    const serviceInfo = services.find(s => s.ID === id);
+    if (!serviceInfo) {
+        // If not in the main list, maybe it's a mock-only service id
+        const mockOnlyService = mockServiceDetails.find(d => d.id === id);
+        if (mockOnlyService) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            return mockOnlyService;
+        }
+        return undefined;
+    }
+
+    // Find specific mock details for this service
+    let details = mockServiceDetails.find(d => d.id === id);
+
+    // If no specific mock data, use the first mock as a template but with correct info
+    if (!details) {
+        const fallbackDetails = { ...mockServiceDetails[0] }; // Clone the template
+        details = {
+            ...fallbackDetails,
+            id: serviceInfo.ID,
+            name: serviceInfo.SERVICE_NAME,
+            description: `Descripción para el servicio ${serviceInfo.SERVICE_NAME}.`,
+        };
+    }
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    return details;
+}
+    

@@ -22,9 +22,18 @@ export default function ToilDashboardPage() {
     const [gruposCelula, setGruposCelula] = useState<GrupoCelula[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    const [isCreateActividadOpen, setIsCreateActividadOpen] = useState(false);
+    const [isActividadDialogOpen, setIsActividadDialogOpen] = useState(false);
     const [isCreateIniciativaOpen, setIsCreateIniciativaOpen] = useState(false);
-    const [isCreateProyectoOpen, setIsCreateProyectoOpen] = useState(false);
+    const [isProyectoDialogOpen, setIsProyectoDialogOpen] = useState(false);
+    
+    const [actividadToEdit, setActividadToEdit] = useState<ActividadDefinicion | null>(null);
+    const [iniciativaToEdit, setIniciativaToEdit] = useState<IniciativaAutomatizacion | null>(null);
+    const [proyectoToEdit, setProyectoToEdit] = useState<ProyectoConNombre | null>(null);
+
+    const isEditModeActividad = !!actividadToEdit;
+    const isEditModeIniciativa = !!iniciativaToEdit;
+    const isEditModeProyecto = !!proyectoToEdit;
+
 
     async function loadData() {
         setIsLoading(true);
@@ -51,68 +60,60 @@ export default function ToilDashboardPage() {
     }, []);
 
     const handleSuccess = () => {
-        setIsCreateActividadOpen(false);
+        setIsActividadDialogOpen(false);
         setIsCreateIniciativaOpen(false);
-        setIsCreateProyectoOpen(false);
+        setIsProyectoDialogOpen(false);
+        setActividadToEdit(null);
+        setIniciativaToEdit(null);
+        setProyectoToEdit(null);
         loadData(); 
     };
+    
+    const handleEditActividad = (actividad: ActividadDefinicion) => {
+        setActividadToEdit(actividad);
+        setIsActividadDialogOpen(true);
+    };
+
+    const handleEditIniciativa = (iniciativa: IniciativaAutomatizacion) => {
+        setIniciativaToEdit(iniciativa);
+        setIsCreateIniciativaOpen(true);
+    };
+
+    const handleEditProyecto = (proyecto: ProyectoConNombre) => {
+        setProyectoToEdit(proyecto);
+        setIsProyectoDialogOpen(true);
+    };
+
+    const handleOpenDialog = (dialogSetter: (isOpen: boolean) => void, editSetter: (item: any) => void) => {
+        editSetter(null);
+        dialogSetter(true);
+    }
+    
+    useEffect(() => {
+        if (!isActividadDialogOpen) setActividadToEdit(null);
+        if (!isCreateIniciativaOpen) setIniciativaToEdit(null);
+        if (!isProyectoDialogOpen) setProyectoToEdit(null);
+    }, [isActividadDialogOpen, isCreateIniciativaOpen, isProyectoDialogOpen]);
 
     return (
         <div className="flex flex-col h-full">
-            <header className="flex h-14 items-center justify-between   mt-4 px-4 lg:h-[60px] lg:px-6">
+            <header className="flex h-14 items-center justify-between border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
                 <h1 className="text-xl font-bold tracking-tight">Gestión de TOIL</h1>
-                <div className="flex items-center gap-4">
-                    <Dialog open={isCreateActividadOpen} onOpenChange={setIsCreateActividadOpen}>
-                        <DialogTrigger asChild>
-                            <Button size="sm">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Definir Actividad
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                                <DialogTitle>Definir Nueva Actividad TOIL</DialogTitle>
-                                <DialogDescription>
-                                    Registra una nueva actividad manual y repetitiva para su posterior análisis.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <DefinirActividadForm onSuccess={handleSuccess} gruposCelula={gruposCelula} />
-                        </DialogContent>
-                    </Dialog>
-                    <Dialog open={isCreateIniciativaOpen} onOpenChange={setIsCreateIniciativaOpen}>
-                        <DialogTrigger asChild>
-                            <Button size="sm" variant="outline">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Registrar Iniciativa
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
-                            <DialogHeader>
-                                <DialogTitle>Registrar Nueva Iniciativa</DialogTitle>
-                                <DialogDescription>
-                                    Propón una nueva iniciativa de automatización para una o más actividades TOIL.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <RegistrarIniciativaForm onSuccess={handleSuccess} actividades={actividades} />
-                        </DialogContent>
-                    </Dialog>
-                    <Dialog open={isCreateProyectoOpen} onOpenChange={setIsCreateProyectoOpen}>
-                        <DialogTrigger asChild>
-                            <Button size="sm" variant="outline" className="mr-4">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Crear Proyecto
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[600px]">
-                            <DialogHeader>
-                                <DialogTitle>Crear Nuevo Proyecto de Automatización</DialogTitle>
-                                <DialogDescription>
-                                    Convierte una iniciativa aprobada en un proyecto tangible.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <CrearProyectoForm onSuccess={handleSuccess} />
-                        </DialogContent>
-                    </Dialog>
+                <div className="flex items-center gap-2">
+                    <Button size="sm" onClick={() => handleOpenDialog(setIsActividadDialogOpen, setActividadToEdit)}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Definir Actividad
+                    </Button>
+
+                    <Button size="sm" variant="outline" onClick={() => handleOpenDialog(setIsCreateIniciativaOpen, setIniciativaToEdit)}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Registrar Iniciativa
+                    </Button>
+
+                    <Button size="sm" variant="outline" onClick={() => handleOpenDialog(setIsProyectoDialogOpen, setProyectoToEdit)}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Crear Proyecto
+                    </Button>
                 </div>
             </header>
             <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
@@ -125,18 +126,84 @@ export default function ToilDashboardPage() {
                                 <TabsTrigger value="proyectos">Proyectos</TabsTrigger>
                             </TabsList>
                             <TabsContent value="actividades">
-                                <ActividadesTable actividades={actividades} gruposCelula={gruposCelula} isLoading={isLoading} />
+                                <ActividadesTable 
+                                    actividades={actividades} 
+                                    gruposCelula={gruposCelula} 
+                                    isLoading={isLoading} 
+                                    onEdit={handleEditActividad}
+                                />
                             </TabsContent>
                             <TabsContent value="iniciativas">
-                                <IniciativasTable iniciativas={iniciativas} isLoading={isLoading} />
+                                <IniciativasTable 
+                                    iniciativas={iniciativas} 
+                                    isLoading={isLoading}
+                                    onEdit={handleEditIniciativa}
+                                />
                             </TabsContent>
                             <TabsContent value="proyectos">
-                                <ProyectosTable proyectos={proyectos} isLoading={isLoading} />
+                                <ProyectosTable 
+                                    proyectos={proyectos} 
+                                    isLoading={isLoading} 
+                                    onEdit={handleEditProyecto}
+                                />
                             </TabsContent>
                         </Tabs>
                     </CardContent>
                 </Card>
             </main>
+
+             {/* Diálogo para Actividades */}
+            <Dialog open={isActividadDialogOpen} onOpenChange={setIsActividadDialogOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>{isEditModeActividad ? "Editar Actividad TOIL" : "Definir Nueva Actividad TOIL"}</DialogTitle>
+                        <DialogDescription>
+                            {isEditModeActividad ? "Modifica los detalles de la actividad." : "Registra una nueva actividad manual y repetitiva para su posterior análisis."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DefinirActividadForm 
+                        onSuccess={handleSuccess} 
+                        gruposCelula={gruposCelula} 
+                        actividadToEdit={actividadToEdit}
+                        isEditMode={isEditModeActividad}
+                    />
+                </DialogContent>
+            </Dialog>
+
+            {/* Diálogo para Iniciativas */}
+            <Dialog open={isCreateIniciativaOpen} onOpenChange={setIsCreateIniciativaOpen}>
+                 <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>{isEditModeIniciativa ? "Editar Iniciativa" : "Registrar Nueva Iniciativa"}</DialogTitle>
+                        <DialogDescription>
+                           {isEditModeIniciativa ? "Modifica los detalles de la iniciativa." : "Propón una nueva iniciativa de automatización para una o más actividades TOIL."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <RegistrarIniciativaForm 
+                        onSuccess={handleSuccess} 
+                        actividades={actividades} 
+                        iniciativaToEdit={iniciativaToEdit}
+                        isEditMode={isEditModeIniciativa}
+                    />
+                </DialogContent>
+            </Dialog>
+
+            {/* Diálogo para Proyectos */}
+            <Dialog open={isProyectoDialogOpen} onOpenChange={setIsProyectoDialogOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                         <DialogTitle>{isEditModeProyecto ? "Editar Proyecto" : "Crear Nuevo Proyecto de Automatización"}</DialogTitle>
+                        <DialogDescription>
+                           {isEditModeProyecto ? "Actualiza la información del proyecto." : "Convierte una iniciativa aprobada en un proyecto tangible."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <CrearProyectoForm 
+                        onSuccess={handleSuccess}
+                        proyectoToEdit={proyectoToEdit}
+                        isEditMode={isEditModeProyecto}
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

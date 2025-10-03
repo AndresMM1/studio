@@ -16,19 +16,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Eye, Loader2 } from "lucide-react";
+import { Eye, Loader2, MoreHorizontal, Pencil } from "lucide-react";
 import type { ProyectoConNombre } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerProyectoDetalle from './ver-proyecto-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface ProyectosTableProps {
     proyectos: ProyectoConNombre[];
     isLoading: boolean;
+    onEdit: (proyecto: ProyectoConNombre) => void;
 }
 
-export default function ProyectosTable({ proyectos, isLoading }: ProyectosTableProps) {
+export default function ProyectosTable({ proyectos, isLoading, onEdit }: ProyectosTableProps) {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedProyecto, setSelectedProyecto] = useState<ProyectoConNombre | null>(null);
     const [sorting, setSorting] = useState<SortingState>([])
@@ -48,6 +50,7 @@ export default function ProyectosTable({ proyectos, isLoading }: ProyectosTableP
     }
 
     const formatDate = (dateString: string) => {
+        if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'long',
@@ -55,13 +58,6 @@ export default function ProyectosTable({ proyectos, isLoading }: ProyectosTableP
         });
     }
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
-    }
-    
     const columns: ColumnDef<ProyectoConNombre>[] = [
         {
             accessorKey: "nombre_iniciativa",
@@ -69,18 +65,13 @@ export default function ProyectosTable({ proyectos, isLoading }: ProyectosTableP
             cell: ({ row }) => <div className="font-medium max-w-xs truncate">{row.getValue("nombre_iniciativa")}</div>,
         },
         {
-            accessorKey: "responsable_tecnico",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Responsable Técnico" />,
+            accessorKey: "tecnologia_utilizada",
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Tecnología" />,
         },
         {
             accessorKey: "fecha_inicio",
             header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha Inicio" />,
             cell: ({ row }) => formatDate(row.getValue("fecha_inicio")),
-        },
-         {
-            accessorKey: "presupuesto_usd",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Presupuesto" />,
-            cell: ({ row }) => formatCurrency(row.getValue("presupuesto_usd")),
         },
         {
             accessorKey: "estado_proyecto",
@@ -90,10 +81,24 @@ export default function ProyectosTable({ proyectos, isLoading }: ProyectosTableP
         {
             id: "actions",
             cell: ({ row }) => (
-                 <Button variant="outline" size="sm" onClick={() => handleViewDetails(row.original)}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Ver Detalles
-                </Button>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menú</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleViewDetails(row.original)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Ver Detalles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             ),
         },
     ]

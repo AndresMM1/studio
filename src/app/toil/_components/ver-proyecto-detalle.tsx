@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Calendar, DollarSign, Users, User, Wrench, TrendingUp, Link as LinkIcon, CalendarCheck, Flag } from "lucide-react";
+import { Calendar, Wrench, TrendingUp, CalendarCheck, Flag } from "lucide-react";
 
 
 interface VerProyectoDetalleProps {
@@ -23,18 +23,12 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
     }
     
     const formatDate = (dateString: string) => {
+        if (!dateString) return "N/A";
         return new Date(dateString).toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
         });
-    }
-    
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
     }
     
     return (
@@ -43,7 +37,7 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
                 <div>
                     <h3 className="text-lg font-semibold">{proyecto.nombre_iniciativa || `Proyecto #${proyecto.id_proyecto}`}</h3>
                     <p className="text-sm text-muted-foreground">
-                        Iniciativa ID #{proyecto.id_iniciativa}
+                        Iniciativa ID #{proyecto.id_iniciativa || 'N/A'}
                     </p>
                 </div>
                  <Badge variant="outline" className={cn("border-0 text-base", estadoColors[proyecto.estado_proyecto])}>
@@ -71,27 +65,6 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
                         <p className="text-muted-foreground">{formatDate(proyecto.fecha_fin_estimada)}</p>
                     </div>
                 </div>
-                <div className="flex items-start gap-3">
-                    <DollarSign className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Presupuesto</p>
-                        <p className="text-muted-foreground">{formatCurrency(proyecto.presupuesto_usd)}</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-3">
-                    <Users className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Responsable Célula</p>
-                        <p className="text-muted-foreground">{proyecto.responsable_celula}</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-3">
-                    <User className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Responsable Técnico</p>
-                        <p className="text-muted-foreground">{proyecto.responsable_tecnico}</p>
-                    </div>
-                </div>
                  <div className="flex items-start gap-3">
                     <Wrench className="h-5 w-5 text-muted-foreground mt-1" />
                     <div>
@@ -103,22 +76,10 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
             
             <Separator className="my-6" />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-6">
                 <div className="space-y-3">
                     <h3 className="text-lg font-semibold flex items-center gap-2"><TrendingUp className="h-5 w-5" /> Estado de Beneficios</h3>
                     <p className="text-muted-foreground whitespace-pre-wrap">{proyecto.beneficios_estado}</p>
-                </div>
-                 <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2"><LinkIcon className="h-5 w-5" /> Documentación</h3>
-                    {proyecto.url_documentacion ? (
-                        <Button asChild variant="outline">
-                            <Link href={proyecto.url_documentacion} target="_blank" rel="noopener noreferrer">
-                                Ver Documentación
-                            </Link>
-                        </Button>
-                    ) : (
-                        <p className="text-muted-foreground">No hay enlace de documentación.</p>
-                    )}
                 </div>
             </div>
 

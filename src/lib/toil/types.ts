@@ -1,5 +1,6 @@
 
 import type { ElementType } from "react";
+import type { Incident, IncidentUpdate } from "../types";
 
 export type Complejidad = "Baja" | "Media" | "Alta";
 export type FrecuenciaMedicion = "Diaria" | "Semanal" | "Mensual" | "Bimestral" | "Trimestral" | "Semestral" | "Anual";
@@ -55,16 +56,17 @@ export interface IniciativaAutomatizacion {
 
 export interface ProyectoAutomatizacion {
     id_proyecto: number;
+    nombre_iniciativa: string;
     id_iniciativa: number;
     fecha_inicio: string;
     fecha_fin_estimada: string;
-    responsable_celula?: string;
-    responsable_tecnico: string;
-    presupuesto_usd?: number;
-    estado_proyecto: EstadoProyecto;
-    url_documentacion?: string;
-    tecnologia_utilizada: string;
+    tecnologia_utilizada?: string;
     beneficios_estado?: string;
+    estado_proyecto: EstadoProyecto;
 }
 
-export type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };
+export type ProyectoConNombre = ProyectoAutomatizacion;
+
+
+// Re-export Incident and IncidentUpdate to be used in the service pages
+export type { Incident, IncidentUpdate };

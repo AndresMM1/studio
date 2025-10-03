@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -16,20 +15,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Eye, Loader2 } from "lucide-react";
+import { Eye, Loader2, MoreHorizontal, Pencil } from "lucide-react";
 import type { IniciativaAutomatizacion } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerIniciativaDetalle from './ver-iniciativa-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 
 interface IniciativasTableProps {
     iniciativas: IniciativaAutomatizacion[];
     isLoading: boolean;
+    onEdit: (iniciativa: IniciativaAutomatizacion) => void;
 }
 
-export default function IniciativasTable({ iniciativas, isLoading }: IniciativasTableProps) {
+export default function IniciativasTable({ iniciativas, isLoading, onEdit }: IniciativasTableProps) {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedIniciativa, setSelectedIniciativa] = useState<IniciativaAutomatizacion | null>(null);
     const [sorting, setSorting] = useState<SortingState>([])
@@ -87,10 +88,24 @@ export default function IniciativasTable({ iniciativas, isLoading }: Iniciativas
         {
             id: "actions",
             cell: ({ row }) => (
-                <Button variant="outline" size="sm" onClick={() => handleViewDetails(row.original)}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Ver Detalles
-                </Button>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menú</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleViewDetails(row.original)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Ver Detalles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             ),
         },
     ]

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from 'react';
@@ -16,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Eye, ChevronsUpDown, Loader2 } from "lucide-react";
+import { Eye, ChevronsUpDown, Loader2, MoreHorizontal, Pencil } from "lucide-react";
 import type { ActividadDefinicion, GrupoCelula } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerActividadDetalle from './ver-actividad-detalle';
@@ -43,9 +42,10 @@ interface ActividadesTableProps {
     actividades: ActividadDefinicion[];
     gruposCelula: GrupoCelula[];
     isLoading: boolean;
+    onEdit: (actividad: ActividadDefinicion) => void;
 }
 
-export default function ActividadesTable({ actividades, gruposCelula, isLoading }: ActividadesTableProps) {
+export default function ActividadesTable({ actividades, gruposCelula, isLoading, onEdit }: ActividadesTableProps) {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedActividad, setSelectedActividad] = useState<ActividadDefinicion | null>(null);
     const [sorting, setSorting] = useState<SortingState>([])
@@ -115,10 +115,24 @@ export default function ActividadesTable({ actividades, gruposCelula, isLoading 
         {
             id: "actions",
             cell: ({ row }) => (
-              <Button variant="outline" size="sm" onClick={() => handleViewDetails(row.original)}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  Ver Detalles
-              </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menú</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleViewDetails(row.original)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Ver Detalles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             ),
         }
     ]
