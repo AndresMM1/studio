@@ -164,6 +164,10 @@ export default function IncidentDetailPage() {
     try {
         const solutionUpdateText = `Solución aplicada: ${solution}`;
         
+        // 1. Update status to "Cerrado"
+        await updateIncidentStatus(incident.id, "Cerrado");
+
+        // 2. Add final update and send documentation
         await Promise.all([
             addIncidentUpdate(incident.id.toString(), solutionUpdateText),
             sendClosureDocumentation({
@@ -176,10 +180,10 @@ export default function IncidentDetailPage() {
                 generatedAlerts: generatedAlerts,
                 docResponsible: docResponsible,
                 domainResponsible: domainResponsible,
-            }),
-            updateIncidentStatus(incident.id, "Cerrado")
+            })
         ]);
 
+        // 3. Fetch final state
         const [fetchedUpdates, updatedIncident] = await Promise.all([
             getIncidentUpdates(incident.id),
             getIncidentById(incident.id)

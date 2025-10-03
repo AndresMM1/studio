@@ -118,6 +118,8 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
   
   const createdIncidentFromApi = await response.json();
 
+  console.log("API Response for Create Incident:", JSON.stringify(createdIncidentFromApi, null, 2));
+
   // The API returns the full incident object, let's use it directly.
   // We'll parse it just like we do in getIncidents to ensure consistency.
   let priority: Incident["priority"] = "Baja";
