@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProyectoAutomatizacionSchema } from "@/lib/toil/schemas";
 import { addProyectoAutomatizacion, updateProyectoAutomatizacion } from "@/lib/toil/data";
-import type { ProyectoAutomatizacion, ProyectoConNombre } from "@/lib/toil/types";
+import type { ProyectoAutomatizacion, ProyectoConNombre, IniciativaAutomatizacion } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
+import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 
 
 const estadoOptions = ["Planificado", "En Ejecución", "Finalizado", "En Pausa", "Cancelado"];
@@ -24,10 +25,11 @@ interface CrearProyectoFormProps {
     onSuccess: () => void;
     proyectoToEdit?: ProyectoConNombre | null;
     isEditMode: boolean;
+    iniciativas: IniciativaAutomatizacion[];
 }
 
 const defaultValues: ProyectoAutomatizacionForm = {
-    id_iniciativa: 0,
+    id_iniciativas: [],
     nombre_iniciativa: "",
     fecha_inicio: new Date().toISOString().split('T')[0],
     fecha_fin_estimada: new Date().toISOString().split('T')[0],
@@ -37,7 +39,7 @@ const defaultValues: ProyectoAutomatizacionForm = {
 };
 
 
-export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMode }: CrearProyectoFormProps) {
+export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMode, iniciativas }: CrearProyectoFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
@@ -92,28 +94,32 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
         }
     }
 
+    const iniciativaOptions: MultiSelectOption[] = useMemo(() => 
+        iniciativas
+            .filter(inc => inc.estado === 'Aprobada')
+            .map(inc => ({
+                value: inc.id_iniciativa.toString(),
+                label: `${inc.id_iniciativa}: ${inc.nombre_iniciativa}`
+            })), [iniciativas]);
+
   return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto pr-4">
                 <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="id-iniciativa">Iniciativa a desarrollar</Label>
+                    <Label htmlFor="id-iniciativas">Iniciativas a desarrollar</Label>
                     <Controller
-                        name="id_iniciativa"
+                        name="id_iniciativas"
                         control={control}
                         render={({ field }) => (
-                                <Select onValueChange={(v) => field.onChange(parseInt(v))} value={field.value?.toString() || ""}>
-                                <SelectTrigger id="id-iniciativa">
-                                    <SelectValue placeholder="Seleccionar una iniciativa aprobada" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="1">Iniciativa 1: Automatización de Reporte de Ventas</SelectItem>
-                                    <SelectItem value="2">Iniciativa 2: Proceso de Alta de Nuevos Clientes</SelectItem>
-                                    <SelectItem value="3">Iniciativa 3: Sincronización de Inventario</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <MultiSelect
+                                options={iniciativaOptions}
+                                selected={field.value.map(String)}
+                                onChange={(values) => field.onChange(values.map(Number))}
+                                placeholder="Seleccionar iniciativas aprobadas..."
+                            />
                         )}
                     />
-                    {errors.id_iniciativa && <p className="text-sm text-destructive">{errors.id_iniciativa.message}</p>}
+                    {errors.id_iniciativas && <p className="text-sm text-destructive">{errors.id_iniciativas.message}</p>}
                 </div>
                  <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="nombre-iniciativa">Nombre del Proyecto</Label>

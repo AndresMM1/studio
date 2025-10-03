@@ -201,6 +201,7 @@ export default function ToilDashboardPage() {
                         onSuccess={handleSuccess}
                         proyectoToEdit={proyectoToEdit}
                         isEditMode={isEditModeProyecto}
+                        iniciativas={iniciativas}
                     />
                 </DialogContent>
             </Dialog>
