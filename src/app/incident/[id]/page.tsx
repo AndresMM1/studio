@@ -162,7 +162,7 @@ export default function IncidentDetailPage() {
     setIsSubmitting(true);
 
     try {
-        const solutionUpdateText = `Solución aplicada: ${solution}`;
+        const solutionUpdateText = `Solución aplicada : ${solution}`;
         
         // 1. Update status to "Cerrado"
         await updateIncidentStatus(incident.id, "Cerrado");
