@@ -122,29 +122,21 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
 
   // The API returns the full incident object, let's use it directly.
   // We'll parse it just like we do in getIncidents to ensure consistency.
-  let priority: Incident["priority"] = "Baja";
-  if(createdIncidentFromApi.AFFECT_PRIORITY) {
-      const p = createdIncidentFromApi.AFFECT_PRIORITY.charAt(0).toUpperCase() + createdIncidentFromApi.AFFECT_PRIORITY.slice(1).toLowerCase();
-      if (p === "Crítica" || p === "Alta" || p === "Media" || p === "Baja") {
-          priority = p;
-      }
+  const newIncidentId = createdIncidentFromApi.CreatedID;
+  if (!newIncidentId) {
+    throw new Error("API response did not contain a CreatedID.");
   }
 
-  const createdIncident: Incident = {
-    id: createdIncidentFromApi.Id,
-    service: createdIncidentFromApi.AFFECT_SERVICE || "N/A",
-    description: createdIncidentFromApi.AFFECT_DETAILS || "",
-    startTime: createdIncidentFromApi.AFFECT_START_DATE,
-    endDate: createdIncidentFromApi.AFFECT_END_DATE,
-    priority: priority,
-    status: "Proceso",
-    environment: createdIncidentFromApi.AFFECT_ENVIROMENT || "Producción",
-    teamsLink: createdIncidentFromApi.AFFECT_LINK,
-  };
+  // Fetch the full incident details using the new ID
+  const newIncident = await getIncidentById(newIncidentId);
+  if (!newIncident) {
+    // Optional: Add retry logic here if needed, or just throw
+    throw new Error(`Failed to fetch newly created incident with ID: ${newIncidentId}`);
+  }
 
-  await addIncidentUpdate(createdIncident.id.toString(), 'Incidente creado.');
+  await addIncidentUpdate(newIncident.id.toString(), 'Incidente creado.');
 
-  return createdIncident;
+  return newIncident;
 }
 
 export async function getIncidentById(id: number): Promise<Incident | undefined> {
