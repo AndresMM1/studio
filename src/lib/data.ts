@@ -118,13 +118,17 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
   
   const createdIncidentFromApi = await response.json();
 
-  console.log("API Response for Create Incident:", JSON.stringify(createdIncidentFromApi, null, 2));
+  // The response is { "Incident": "{\"CreatedID\":\"322\"}" }
+  // We need to parse the string inside the "Incident" property
+  if (!createdIncidentFromApi.Incident || typeof createdIncidentFromApi.Incident !== 'string') {
+    throw new Error("API response did not contain an 'Incident' string property.");
+  }
 
-  // The API returns the full incident object, let's use it directly.
-  // We'll parse it just like we do in getIncidents to ensure consistency.
-  const newIncidentId = createdIncidentFromApi.CreatedID;
+  const incidentData = JSON.parse(createdIncidentFromApi.Incident);
+  const newIncidentId = incidentData.CreatedID;
+
   if (!newIncidentId) {
-    throw new Error("API response did not contain a CreatedID.");
+    throw new Error("Parsed incident data did not contain a CreatedID.");
   }
 
   // Fetch the full incident details using the new ID
