@@ -155,8 +155,11 @@ function DashboardPage() {
 
   const filteredIncidents = useMemo(() => {
     return incidents.filter((incident) => {
+      const searchTerm = search.toLowerCase();
       return (
-        (search === "" || incident.service.toLowerCase().includes(search.toLowerCase())) &&
+        (search === "" || 
+         incident.service.toLowerCase().includes(searchTerm) ||
+         incident.description.toLowerCase().includes(searchTerm)) &&
         (priority === "all" || incident.priority === priority) &&
         (status === "all" || incident.status === status) &&
         (environment === "all" || incident.environment === environment)
@@ -177,7 +180,7 @@ function DashboardPage() {
     // Dummy calculations for metrics
     const avgResponseTime = totalIncidents > 0 ? "35m" : "N/A";
     const avgResolutionTime = totalIncidents > 0 ? "4h 15m" : "N/A";
-    const incidentRate = totalIncidents > 0 ? "1.2/día" : "N/A";
+    const incidentRate = totalIncidents > 0 ? "0" : "N/A";
     return { totalIncidents, avgResponseTime, avgResolutionTime, incidentRate };
   }, [filteredIncidents]);
   

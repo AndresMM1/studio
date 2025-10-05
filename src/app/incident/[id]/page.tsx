@@ -1,5 +1,5 @@
 "use client";
-
+import { AbejaEmpty } from "@/components/icons/AbejaEmpty";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
@@ -224,6 +224,8 @@ export default function IncidentDetailPage() {
                     <CardTitle>Incidente no encontrado</CardTitle>
                 </CardHeader>
                 <CardContent>
+                      <AbejaEmpty className="h-44 w-44 text-blue-300 transition-colors hover:text-blue-400 blue-100" />
+                  
                     <p>{error || "El incidente que estás buscando no existe."}</p>
                 </CardContent>
                 <CardFooter>
@@ -319,7 +321,12 @@ export default function IncidentDetailPage() {
                             </div>
                         ))
                     ) : (
+                      <div>
+<AbejaEmpty className="h-44 w-44 text-blue-300 transition-colors hover:text-blue-400 blue-100" />
+
                         <p className="text-muted-foreground">Aún no hay actualizaciones.</p>
+                      </div>
+                                            
                     )}
                 </div>
             </div>
