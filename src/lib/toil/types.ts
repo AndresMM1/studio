@@ -56,16 +56,39 @@ export interface IniciativaAutomatizacion {
 
 export interface ProyectoAutomatizacion {
     id_proyecto: number;
-    nombre_iniciativa: string;
-    id_iniciativa: number;
-    fecha_inicio: string;
-    fecha_fin_estimada: string;
-    tecnologia_utilizada?: string;
+    titulo: string; // Title
+    id_iniciativas: number[];
+
+    // Nuevos campos
+    descripcionProblema?: string;
+    objetivo?: string;
+    situacionInicial?: string;
+    situacionDeseada?: string;
+    objetivoEspecifico?: string;
+    beneficiosEconomicos?: string;
+    beneficiosCliente?: string;
+    beneficiosColaboradores?: string;
+    datosReferencia?: string;
+    conclusiones?: string;
+    
+    fecha_inicio: string; // Fecha Inicio
+    fecha_fin: string; // Fecha Finalizacion
+    
+    tecnologia?: string; // Tecnología
     beneficios_estado?: string;
     estado_proyecto: EstadoProyecto;
+
+    // Campos de variación
+    varSeniorityTecnico: number;
+    varSeniorityOperativo: number;
+    varTiempo: number;
+    varInvolucrados: number;
+    varFrecuencia: number;
 }
 
-export type ProyectoConNombre = ProyectoAutomatizacion;
+export interface ProyectoConNombre extends ProyectoAutomatizacion {
+    nombre_iniciativa: string;
+}
 
 
 // Re-export Incident and IncidentUpdate to be used in the service pages

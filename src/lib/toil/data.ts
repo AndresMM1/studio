@@ -199,16 +199,32 @@ export async function getProyectosAutomatizacion(): Promise<ProyectoConNombre[]>
 
         return proyectosData.map((item: any): ProyectoConNombre => ({
             id_proyecto: item.ID,
-            nombre_iniciativa: item.Title || `Proyecto #${item.ID}`,
-            id_iniciativa: 0, // Este campo no parece venir de la API, se deja valor por defecto
+            titulo: item.Title || `Proyecto #${item.ID}`,
+            nombre_iniciativa: item.Title || `Proyecto #${item.ID}`, // Compatibilidad
+            id_iniciativas: [], // No viene de la API
+            
+            descripcionProblema: item.Resumen, // Asumiendo que 'Resumen' es 'Descripcion Problema'
+            objetivo: item.Objetivo,
+            situacionInicial: item.Situacion_x0020_Inicial,
+            situacionDeseada: item.Situacion_x0020_Deseada,
+            objetivoEspecifico: item.Objetivo_x0020_especifico,
+            beneficiosEconomicos: item.Beneficios_x0020_Economicos,
+            beneficiosCliente: item.Beneficios_x0020_Cliente,
+            beneficiosColaboradores: item.Beneficios_x0020_Colaboradores,
+            datosReferencia: item.Datos_x0020_Referencia,
+            conclusiones: item.Conclusiones,
+
             fecha_inicio: item.Fecha_x0020_Inicio || new Date().toISOString(),
-            fecha_fin_estimada: item.Fecha_x0020_Finalizacion || new Date().toISOString(),
-            responsable_celula: "No definido", // No existe en la API
-            responsable_tecnico: "No definido", // No existe en la API
-            presupuesto_usd: 0, // No existe en la API
-            estado_proyecto: "Planificado", // No existe en la API, se asigna un valor por defecto
-            tecnologia_utilizada: item.Tecnolog_x00ed_a || "No especificada",
-            beneficios_estado: item.Beneficios_x0020_Estado || "No definido",
+            fecha_fin: item.Fecha_x0020_Finalizacion || new Date().toISOString(),
+            estado_proyecto: "Planificado", // No viene de la API
+            tecnologia: item.Tecnolog_x00ed_a,
+            beneficios_estado: item.Beneficios_x0020_Estado,
+
+            varSeniorityTecnico: item.Var_x0020_Se_x00f1_ority_x0020_T || 0,
+            varSeniorityOperativo: item.Var_x0020_Se_x00f1_ority_x0020_O || 0,
+            varTiempo: item.Var_x0020_Tiempo || 0,
+            varInvolucrados: item.Var_x0020_Involucrados || 0,
+            varFrecuencia: item.Var_x0020_Frecuencia || 0,
         }));
     } catch (error) {
         console.error("Error al obtener los proyectos:", error);

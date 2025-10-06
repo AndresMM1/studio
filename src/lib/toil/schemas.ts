@@ -56,11 +56,31 @@ export const IniciativaAutomatizacionSchema = z.object({
 
 export const ProyectoAutomatizacionSchema = z.object({
     id_proyecto: z.number().int().positive(),
-    id_iniciativa: z.number().int().positive("La iniciativa es requerida."),
-    nombre_iniciativa: z.string().min(1, "El nombre es requerido."),
+    id_iniciativas: z.array(z.number()).min(1, "Debe seleccionar al menos una iniciativa."),
+    titulo: z.string().min(1, "El título es requerido."),
+    
+    // Nuevos campos opcionales
+    descripcionProblema: z.string().optional(),
+    objetivo: z.string().optional(),
+    situacionInicial: z.string().optional(),
+    situacionDeseada: z.string().optional(),
+    objetivoEspecifico: z.string().optional(),
+    beneficiosEconomicos: z.string().optional(),
+    beneficiosCliente: z.string().optional(),
+    beneficiosColaboradores: z.string().optional(),
+    datosReferencia: z.string().optional(),
+    conclusiones: z.string().optional(),
+
     fecha_inicio: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Fecha de inicio inválida" }),
-    fecha_fin_estimada: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Fecha de fin inválida" }),
+    fecha_fin: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Fecha de fin inválida" }),
     estado_proyecto: z.enum(estadoProyectoEnum),
-    tecnologia_utilizada: z.string().optional(),
+    tecnologia: z.string().optional(),
     beneficios_estado: z.string().optional(),
+
+    // Campos de variación (obligatorios)
+    varSeniorityTecnico: z.number({ required_error: 'Este campo es requerido.' }),
+    varSeniorityOperativo: z.number({ required_error: 'Este campo es requerido.' }),
+    varTiempo: z.number().min(0).max(100, "El valor debe estar entre 0 y 100."),
+    varInvolucrados: z.number().min(0).max(100, "El valor debe estar entre 0 y 100."),
+    varFrecuencia: z.number().min(0).max(100, "El valor debe estar entre 0 y 100."),
 });

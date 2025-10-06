@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
@@ -15,6 +16,8 @@ import { addProyectoAutomatizacion, updateProyectoAutomatizacion } from "@/lib/t
 import type { ProyectoAutomatizacion, ProyectoConNombre, IniciativaAutomatizacion } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Separator } from "@/components/ui/separator";
 
 
 const estadoOptions = ["Planificado", "En Ejecución", "Finalizado", "En Pausa", "Cancelado"];
@@ -30,12 +33,27 @@ interface CrearProyectoFormProps {
 
 const defaultValues: ProyectoAutomatizacionForm = {
     id_iniciativas: [],
-    nombre_iniciativa: "",
+    titulo: "",
+    descripcionProblema: "",
+    objetivo: "",
+    situacionInicial: "",
+    situacionDeseada: "",
+    objetivoEspecifico: "",
+    beneficiosEconomicos: "",
+    beneficiosCliente: "",
+    beneficiosColaboradores: "",
+    datosReferencia: "",
+    conclusiones: "",
     fecha_inicio: new Date().toISOString().split('T')[0],
-    fecha_fin_estimada: new Date().toISOString().split('T')[0],
+    fecha_fin: new Date().toISOString().split('T')[0],
     estado_proyecto: "Planificado",
-    tecnologia_utilizada: "",
+    tecnologia: "",
     beneficios_estado: "",
+    varSeniorityTecnico: 1,
+    varSeniorityOperativo: 1,
+    varTiempo: 0,
+    varInvolucrados: 0,
+    varFrecuencia: 0,
 };
 
 
@@ -43,26 +61,28 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
-     const { control, register, handleSubmit, formState: { errors }, reset } = useForm<ProyectoAutomatizacionForm>({
+     const form = useForm<ProyectoAutomatizacionForm>({
         resolver: zodResolver(ProyectoAutomatizacionSchema.omit({ id_proyecto: true })),
         defaultValues: proyectoToEdit ? {
             ...proyectoToEdit,
+            id_iniciativas: proyectoToEdit.id_iniciativas || [],
             fecha_inicio: proyectoToEdit.fecha_inicio.split('T')[0],
-            fecha_fin_estimada: proyectoToEdit.fecha_fin_estimada.split('T')[0],
+            fecha_fin: proyectoToEdit.fecha_fin.split('T')[0],
         } : defaultValues,
     });
     
     useEffect(() => {
         if (proyectoToEdit && isEditMode) {
-            reset({
+            form.reset({
                 ...proyectoToEdit,
+                id_iniciativas: proyectoToEdit.id_iniciativas || [],
                 fecha_inicio: new Date(proyectoToEdit.fecha_inicio).toISOString().split('T')[0],
-                fecha_fin_estimada: new Date(proyectoToEdit.fecha_fin_estimada).toISOString().split('T')[0],
+                fecha_fin: new Date(proyectoToEdit.fecha_fin).toISOString().split('T')[0],
             });
         } else {
-            reset(defaultValues);
+            form.reset(defaultValues);
         }
-    }, [proyectoToEdit, isEditMode, reset]);
+    }, [proyectoToEdit, isEditMode, form.reset]);
 
 
     const onSubmit = async (data: ProyectoAutomatizacionForm) => {
@@ -103,73 +123,387 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
             })), [iniciativas]);
 
   return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto pr-4">
-                <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="id-iniciativas">Iniciativas a desarrollar</Label>
-                    <Controller
-                        name="id_iniciativas"
-                        control={control}
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto p-4 border rounded-md">
+                    
+                    <div className="md:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="titulo"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Título</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Título del proyecto" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="id_iniciativas"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Iniciativas Vinculadas</FormLabel>
+                                    <FormControl>
+                                        <MultiSelect
+                                            options={iniciativaOptions}
+                                            selected={field.value.map(String)}
+                                            onChange={(values) => field.onChange(values.map(Number))}
+                                            placeholder="Seleccionar iniciativas aprobadas..."
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                    
+                    <Separator className="md:col-span-2" />
+
+                    <div className="md:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="descripcionProblema"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Descripción del Problema</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Describe el problema" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                    
+                     <div className="md:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="objetivo"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Objetivo General</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Objetivo general del proyecto" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                     <div className="md:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="objetivoEspecifico"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Objetivo Específico</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Objetivos específicos y medibles" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <FormField
+                        control={form.control}
+                        name="situacionInicial"
                         render={({ field }) => (
-                            <MultiSelect
-                                options={iniciativaOptions}
-                                selected={field.value.map(String)}
-                                onChange={(values) => field.onChange(values.map(Number))}
-                                placeholder="Seleccionar iniciativas aprobadas..."
-                            />
+                            <FormItem>
+                                <FormLabel>Situación Inicial</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Cómo se hace actualmente" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )}
                     />
-                    {errors.id_iniciativas && <p className="text-sm text-destructive">{errors.id_iniciativas.message}</p>}
-                </div>
-                 <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="nombre-iniciativa">Nombre del Proyecto</Label>
-                    <Input id="nombre-iniciativa" placeholder="Nombre del proyecto" {...register('nombre_iniciativa')} />
-                    {errors.nombre_iniciativa && <p className="text-sm text-destructive">{errors.nombre_iniciativa.message}</p>}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="fecha-inicio">Fecha de Inicio</Label>
-                    <Input id="fecha-inicio" type="date" {...register('fecha_inicio')} />
-                    {errors.fecha_inicio && <p className="text-sm text-destructive">{errors.fecha_inicio.message}</p>}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="fecha-fin">Fecha de Fin (Estimada)</Label>
-                    <Input id="fecha-fin" type="date" {...register('fecha_fin_estimada')} />
-                    {errors.fecha_fin_estimada && <p className="text-sm text-destructive">{errors.fecha_fin_estimada.message}</p>}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="estado-proyecto">Estado del Proyecto</Label>
-                        <Controller
+
+                    <FormField
+                        control={form.control}
+                        name="situacionDeseada"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Situación Deseada</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Cómo se hará tras la automatización" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <Separator className="md:col-span-2" />
+
+                     <h3 className="md:col-span-2 font-medium text-lg">Beneficios</h3>
+
+                     <FormField
+                        control={form.control}
+                        name="beneficiosEconomicos"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Beneficios Económicos</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Ahorro de costos, etc." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="beneficiosCliente"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Beneficios para el Cliente</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Mejora de tiempos, calidad, etc." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="beneficiosColaboradores"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Beneficios para Colaboradores</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Reducción de carga, etc." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="beneficios_estado"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Estado de los Beneficios</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="Cómo se medirán y estado actual" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <Separator className="md:col-span-2" />
+
+                    <h3 className="md:col-span-2 font-medium text-lg">Detalles Técnicos y de Gestión</h3>
+                    
+                     <FormField
+                        control={form.control}
+                        name="fecha_inicio"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Fecha de Inicio</FormLabel>
+                                <FormControl>
+                                    <Input type="date" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="fecha_fin"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Fecha de Fin</FormLabel>
+                                <FormControl>
+                                    <Input type="date" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
                         name="estado_proyecto"
-                        control={control}
                         render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Estado del Proyecto</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger id="estado-proyecto">
-                                    <SelectValue placeholder="Seleccionar estado" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {estadoOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar estado" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {estadoOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="tecnologia"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Tecnología Utilizada</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Ej: Power Automate, Azure Functions" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <div className="md:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="datosReferencia"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Datos de Referencia</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Datos usados para el análisis" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                     <div className="md:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="conclusiones"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Conclusiones</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Conclusiones del proyecto" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <Separator className="md:col-span-2" />
+                    <h3 className="md:col-span-2 font-medium text-lg">Resultados Esperados (Variación)</h3>
+
+                     <FormField
+                        control={form.control}
+                        name="varSeniorityTecnico"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Var Seniority Técnico</FormLabel>
+                                <FormControl>
+                                    <Input type="number" {...field} onChange={event => field.onChange(+event.target.value)} />
+                                </FormControl>
+                                <FormDescription>Resultado esperado para el seniority técnico.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="varSeniorityOperativo"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Var Seniority Operativo</FormLabel>
+                                <FormControl>
+                                    <Input type="number" {...field} onChange={event => field.onChange(+event.target.value)} />
+                                </FormControl>
+                                <FormDescription>Resultado esperado del seniority operativo.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="varTiempo"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Var Tiempo (%)</FormLabel>
+                                <FormControl>
+                                    <div className="flex items-center gap-4">
+                                        <Slider
+                                            defaultValue={[field.value]}
+                                            max={100}
+                                            step={1}
+                                            onValueChange={(value) => field.onChange(value[0])}
+                                            className="w-[85%]"
+                                        />
+                                        <span className="w-[15%] text-right font-mono text-sm">{field.value}%</span>
+                                    </div>
+                                </FormControl>
+                                <FormDescription>Variación porcentual del tiempo.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                     <FormField
+                        control={form.control}
+                        name="varInvolucrados"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Var Involucrados (%)</FormLabel>
+                                 <FormControl>
+                                    <div className="flex items-center gap-4">
+                                        <Slider
+                                            defaultValue={[field.value]}
+                                            max={100}
+                                            step={1}
+                                            onValueChange={(value) => field.onChange(value[0])}
+                                            className="w-[85%]"
+                                        />
+                                        <span className="w-[15%] text-right font-mono text-sm">{field.value}%</span>
+                                    </div>
+                                </FormControl>
+                                <FormDescription>Variación porcentual de involucrados.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="varFrecuencia"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Var Frecuencia (%)</FormLabel>
+                                <FormControl>
+                                     <div className="flex items-center gap-4">
+                                        <Slider
+                                            defaultValue={[field.value]}
+                                            max={100}
+                                            step={1}
+                                            onValueChange={(value) => field.onChange(value[0])}
+                                            className="w-[85%]"
+                                        />
+                                        <span className="w-[15%] text-right font-mono text-sm">{field.value}%</span>
+                                    </div>
+                                </FormControl>
+                                <FormDescription>Variación porcentual de la frecuencia.</FormDescription>
+                                <FormMessage />
+                            </FormItem>
                         )}
                     />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="tecnologia-utilizada">Tecnología Utilizada</Label>
-                    <Input id="tecnologia-utilizada" placeholder="Ej: Power Automate, Azure Functions" {...register('tecnologia_utilizada')} />
-                        {errors.tecnologia_utilizada && <p className="text-sm text-destructive">{errors.tecnologia_utilizada.message}</p>}
+                <div className="flex justify-end mt-4">
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isSubmitting ? "Guardando..." : isEditMode ? "Guardar Cambios" : "Guardar Proyecto"}
+                    </Button>
                 </div>
-                <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="beneficios-estado">Estado de los Beneficios</Label>
-                    <Textarea id="beneficios-estado" placeholder="Describir cómo se medirán y cuál es el estado actual de los beneficios" {...register('beneficios_estado')} />
-                        {errors.beneficios_estado && <p className="text-sm text-destructive">{errors.beneficios_estado.message}</p>}
-                </div>
-            </div>
-            <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isSubmitting ? "Guardando..." : isEditMode ? "Guardar Cambios" : "Guardar Proyecto"}
-                </Button>
-            </div>
-        </form>
+            </form>
+        </Form>
   );
 }
+
+    

@@ -51,21 +51,27 @@ export default function ProyectosTable({ proyectos, isLoading, onEdit }: Proyect
 
     const formatDate = (dateString: string) => {
         if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('es-ES', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        try {
+            // Check if it is a valid date string
+            if (isNaN(new Date(dateString).getTime())) return 'N/A';
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        } catch(e) {
+            return 'N/A';
+        }
     }
 
     const columns: ColumnDef<ProyectoConNombre>[] = [
         {
-            accessorKey: "nombre_iniciativa",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Nombre del Proyecto" />,
-            cell: ({ row }) => <div className="font-medium max-w-xs truncate">{row.getValue("nombre_iniciativa")}</div>,
+            accessorKey: "titulo",
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Título del Proyecto" />,
+            cell: ({ row }) => <div className="font-medium max-w-xs truncate">{row.getValue("titulo")}</div>,
         },
         {
-            accessorKey: "tecnologia_utilizada",
+            accessorKey: "tecnologia",
             header: ({ column }) => <DataTableColumnHeader column={column} title="Tecnología" />,
         },
         {
