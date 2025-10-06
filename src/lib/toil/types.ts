@@ -57,7 +57,6 @@ export interface IniciativaAutomatizacion {
 export interface ProyectoAutomatizacion {
     id_proyecto: number;
     titulo: string; // Title
-    id_iniciativas: number[];
 
     // Nuevos campos
     descripcionProblema?: string;
@@ -93,3 +92,5 @@ export interface ProyectoConNombre extends ProyectoAutomatizacion {
 
 // Re-export Incident and IncidentUpdate to be used in the service pages
 export type { Incident, IncidentUpdate };
+
+    

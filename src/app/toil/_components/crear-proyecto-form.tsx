@@ -13,14 +13,23 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProyectoAutomatizacionSchema } from "@/lib/toil/schemas";
 import { addProyectoAutomatizacion, updateProyectoAutomatizacion } from "@/lib/toil/data";
-import type { ProyectoAutomatizacion, ProyectoConNombre, IniciativaAutomatizacion } from "@/lib/toil/types";
+import type { ProyectoAutomatizacion, ProyectoConNombre } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
-import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
 
 
 const estadoOptions = ["Planificado", "En Ejecución", "Finalizado", "En Pausa", "Cancelado"];
+const objetivoOptions = [
+    "Eficiencia de la Operación",
+    "Precisión y reducción de errores",
+    "Productividad",
+    "Seguridad y cumplimiento",
+    "Costos",
+    "Escalabilidad",
+    "Experiencia del cliente y del usuario interno",
+    "Toma de decisiones"
+];
 
 type ProyectoAutomatizacionForm = Omit<ProyectoAutomatizacion, 'id_proyecto'>;
 
@@ -28,11 +37,9 @@ interface CrearProyectoFormProps {
     onSuccess: () => void;
     proyectoToEdit?: ProyectoConNombre | null;
     isEditMode: boolean;
-    iniciativas: IniciativaAutomatizacion[];
 }
 
 const defaultValues: ProyectoAutomatizacionForm = {
-    id_iniciativas: [],
     titulo: "",
     descripcionProblema: "",
     objetivo: "",
@@ -57,7 +64,7 @@ const defaultValues: ProyectoAutomatizacionForm = {
 };
 
 
-export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMode, iniciativas }: CrearProyectoFormProps) {
+export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMode }: CrearProyectoFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
@@ -65,7 +72,6 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
         resolver: zodResolver(ProyectoAutomatizacionSchema.omit({ id_proyecto: true })),
         defaultValues: proyectoToEdit ? {
             ...proyectoToEdit,
-            id_iniciativas: proyectoToEdit.id_iniciativas || [],
             fecha_inicio: proyectoToEdit.fecha_inicio.split('T')[0],
             fecha_fin: proyectoToEdit.fecha_fin.split('T')[0],
         } : defaultValues,
@@ -75,14 +81,13 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
         if (proyectoToEdit && isEditMode) {
             form.reset({
                 ...proyectoToEdit,
-                id_iniciativas: proyectoToEdit.id_iniciativas || [],
                 fecha_inicio: new Date(proyectoToEdit.fecha_inicio).toISOString().split('T')[0],
                 fecha_fin: new Date(proyectoToEdit.fecha_fin).toISOString().split('T')[0],
             });
         } else {
             form.reset(defaultValues);
         }
-    }, [proyectoToEdit, isEditMode, form.reset]);
+    }, [proyectoToEdit, isEditMode, form]);
 
 
     const onSubmit = async (data: ProyectoAutomatizacionForm) => {
@@ -114,20 +119,12 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
         }
     }
 
-    const iniciativaOptions: MultiSelectOption[] = useMemo(() => 
-        iniciativas
-            .filter(inc => inc.estado === 'Aprobada')
-            .map(inc => ({
-                value: inc.id_iniciativa.toString(),
-                label: `${inc.id_iniciativa}: ${inc.nombre_iniciativa}`
-            })), [iniciativas]);
-
   return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[70vh] overflow-y-auto p-4 border rounded-md">
                     
-                    <div className="lg:col-span-2">
+                    <div className="lg:col-span-4">
                         <FormField
                             control={form.control}
                             name="titulo"
@@ -136,27 +133,6 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                                     <FormLabel>Título</FormLabel>
                                     <FormControl>
                                         <Input placeholder="Título del proyecto" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-
-                    <div className="lg:col-span-2">
-                        <FormField
-                            control={form.control}
-                            name="id_iniciativas"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Iniciativas Vinculadas</FormLabel>
-                                    <FormControl>
-                                        <MultiSelect
-                                            options={iniciativaOptions}
-                                            selected={field.value.map(String)}
-                                            onChange={(values) => field.onChange(values.map(Number))}
-                                            placeholder="Seleccionar iniciativas aprobadas..."
-                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -189,9 +165,16 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Objetivo General</FormLabel>
-                                    <FormControl>
-                                        <Textarea placeholder="Objetivo general del proyecto" {...field} />
-                                    </FormControl>
+                                     <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Seleccionar objetivo" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {objetivoOptions.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -509,3 +492,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
         </Form>
   );
 }
+
+    
+
+    

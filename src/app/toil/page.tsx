@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from 'react';
@@ -194,17 +195,18 @@ export default function ToilDashboardPage() {
                     <DialogHeader>
                          <DialogTitle>{isEditModeProyecto ? "Editar Proyecto" : "Crear Nuevo Proyecto de Automatización"}</DialogTitle>
                         <DialogDescription>
-                           {isEditModeProyecto ? "Actualiza la información del proyecto." : "Convierte una iniciativa aprobada en un proyecto tangible."}
+                           {isEditModeProyecto ? "Actualiza la información del proyecto." : ""}
                         </DialogDescription>
                     </DialogHeader>
                     <CrearProyectoForm 
                         onSuccess={handleSuccess}
                         proyectoToEdit={proyectoToEdit}
                         isEditMode={isEditModeProyecto}
-                        iniciativas={iniciativas}
                     />
                 </DialogContent>
             </Dialog>
         </div>
     );
 }
+
+    

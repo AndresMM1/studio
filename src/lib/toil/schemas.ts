@@ -56,7 +56,6 @@ export const IniciativaAutomatizacionSchema = z.object({
 
 export const ProyectoAutomatizacionSchema = z.object({
     id_proyecto: z.number().int().positive(),
-    id_iniciativas: z.array(z.number()).min(1, "Debe seleccionar al menos una iniciativa."),
     titulo: z.string().min(1, "El título es requerido."),
     
     // Nuevos campos opcionales
@@ -84,3 +83,5 @@ export const ProyectoAutomatizacionSchema = z.object({
     varInvolucrados: z.number().min(0).max(100, "El valor debe estar entre 0 y 100."),
     varFrecuencia: z.number().min(0).max(100, "El valor debe estar entre 0 y 100."),
 });
+
+    

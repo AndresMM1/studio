@@ -51,28 +51,28 @@ export async function addProyectoAutomatizacion(data: Omit<ProyectoAutomatizacio
     const endpoint = 'https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/8ad6351f09fa4ab8b8bf9663c04780a3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=oTw9RffikCjmLNyq2j50NBRTCCitqi0l0cgu2yp2Zlc';
     
     const apiPayload = {
-        Title: data.titulo,
-        Id_x0020_IniciativaId: data.id_iniciativas.join(','), // Asumiendo que la API espera un string
-        Resumen: data.descripcionProblema,
-        Objetivo: data.objetivo,
-        Situacion_x0020_Inicial: data.situacionInicial,
-        Situacion_x0020_Deseada: data.situacionDeseada,
-        Objetivo_x0020_especifico: data.objetivoEspecifico,
-        Beneficios_x0020_Economicos: data.beneficiosEconomicos,
-        Beneficios_x0020_Cliente: data.beneficiosCliente,
-        Beneficios_x0020_Colaboradores: data.beneficiosColaboradores,
-        Datos_x0020_Referencia: data.datosReferencia,
-        Conclusiones: data.conclusiones,
-        Fecha_x0020_Inicio: data.fecha_inicio,
-        Fecha_x0020_Finalizacion: data.fecha_fin,
-        Tecnolog_x00ed_a: data.tecnologia,
-        Beneficios_x0020_Estado: data.beneficios_estado,
-        Estado: data.estado_proyecto,
-        Var_x0020_Se_x00f1_ority_x0020_T: data.varSeniorityTecnico,
-        Var_x0020_Se_x00f1_ority_x0020_O: data.varSeniorityOperativo,
-        Var_x0020_Tiempo: data.varTiempo,
-        Var_x0020_Involucrados: data.varInvolucrados,
-        Var_x0020_Frecuencia: data.varFrecuencia,
+        titulo: data.titulo,
+        id_iniciativas: [], // Se envía vacío como placeholder
+        descripcionProblema: data.descripcionProblema,
+        objetivo: data.objetivo,
+        situacionInicial: data.situacionInicial,
+        situacionDeseada: data.situacionDeseada,
+        objetivoEspecifico: data.objetivoEspecifico,
+        beneficiosEconomicos: data.beneficiosEconomicos,
+        beneficiosCliente: data.beneficiosCliente,
+        beneficiosColaboradores: data.beneficiosColaboradores,
+        datosReferencia: data.datosReferencia,
+        conclusiones: data.conclusiones,
+        fecha_inicio: data.fecha_inicio,
+        fecha_fin: data.fecha_fin,
+        tecnologia: data.tecnologia,
+        beneficios_estado: data.beneficios_estado,
+        estado_proyecto: data.estado_proyecto,
+        varSeniorityTecnico: data.varSeniorityTecnico,
+        varSeniorityOperativo: data.varSeniorityOperativo,
+        varTiempo: data.varTiempo,
+        varInvolucrados: data.varInvolucrados,
+        varFrecuencia: data.varFrecuencia,
     };
 
     const response = await fetch(endpoint, {
@@ -95,28 +95,28 @@ export async function updateProyectoAutomatizacion(data: ProyectoAutomatizacion)
     
     const apiPayload = {
         ID: data.id_proyecto, // Incluir ID para la actualización
-        Title: data.titulo,
-        Id_x0020_IniciativaId: data.id_iniciativas.join(','),
-        Resumen: data.descripcionProblema,
-        Objetivo: data.objetivo,
-        Situacion_x0020_Inicial: data.situacionInicial,
-        Situacion_x0020_Deseada: data.situacionDeseada,
-        Objetivo_x0020_especifico: data.objetivoEspecifico,
-        Beneficios_x0020_Economicos: data.beneficiosEconomicos,
-        Beneficios_x0020_Cliente: data.beneficiosCliente,
-        Beneficios_x0020_Colaboradores: data.beneficiosColaboradores,
-        Datos_x0020_Referencia: data.datosReferencia,
-        Conclusiones: data.conclusiones,
-        Fecha_x0020_Inicio: data.fecha_inicio,
-        Fecha_x0020_Finalizacion: data.fecha_fin,
-        Tecnolog_x00ed_a: data.tecnologia,
-        Beneficios_x0020_Estado: data.beneficios_estado,
-        Estado: data.estado_proyecto,
-        Var_x0020_Se_x00f1_ority_x0020_T: data.varSeniorityTecnico,
-        Var_x0020_Se_x00f1_ority_x0020_O: data.varSeniorityOperativo,
-        Var_x0020_Tiempo: data.varTiempo,
-        Var_x0020_Involucrados: data.varInvolucrados,
-        Var_x0020_Frecuencia: data.varFrecuencia,
+        titulo: data.titulo,
+        id_iniciativas: [], // Se envía vacío como placeholder
+        descripcionProblema: data.descripcionProblema,
+        objetivo: data.objetivo,
+        situacionInicial: data.situacionInicial,
+        situacionDeseada: data.situacionDeseada,
+        objetivoEspecifico: data.objetivoEspecifico,
+        beneficiosEconomicos: data.beneficiosEconomicos,
+        beneficiosCliente: data.beneficiosCliente,
+        beneficiosColaboradores: data.beneficiosColaboradores,
+        datosReferencia: data.datosReferencia,
+        conclusiones: data.conclusiones,
+        fecha_inicio: data.fecha_inicio,
+        fecha_fin: data.fecha_fin,
+        tecnologia: data.tecnologia,
+        beneficios_estado: data.beneficios_estado,
+        estado_proyecto: data.estado_proyecto,
+        varSeniorityTecnico: data.varSeniorityTecnico,
+        varSeniorityOperativo: data.varSeniorityOperativo,
+        varTiempo: data.varTiempo,
+        varInvolucrados: data.varInvolucrados,
+        varFrecuencia: data.varFrecuencia,
     };
     
     const response = await fetch(endpoint, {
@@ -276,7 +276,6 @@ export async function getProyectosAutomatizacion(): Promise<ProyectoConNombre[]>
             id_proyecto: item.ID,
             titulo: item.Title || `Proyecto #${item.ID}`,
             nombre_iniciativa: item.Title || `Proyecto #${item.ID}`, // Compatibilidad
-            id_iniciativas: [], // No viene de la API
             
             descripcionProblema: item.Resumen, // Asumiendo que 'Resumen' es 'Descripcion Problema'
             objetivo: item.Objetivo,
@@ -407,6 +406,10 @@ export async function getServiceById(id: number, services: Service[]): Promise<S
     
     return details;
 }
+    
+
+    
+
     
 
     

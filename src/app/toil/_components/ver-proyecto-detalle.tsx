@@ -23,7 +23,7 @@ const DetailSection = ({ title, children, icon }: { title: string, children: Rea
 }
 
 const DetailItem = ({ label, value }: { label: string, value?: string | number | null }) => {
-    if (!value) return null;
+    if (!value && value !== 0) return null;
     return (
         <div>
             <p className="font-semibold text-foreground">{label}</p>
@@ -56,9 +56,6 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div>
                     <h3 className="text-2xl font-bold">{proyecto.titulo}</h3>
-                    <p className="text-sm text-muted-foreground">
-                        IDs de iniciativas vinculadas: {proyecto.id_iniciativas.join(', ')}
-                    </p>
                 </div>
                  <Badge variant="outline" className={cn("border-0 text-base", estadoColors[proyecto.estado_proyecto])}>
                     <div className="flex items-center gap-2">
@@ -106,9 +103,9 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         <DetailItem label="Var. Seniority Técnico" value={proyecto.varSeniorityTecnico} />
                         <DetailItem label="Var. Seniority Operativo" value={proyecto.varSeniorityOperativo} />
-                        <DetailItem label="Var. Tiempo (%)" value={proyecto.varTiempo} />
-                        <DetailItem label="Var. Involucrados (%)" value={proyecto.varInvolucrados} />
-                        <DetailItem label="Var. Frecuencia (%)" value={proyecto.varFrecuencia} />
+                        <DetailItem label="Var. Tiempo (%)" value={`${proyecto.varTiempo}%`} />
+                        <DetailItem label="Var. Involucrados (%)" value={`${proyecto.varInvolucrados}%`} />
+                        <DetailItem label="Var. Frecuencia (%)" value={`${proyecto.varFrecuencia}%`} />
                     </div>
                 </DetailSection>
             </div>
@@ -116,3 +113,5 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
         </div>
     );
 }
+
+    
