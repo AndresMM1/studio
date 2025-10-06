@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ProyectoConNombre } from '@/lib/toil/types';
+import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoConNombre, GrupoCelula } from '@/lib/toil/types';
 import { getActividadesDefinicion, getIniciativasAutomatizacion, getProyectosAutomatizacion, getGruposCelula } from '@/lib/toil/data';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +15,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import DefinirActividadForm from "./_components/definir-actividad-form";
 import RegistrarIniciativaForm from "./_components/registrar-iniciativa-form";
 import CrearProyectoForm from "./_components/crear-proyecto-form";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function ToilDashboardPage() {
     const [actividades, setActividades] = useState<ActividadDefinicion[]>([]);
@@ -98,24 +104,27 @@ export default function ToilDashboardPage() {
 
     return (
         <div className="flex flex-col h-full">
-            <header className="flex h-14 items-center justify-between border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+            <header className="flex h-14 items-center justify-between  px-4 lg:h-[60px] lg:px-6">
                 <h1 className="text-xl font-bold tracking-tight">Gestión de TOIL</h1>
-                <div className="flex items-center gap-2">
-                    <Button size="sm" onClick={() => handleOpenDialog(setIsActividadDialogOpen, setActividadToEdit)}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Definir Actividad
-                    </Button>
-
-                    <Button size="sm" variant="outline" onClick={() => handleOpenDialog(setIsCreateIniciativaOpen, setIniciativaToEdit)}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Registrar Iniciativa
-                    </Button>
-
-                    <Button size="sm" variant="outline" onClick={() => handleOpenDialog(setIsProyectoDialogOpen, setProyectoToEdit)}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Crear Proyecto
-                    </Button>
-                </div>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline">
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Nuevo
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenDialog(setIsActividadDialogOpen, setActividadToEdit)}>
+                            Definir Actividad
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenDialog(setIsCreateIniciativaOpen, setIniciativaToEdit)}>
+                            Registrar Iniciativa
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleOpenDialog(setIsProyectoDialogOpen, setProyectoToEdit)}>
+                            Crear Proyecto
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </header>
             <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
                 <Card>
@@ -136,7 +145,10 @@ export default function ToilDashboardPage() {
                             </TabsContent>
                             <TabsContent value="iniciativas">
                                 <IniciativasTable 
-                                    iniciativas={iniciativas} 
+                                    iniciativas={iniciativas}
+                                    actividades={actividades}
+                                    gruposCelula={gruposCelula}
+                                    proyectos={proyectos}
                                     isLoading={isLoading}
                                     onEdit={handleEditIniciativa}
                                 />
@@ -183,6 +195,7 @@ export default function ToilDashboardPage() {
                     <RegistrarIniciativaForm 
                         onSuccess={handleSuccess} 
                         actividades={actividades} 
+                        proyectos={proyectos}
                         iniciativaToEdit={iniciativaToEdit}
                         isEditMode={isEditModeIniciativa}
                     />
@@ -195,7 +208,7 @@ export default function ToilDashboardPage() {
                     <DialogHeader>
                          <DialogTitle>{isEditModeProyecto ? "Editar Proyecto" : "Crear Nuevo Proyecto de Automatización"}</DialogTitle>
                         <DialogDescription>
-                           {isEditModeProyecto ? "Actualiza la información del proyecto." : ""}
+                           {isEditModeProyecto ? "Actualiza la información del proyecto." : "Convierte una iniciativa aprobada en un proyecto tangible."}
                         </DialogDescription>
                     </DialogHeader>
                     <CrearProyectoForm 
@@ -208,5 +221,3 @@ export default function ToilDashboardPage() {
         </div>
     );
 }
-
-    

@@ -1,5 +1,10 @@
 
 
+
+
+
+
+
 import { Users, Code, Database, Server, Component, Settings } from 'lucide-react';
 import type { ElementType } from "react";
 import type { ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ProyectoConNombre, EstadoProyecto, ServiceDetails } from "./types";
@@ -21,29 +26,80 @@ export async function updateActividadDefinicion(data: ActividadDefinicion): Prom
 }
 
 export async function addActividadMedicion(data: Omit<ActividadMedicion, 'id_medicion'>): Promise<any> {
-    const response = await fetch('https://your-power-automate-url-for-actividad-medicion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-  
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Error al guardar la medición: ${errorBody}`);
-    }
-  
-    return response.json();
+    console.log("Creando nueva medición:", data);
+    // Simulación: en un caso real, aquí iría la llamada a Power Automate.
+    await new Promise(resolve => setTimeout(resolve, 1000));
+     return { ...data, id_medicion: Date.now() };
   }
   
+export async function getLatestMedicionForActividad(id_actividad: number): Promise<ActividadMedicion | null> {
+    // Simulación: En un escenario real, esta función haría una llamada a la API
+    // para obtener la última medición ("Real") de una actividad específica.
+    console.log(`Buscando la última medición para la actividad ${id_actividad}`);
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    // Devolvemos un mock de datos para la simulación
+    return {
+        id_medicion: Math.floor(Math.random() * 1000),
+        id_actividad: id_actividad,
+        fecha_medicion: new Date().toISOString(),
+        "Tipo Medicion": "Real",
+        "Señority Tecnico": "Senior",
+        "Señority Operativo": "Semi-Senior",
+        "Tiempo Minutos": 120,
+        "Personas Involucradas": 2,
+        "Frecuencia": 4,
+        "Frecuencia Tipo": "Semanal",
+        "I/O": "Input",
+        "Url Evidencia": "https://example.com/evidence"
+    };
+}
+
+
 export async function addIniciativaAutomatizacion(data: Omit<IniciativaAutomatizacion, 'id_iniciativa'>): Promise<any> {
     console.log("Creando nueva iniciativa:", data);
+    // Simulación de la creación de la iniciativa
     await new Promise(resolve => setTimeout(resolve, 1000));
-    return { ...data, id_iniciativa: Date.now() };
+    const newIniciativa = { ...data, id_iniciativa: Date.now() };
+
+    // Lógica para crear mediciones proyectadas si la iniciativa está vinculada a un proyecto
+    if (data.id_proyecto && data.id_actividades.length > 0) {
+        const proyecto = await getProyectoById(data.id_proyecto);
+        if (proyecto) {
+            for (const actividadId of data.id_actividades) {
+                const latestMedicion = await getLatestMedicionForActividad(actividadId);
+                if (latestMedicion) {
+                    const newMedicion: Omit<ActividadMedicion, 'id_medicion'> = {
+                        ...latestMedicion,
+                        "Tipo Medicion": "Proyectada",
+                        fecha_medicion: new Date().toISOString(),
+                        // Aplicar reducciones
+                        "Tiempo Minutos": latestMedicion["Tiempo Minutos"] * (1 - (proyecto.varTiempo / 100)),
+                        "Personas Involucradas": Math.ceil(latestMedicion["Personas Involucradas"] * (1 - (proyecto.varInvolucrados / 100))),
+                        // Aquí podrías agregar más lógica para las otras variables si es necesario
+                    };
+                    await addActividadMedicion(newMedicion);
+                }
+            }
+        }
+    }
+
+    return newIniciativa;
 }
 
 export async function updateIniciativaAutomatizacion(data: IniciativaAutomatizacion): Promise<any> {
     console.log("Actualizando iniciativa:", data);
     await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Aquí también se podría añadir la lógica de cálculo si el proyecto se asigna en una actualización
+    if (data.id_proyecto && data.id_actividades.length > 0) {
+         const proyecto = await getProyectoById(data.id_proyecto);
+         if (proyecto) {
+             console.log(`Recalculando mediciones para iniciativa ${data.id_iniciativa} con proyecto ${proyecto.titulo}`);
+             // La lógica de cálculo iría aquí, similar a `addIniciativaAutomatizacion`
+         }
+    }
+
     return data;
 }
   
@@ -52,7 +108,7 @@ export async function addProyectoAutomatizacion(data: Omit<ProyectoAutomatizacio
     
     const apiPayload = {
         titulo: data.titulo,
-        id_iniciativas: [], // Se envía vacío como placeholder
+        id_iniciativas: [], // Requerido por el schema de Power Automate
         descripcionProblema: data.descripcionProblema,
         objetivo: data.objetivo,
         situacionInicial: data.situacionInicial,
@@ -84,7 +140,7 @@ export async function addProyectoAutomatizacion(data: Omit<ProyectoAutomatizacio
     if (!response.ok) {
         const errorBody = await response.text();
         console.error('Error al crear el proyecto:', errorBody);
-        throw new Error(`Error de red: ${response.statusText}`);
+        throw new Error(`Error de red: ${errorBody}`);
     }
     
     return response.json();
@@ -94,9 +150,9 @@ export async function updateProyectoAutomatizacion(data: ProyectoAutomatizacion)
     const endpoint = 'https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/0290d0506ec342289e8829b815409bf0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=khefjDi85GA5weeP_kA5ARI5MagzkHguY7uY0EshaX0';
     
     const apiPayload = {
-        ID: data.id_proyecto, // Incluir ID para la actualización
+        ID: data.id_proyecto,
         titulo: data.titulo,
-        id_iniciativas: [], // Se envía vacío como placeholder
+        id_iniciativas: [], // Requerido por el schema de Power Automate
         descripcionProblema: data.descripcionProblema,
         objetivo: data.objetivo,
         situacionInicial: data.situacionInicial,
@@ -120,7 +176,7 @@ export async function updateProyectoAutomatizacion(data: ProyectoAutomatizacion)
     };
     
     const response = await fetch(endpoint, {
-        method: 'POST', // O 'PUT'/'PATCH' si tu API lo requiere para actualizar
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(apiPayload),
     });
@@ -128,7 +184,7 @@ export async function updateProyectoAutomatizacion(data: ProyectoAutomatizacion)
     if (!response.ok) {
         const errorBody = await response.text();
         console.error('Error al actualizar el proyecto:', errorBody);
-        throw new Error(`Error de red: ${response.statusText}`);
+        throw new Error(`Error de red: ${errorBody}`);
     }
     
     return response.json();
@@ -222,14 +278,49 @@ const mapEstadoIniciativa = (estado: string | null): EstadoIniciativa => {
     }
 };
 
-export async function getIniciativasAutomatizacion(): Promise<IniciativaAutomatizacion[]> {
+async function getIniciativaActividadLinks(): Promise<Map<number, number[]>> {
+    const linksMap = new Map<number, number[]>();
     try {
-        const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/cdea0d29fc704e4fa03e1774f3caff42/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=A82k7X-RyUZ6ZrB_2d3ZZyT4gQBRNexzz6cabnUgiSs');
+        const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/897f219c997040eab1ef511676088e88/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=F__TEB918blfCn7GGQJeEVu2v8q5tRwwG9Jz4P6ZnOs');
         if (!response.ok) {
-            console.error('La API de iniciativas falló con el estado:', response.status);
-            return [];
+            console.error('La API de enlaces iniciativa-actividad falló:', response.status);
+            return linksMap;
         }
         const data = await response.json();
+        const linksData = data.value || [];
+
+        if (!Array.isArray(linksData)) {
+            console.error('La respuesta de la API de enlaces no es un array.', data);
+            return linksMap;
+        }
+
+        for (const link of linksData) {
+            const iniciativaId = link["Id_x0020_IniciativaId"];
+            const actividadId = link["Id_x0020_Actividad_x0020_DefinicId"];
+            if (!linksMap.has(iniciativaId)) {
+                linksMap.set(iniciativaId, []);
+            }
+            linksMap.get(iniciativaId)?.push(actividadId);
+        }
+
+    } catch (error) {
+        console.error("Error al obtener los enlaces iniciativa-actividad:", error);
+    }
+    return linksMap;
+}
+
+export async function getIniciativasAutomatizacion(): Promise<IniciativaAutomatizacion[]> {
+    try {
+        const [iniciativasResponse, linksMap] = await Promise.all([
+            fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/cdea0d29fc704e4fa03e1774f3caff42/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=A82k7X-RyUZ6ZrB_2d3ZZyT4gQBRNexzz6cabnUgiSs'),
+            getIniciativaActividadLinks()
+        ]);
+
+        if (!iniciativasResponse.ok) {
+            console.error('La API de iniciativas falló con el estado:', iniciativasResponse.status);
+            return [];
+        }
+        const data = await iniciativasResponse.json();
         const iniciativasData = data.value || [];
 
         if (!Array.isArray(iniciativasData)) {
@@ -239,7 +330,8 @@ export async function getIniciativasAutomatizacion(): Promise<IniciativaAutomati
 
         return iniciativasData.map((item: any): IniciativaAutomatizacion => ({
             id_iniciativa: item.ID,
-            id_actividades: item.Id_x0020_ProyectoId ? [item.Id_x0020_ProyectoId] : [],
+            id_proyecto: item.Id_x0020_ProyectoId,
+            id_actividades: linksMap.get(item.ID) || [],
             nombre_iniciativa: item.Nombre_x0020_Iniciativa || "Iniciativa sin nombre",
             objetivo_iniciativa: item.Objetivo_x0020_Solucion || "No definido",
             alcance: "No definido", 
@@ -406,6 +498,8 @@ export async function getServiceById(id: number, services: Service[]): Promise<S
     
     return details;
 }
+    
+
     
 
     

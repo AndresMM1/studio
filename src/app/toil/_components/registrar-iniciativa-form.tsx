@@ -10,7 +10,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { IniciativaAutomatizacionSchema } from "@/lib/toil/schemas";
-import type { ActividadDefinicion, IniciativaAutomatizacion } from "@/lib/toil/types";
+import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoConNombre } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
 import { addIniciativaAutomatizacion, updateIniciativaAutomatizacion } from "@/lib/toil/data";
 import { MultiSelect, type MultiSelectOption } from "@/components/ui/multi-select";
@@ -31,16 +31,18 @@ const defaultValues: IniciativaAutomatizacionForm = {
     prioridad: "Media",
     estado: "Propuesta",
     responsable_celula: "",
+    id_proyecto: undefined,
 };
 
 interface RegistrarIniciativaFormProps {
     onSuccess: () => void;
     actividades: ActividadDefinicion[];
+    proyectos: ProyectoConNombre[];
     iniciativaToEdit?: IniciativaAutomatizacion | null;
     isEditMode: boolean;
 }
 
-export default function RegistrarIniciativaForm({ onSuccess, actividades, iniciativaToEdit, isEditMode }: RegistrarIniciativaFormProps) {
+export default function RegistrarIniciativaForm({ onSuccess, actividades, proyectos, iniciativaToEdit, isEditMode }: RegistrarIniciativaFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
@@ -96,6 +98,27 @@ export default function RegistrarIniciativaForm({ onSuccess, actividades, inicia
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto pr-4">
+             <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="id-proyecto">Proyecto de Automatización (Opcional)</Label>
+                <Controller
+                    name="id_proyecto"
+                    control={control}
+                    render={({ field }) => (
+                        <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} value={field.value?.toString()}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Seleccionar un proyecto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {proyectos.map(p => (
+                                    <SelectItem key={p.id_proyecto} value={p.id_proyecto.toString()}>
+                                        {p.titulo}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                />
+            </div>
             <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="id-actividad">Actividades TOIL a Automatizar</Label>
                 <Controller

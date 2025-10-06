@@ -35,13 +35,20 @@ export interface ActividadMedicion {
     id_medicion: number;
     id_actividad: number;
     fecha_medicion: string;
-    frecuencia: FrecuenciaMedicion;
-    tiempo_manual_horas: number;
-    cantidad_personas: number;
+    "Tipo Medicion": "Real" | "Proyectada";
+    "Señority Tecnico": string;
+    "Señority Operativo": string;
+    "Tiempo Minutos": number;
+    "Personas Involucradas": number;
+    "Frecuencia": number;
+    "Frecuencia Tipo": "Diaria" | "Semanal" | "Mensual" | "Bimestral" | "Trimestral" | "Semestral" | "Anual";
+    "I/O": "Input" | "Output";
+    "Url Evidencia": string;
 }
 
 export interface IniciativaAutomatizacion {
   id_iniciativa: number;
+  id_proyecto?: number;
   id_actividades: number[];
   nombre_iniciativa: string;
   objetivo_iniciativa?: string;
@@ -58,7 +65,6 @@ export interface ProyectoAutomatizacion {
     id_proyecto: number;
     titulo: string; // Title
 
-    // Nuevos campos
     descripcionProblema?: string;
     objetivo?: string;
     situacionInicial?: string;
@@ -77,7 +83,6 @@ export interface ProyectoAutomatizacion {
     beneficios_estado?: string;
     estado_proyecto: EstadoProyecto;
 
-    // Campos de variación
     varSeniorityTecnico: number;
     varSeniorityOperativo: number;
     varTiempo: number;

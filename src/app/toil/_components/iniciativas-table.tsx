@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -16,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { Eye, Loader2, MoreHorizontal, Pencil } from "lucide-react";
-import type { IniciativaAutomatizacion } from '@/lib/toil/types';
+import type { IniciativaAutomatizacion, ActividadDefinicion, GrupoCelula, ProyectoConNombre } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerIniciativaDetalle from './ver-iniciativa-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
@@ -26,11 +27,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 interface IniciativasTableProps {
     iniciativas: IniciativaAutomatizacion[];
+    actividades: ActividadDefinicion[];
+    gruposCelula: GrupoCelula[];
+    proyectos: ProyectoConNombre[];
     isLoading: boolean;
     onEdit: (iniciativa: IniciativaAutomatizacion) => void;
 }
 
-export default function IniciativasTable({ iniciativas, isLoading, onEdit }: IniciativasTableProps) {
+export default function IniciativasTable({ iniciativas, actividades, gruposCelula, proyectos, isLoading, onEdit }: IniciativasTableProps) {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedIniciativa, setSelectedIniciativa] = useState<IniciativaAutomatizacion | null>(null);
     const [sorting, setSorting] = useState<SortingState>([])
@@ -192,7 +196,7 @@ export default function IniciativasTable({ iniciativas, isLoading, onEdit }: Ini
                                 Información completa de la iniciativa de automatización.
                             </DialogDescription>
                         </DialogHeader>
-                        <VerIniciativaDetalle iniciativa={selectedIniciativa} />
+                        <VerIniciativaDetalle iniciativa={selectedIniciativa} actividades={actividades} gruposCelula={gruposCelula} proyectos={proyectos} />
                     </DialogContent>
                 </Dialog>
             )}
