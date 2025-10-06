@@ -125,9 +125,9 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
   return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto p-4 border rounded-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[70vh] overflow-y-auto p-4 border rounded-md">
                     
-                    <div className="md:col-span-2">
+                    <div className="lg:col-span-2">
                         <FormField
                             control={form.control}
                             name="titulo"
@@ -143,7 +143,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         />
                     </div>
 
-                    <div className="md:col-span-2">
+                    <div className="lg:col-span-2">
                         <FormField
                             control={form.control}
                             name="id_iniciativas"
@@ -164,9 +164,9 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         />
                     </div>
                     
-                    <Separator className="md:col-span-2" />
+                    <Separator className="lg:col-span-4" />
 
-                    <div className="md:col-span-2">
+                    <div className="lg:col-span-4">
                         <FormField
                             control={form.control}
                             name="descripcionProblema"
@@ -182,7 +182,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         />
                     </div>
                     
-                     <div className="md:col-span-2">
+                     <div className="lg:col-span-2">
                         <FormField
                             control={form.control}
                             name="objetivo"
@@ -198,7 +198,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         />
                     </div>
 
-                     <div className="md:col-span-2">
+                     <div className="lg:col-span-2">
                         <FormField
                             control={form.control}
                             name="objetivoEspecifico"
@@ -214,43 +214,47 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         />
                     </div>
 
-                    <FormField
-                        control={form.control}
-                        name="situacionInicial"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Situación Inicial</FormLabel>
-                                <FormControl>
-                                    <Textarea placeholder="Cómo se hace actualmente" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="lg:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="situacionInicial"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Situación Inicial</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Cómo se hace actualmente" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
-                    <FormField
-                        control={form.control}
-                        name="situacionDeseada"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Situación Deseada</FormLabel>
-                                <FormControl>
-                                    <Textarea placeholder="Cómo se hará tras la automatización" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="lg:col-span-2">
+                        <FormField
+                            control={form.control}
+                            name="situacionDeseada"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Situación Deseada</FormLabel>
+                                    <FormControl>
+                                        <Textarea placeholder="Cómo se hará tras la automatización" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
 
-                    <Separator className="md:col-span-2" />
+                    <Separator className="lg:col-span-4" />
 
-                     <h3 className="md:col-span-2 font-medium text-lg">Beneficios</h3>
+                     <h3 className="lg:col-span-4 font-medium text-lg">Beneficios</h3>
 
                      <FormField
                         control={form.control}
                         name="beneficiosEconomicos"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="lg:col-span-2">
                                 <FormLabel>Beneficios Económicos</FormLabel>
                                 <FormControl>
                                     <Textarea placeholder="Ahorro de costos, etc." {...field} />
@@ -263,7 +267,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         control={form.control}
                         name="beneficiosCliente"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="lg:col-span-2">
                                 <FormLabel>Beneficios para el Cliente</FormLabel>
                                 <FormControl>
                                     <Textarea placeholder="Mejora de tiempos, calidad, etc." {...field} />
@@ -276,7 +280,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         control={form.control}
                         name="beneficiosColaboradores"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="lg:col-span-2">
                                 <FormLabel>Beneficios para Colaboradores</FormLabel>
                                 <FormControl>
                                     <Textarea placeholder="Reducción de carga, etc." {...field} />
@@ -289,7 +293,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         control={form.control}
                         name="beneficios_estado"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="lg:col-span-2">
                                 <FormLabel>Estado de los Beneficios</FormLabel>
                                 <FormControl>
                                     <Textarea placeholder="Cómo se medirán y estado actual" {...field} />
@@ -299,9 +303,9 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         )}
                     />
 
-                    <Separator className="md:col-span-2" />
+                    <Separator className="lg:col-span-4" />
 
-                    <h3 className="md:col-span-2 font-medium text-lg">Detalles Técnicos y de Gestión</h3>
+                    <h3 className="lg:col-span-4 font-medium text-lg">Detalles Técnicos y de Gestión</h3>
                     
                      <FormField
                         control={form.control}
@@ -363,7 +367,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         )}
                     />
 
-                    <div className="md:col-span-2">
+                    <div className="lg:col-span-2">
                         <FormField
                             control={form.control}
                             name="datosReferencia"
@@ -378,7 +382,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                             )}
                         />
                     </div>
-                     <div className="md:col-span-2">
+                     <div className="lg:col-span-2">
                         <FormField
                             control={form.control}
                             name="conclusiones"
@@ -394,8 +398,8 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         />
                     </div>
 
-                    <Separator className="md:col-span-2" />
-                    <h3 className="md:col-span-2 font-medium text-lg">Resultados Esperados (Variación)</h3>
+                    <Separator className="lg:col-span-4" />
+                    <h3 className="lg:col-span-4 font-medium text-lg">Resultados Esperados (Variación)</h3>
 
                      <FormField
                         control={form.control}
@@ -429,7 +433,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         control={form.control}
                         name="varTiempo"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="lg:col-span-2">
                                 <FormLabel>Var Tiempo (%)</FormLabel>
                                 <FormControl>
                                     <div className="flex items-center gap-4">
@@ -452,7 +456,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         control={form.control}
                         name="varInvolucrados"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="lg:col-span-2">
                                 <FormLabel>Var Involucrados (%)</FormLabel>
                                  <FormControl>
                                     <div className="flex items-center gap-4">
@@ -475,7 +479,7 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
                         control={form.control}
                         name="varFrecuencia"
                         render={({ field }) => (
-                            <FormItem>
+                            <FormItem className="lg:col-span-2">
                                 <FormLabel>Var Frecuencia (%)</FormLabel>
                                 <FormControl>
                                      <div className="flex items-center gap-4">
@@ -505,5 +509,3 @@ export default function CrearProyectoForm({ onSuccess, proyectoToEdit, isEditMod
         </Form>
   );
 }
-
-    

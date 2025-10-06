@@ -190,11 +190,11 @@ export default function ToilDashboardPage() {
 
             {/* Diálogo para Proyectos */}
             <Dialog open={isProyectoDialogOpen} onOpenChange={setIsProyectoDialogOpen}>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-5xl">
                     <DialogHeader>
                          <DialogTitle>{isEditModeProyecto ? "Editar Proyecto" : "Crear Nuevo Proyecto de Automatización"}</DialogTitle>
                         <DialogDescription>
-                           {isEditModeProyecto ? "Actualiza la información del proyecto." : ""}
+                           {isEditModeProyecto ? "Actualiza la información del proyecto." : "Convierte una iniciativa aprobada en un proyecto tangible."}
                         </DialogDescription>
                     </DialogHeader>
                     <CrearProyectoForm 
