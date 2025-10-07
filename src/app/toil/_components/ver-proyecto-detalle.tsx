@@ -5,11 +5,31 @@ import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { Calendar, DollarSign, Users, User, Wrench, TrendingUp, Link as LinkIcon, CalendarCheck, Flag } from "lucide-react";
+import { Calendar, Wrench, TrendingUp, CalendarCheck, Flag, Info, Target, GitBranch, DollarSign, Users, Smile, Briefcase, FileText, BarChart } from "lucide-react";
 
 
 interface VerProyectoDetalleProps {
     proyecto: ProyectoConNombre;
+}
+
+const DetailSection = ({ title, children, icon }: { title: string, children: React.ReactNode, icon: React.ElementType }) => {
+    const Icon = icon;
+    return (
+        <div className="space-y-3">
+            <h3 className="text-lg font-semibold flex items-center gap-2"><Icon className="h-5 w-5 text-primary" /> {title}</h3>
+            <div className="pl-7 space-y-2 text-sm text-muted-foreground">{children}</div>
+        </div>
+    )
+}
+
+const DetailItem = ({ label, value }: { label: string, value?: string | number | null }) => {
+    if (!value && value !== 0) return null;
+    return (
+        <div>
+            <p className="font-semibold text-foreground">{label}</p>
+            <p className="whitespace-pre-wrap">{value}</p>
+        </div>
+    )
 }
 
 export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps) {
@@ -23,6 +43,7 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
     }
     
     const formatDate = (dateString: string) => {
+        if (!dateString || isNaN(new Date(dateString).getTime())) return "N/A";
         return new Date(dateString).toLocaleDateString('es-ES', {
             year: 'numeric',
             month: 'long',
@@ -30,21 +51,11 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
         });
     }
     
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        }).format(amount);
-    }
-    
     return (
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-6">
+        <div className="space-y-6 max-h-[75vh] overflow-y-auto pr-6">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                 <div>
-                    <h3 className="text-lg font-semibold">{proyecto.nombre_iniciativa || `Proyecto #${proyecto.id_proyecto}`}</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Iniciativa ID #{proyecto.id_iniciativa}
-                    </p>
+                    <h3 className="text-2xl font-bold">{proyecto.titulo}</h3>
                 </div>
                  <Badge variant="outline" className={cn("border-0 text-base", estadoColors[proyecto.estado_proyecto])}>
                     <div className="flex items-center gap-2">
@@ -55,73 +66,52 @@ export default function VerProyectoDetalle({ proyecto }: VerProyectoDetalleProps
             </div>
             
             <Separator />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
-                <div className="flex items-start gap-3">
-                    <Calendar className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Fecha de Inicio</p>
-                        <p className="text-muted-foreground">{formatDate(proyecto.fecha_inicio)}</p>
-                    </div>
-                </div>
-                 <div className="flex items-start gap-3">
-                    <CalendarCheck className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Fecha de Fin (Estimada)</p>
-                        <p className="text-muted-foreground">{formatDate(proyecto.fecha_fin_estimada)}</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-3">
-                    <DollarSign className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Presupuesto</p>
-                        <p className="text-muted-foreground">{formatCurrency(proyecto.presupuesto_usd)}</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-3">
-                    <Users className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Responsable Célula</p>
-                        <p className="text-muted-foreground">{proyecto.responsable_celula}</p>
-                    </div>
-                </div>
-                <div className="flex items-start gap-3">
-                    <User className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Responsable Técnico</p>
-                        <p className="text-muted-foreground">{proyecto.responsable_tecnico}</p>
-                    </div>
-                </div>
-                 <div className="flex items-start gap-3">
-                    <Wrench className="h-5 w-5 text-muted-foreground mt-1" />
-                    <div>
-                        <p className="font-semibold">Tecnología Utilizada</p>
-                        <p className="text-muted-foreground">{proyecto.tecnologia_utilizada}</p>
-                    </div>
-                </div>
-            </div>
             
-            <Separator className="my-6" />
+            <div className="grid grid-cols-1 gap-x-8 gap-y-6">
+                <DetailSection title="Definición del Proyecto" icon={Info}>
+                    <DetailItem label="Descripción del Problema" value={proyecto.descripcionProblema} />
+                    <DetailItem label="Objetivo General" value={proyecto.objetivo} />
+                    <DetailItem label="Objetivo Específico" value={proyecto.objetivoEspecifico} />
+                    <DetailItem label="Situación Inicial" value={proyecto.situacionInicial} />
+                    <DetailItem label="Situación Deseada" value={proyecto.situacionDeseada} />
+                </DetailSection>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2"><TrendingUp className="h-5 w-5" /> Estado de Beneficios</h3>
-                    <p className="text-muted-foreground whitespace-pre-wrap">{proyecto.beneficios_estado}</p>
-                </div>
-                 <div className="space-y-3">
-                    <h3 className="text-lg font-semibold flex items-center gap-2"><LinkIcon className="h-5 w-5" /> Documentación</h3>
-                    {proyecto.url_documentacion ? (
-                        <Button asChild variant="outline">
-                            <Link href={proyecto.url_documentacion} target="_blank" rel="noopener noreferrer">
-                                Ver Documentación
-                            </Link>
-                        </Button>
-                    ) : (
-                        <p className="text-muted-foreground">No hay enlace de documentación.</p>
-                    )}
-                </div>
+                <Separator/>
+                
+                <DetailSection title="Análisis de Beneficios" icon={TrendingUp}>
+                    <DetailItem label="Beneficios Económicos" value={proyecto.beneficiosEconomicos} />
+                    <DetailItem label="Beneficios para el Cliente" value={proyecto.beneficiosCliente} />
+                    <DetailItem label="Beneficios para Colaboradores" value={proyecto.beneficiosColaboradores} />
+                    <DetailItem label="Estado de los Beneficios" value={proyecto.beneficios_estado} />
+                </DetailSection>
+
+                <Separator/>
+
+                <DetailSection title="Gestión y Detalles Técnicos" icon={Wrench}>
+                    <div className="grid grid-cols-2 gap-4">
+                        <DetailItem label="Fecha de Inicio" value={formatDate(proyecto.fecha_inicio)} />
+                        <DetailItem label="Fecha de Fin" value={formatDate(proyecto.fecha_fin)} />
+                    </div>
+                     <DetailItem label="Tecnología" value={proyecto.tecnologia} />
+                     <DetailItem label="Datos de Referencia" value={proyecto.datosReferencia} />
+                     <DetailItem label="Conclusiones" value={proyecto.conclusiones} />
+                </DetailSection>
+
+                 <Separator/>
+
+                <DetailSection title="Resultados y Variaciones" icon={BarChart}>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <DetailItem label="Var. Seniority Técnico" value={proyecto.varSeniorityTecnico} />
+                        <DetailItem label="Var. Seniority Operativo" value={proyecto.varSeniorityOperativo} />
+                        <DetailItem label="Var. Tiempo (%)" value={`${proyecto.varTiempo}%`} />
+                        <DetailItem label="Var. Involucrados (%)" value={`${proyecto.varInvolucrados}%`} />
+                        <DetailItem label="Var. Frecuencia (%)" value={`${proyecto.varFrecuencia}%`} />
+                    </div>
+                </DetailSection>
             </div>
 
         </div>
     );
 }
+
+    

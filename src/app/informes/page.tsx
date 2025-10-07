@@ -6,7 +6,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} 
+from "@/components/ui/card";
 
 export default function InformesPage() {
   const reportUrl = "https://app.powerbi.com/reportEmbed?reportId=e86d4cd7-c159-4d6f-ba7b-785dabed0f76&autoAuth=true&ctid=e529544b-b6a6-44be-a25b-70b74b34311c&groupId=e6169e8d-c410-479a-a17a-6eb2ce9fe95d";
@@ -16,7 +17,6 @@ export default function InformesPage() {
       <Card>
         <CardHeader>
           <CardTitle>Informe de Power BI</CardTitle>
-        
         </CardHeader>
         <CardContent>
           <div className="aspect-video w-full">

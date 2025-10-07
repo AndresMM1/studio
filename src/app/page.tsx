@@ -7,6 +7,7 @@ import {
   Clock,
   Home,
   LineChart,
+  Server,
   Loader2,
   PlusCircle,
   Search,
@@ -154,8 +155,11 @@ function DashboardPage() {
 
   const filteredIncidents = useMemo(() => {
     return incidents.filter((incident) => {
+      const searchTerm = search.toLowerCase();
       return (
-        (search === "" || incident.service.toLowerCase().includes(search.toLowerCase())) &&
+        (search === "" || 
+         incident.service.toLowerCase().includes(searchTerm) ||
+         incident.description.toLowerCase().includes(searchTerm)) &&
         (priority === "all" || incident.priority === priority) &&
         (status === "all" || incident.status === status) &&
         (environment === "all" || incident.environment === environment)
@@ -176,7 +180,7 @@ function DashboardPage() {
     // Dummy calculations for metrics
     const avgResponseTime = totalIncidents > 0 ? "35m" : "N/A";
     const avgResolutionTime = totalIncidents > 0 ? "4h 15m" : "N/A";
-    const incidentRate = totalIncidents > 0 ? "1.2/día" : "N/A";
+    const incidentRate = totalIncidents > 0 ? "0" : "N/A";
     return { totalIncidents, avgResponseTime, avgResolutionTime, incidentRate };
   }, [filteredIncidents]);
   
@@ -422,13 +426,23 @@ function DashboardPage() {
           <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
             <Card>
               <CardHeader>
-                <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
-                  <MetricCard title="Incidentes Totales" value={metrics.totalIncidents} icon={BarChart} />
-                  <MetricCard title="Tiempo Prom. Respuesta" value={metrics.avgResponseTime} icon={Clock} />
-                  <MetricCard title="Tiempo Prom. Resolución" value={metrics.avgResolutionTime} icon={ShieldAlert} />
-                  <MetricCard title="Tasa General de Incidentes" value={metrics.incidentRate} icon={TriangleAlert} />
-                </div>
-              </CardHeader>
+        <div className="flex items-center space-x-4 text-sm text-muted-foreground pt-2">
+            <div className="flex items-center gap-2">
+                <BarChart className="h-5 w-5" />
+                <span><span className="font-bold text-foreground">{metrics.totalIncidents}</span> Incidentes Totales</span>
+            </div>
+            <Separator orientation="vertical" className="h-6" />
+            <div className="flex items-center gap-2">
+                <Server className="h-5 w-5" />
+                <span><span className="font-bold text-foreground">{metrics.incidentRate}</span> Incidentes Abiertos</span>
+            </div>
+            <Separator orientation="vertical" className="h-6" />
+            <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
+                <span><span className="font-bold text-foreground">{metrics.avgResolutionTime}</span> Tiempo Promedio de Resolución</span>
+            </div>
+        </div>
+      </CardHeader>
               <Separator />
               <CardContent className="pt-6">
                 <div className="flex flex-col gap-4 rounded-lg md:flex-row md:items-center">

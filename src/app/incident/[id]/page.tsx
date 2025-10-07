@@ -1,5 +1,5 @@
 "use client";
-
+import { AbejaEmpty } from "@/components/icons/AbejaEmpty";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from 'next/link';
@@ -162,8 +162,12 @@ export default function IncidentDetailPage() {
     setIsSubmitting(true);
 
     try {
-        const solutionUpdateText = `Solución aplicada: ${solution}`;
+        const solutionUpdateText = `Solución aplicada : ${solution}`;
         
+        // 1. Update status to "Cerrado"
+        await updateIncidentStatus(incident.id, "Cerrado");
+
+        // 2. Add final update and send documentation
         await Promise.all([
             addIncidentUpdate(incident.id.toString(), solutionUpdateText),
             sendClosureDocumentation({
@@ -176,10 +180,10 @@ export default function IncidentDetailPage() {
                 generatedAlerts: generatedAlerts,
                 docResponsible: docResponsible,
                 domainResponsible: domainResponsible,
-            }),
-            updateIncidentStatus(incident.id, "Cerrado")
+            })
         ]);
 
+        // 3. Fetch final state
         const [fetchedUpdates, updatedIncident] = await Promise.all([
             getIncidentUpdates(incident.id),
             getIncidentById(incident.id)
@@ -220,6 +224,8 @@ export default function IncidentDetailPage() {
                     <CardTitle>Incidente no encontrado</CardTitle>
                 </CardHeader>
                 <CardContent>
+                      <AbejaEmpty className="h-44 w-44 text-blue-300 transition-colors hover:text-blue-400 blue-100" />
+                  
                     <p>{error || "El incidente que estás buscando no existe."}</p>
                 </CardContent>
                 <CardFooter>
@@ -315,7 +321,12 @@ export default function IncidentDetailPage() {
                             </div>
                         ))
                     ) : (
+                      <div>
+<AbejaEmpty className="h-44 w-44 text-blue-300 transition-colors hover:text-blue-400 blue-100" />
+
                         <p className="text-muted-foreground">Aún no hay actualizaciones.</p>
+                      </div>
+                                            
                     )}
                 </div>
             </div>

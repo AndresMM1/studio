@@ -1,5 +1,6 @@
 
 import type { ElementType } from "react";
+import type { Incident, IncidentUpdate } from "../types";
 
 export type Complejidad = "Baja" | "Media" | "Alta";
 export type FrecuenciaMedicion = "Diaria" | "Semanal" | "Mensual" | "Bimestral" | "Trimestral" | "Semestral" | "Anual";
@@ -33,14 +34,24 @@ export interface ActividadDefinicion {
 export interface ActividadMedicion {
     id_medicion: number;
     id_actividad: number;
-    fecha_medicion: string;
-    frecuencia: FrecuenciaMedicion;
-    tiempo_manual_horas: number;
-    cantidad_personas: number;
+    "Tipo Medicion": "Real" | "Proyectada";
+    "Fecha Medicion": string;
+    "Señority Tecnico": number;
+    "Señority Operativo": number;
+    "Tiempo Minutos": number;
+    "Involucrados": number;
+    "Cantidad x Mes": number;
+    "Tiempo x Mes": number;
+    "Tiempo Hrs x Mes": number;
+    "Otra Unidad Medida": string;
+    "Unidad Tiempo": string;
+    "Medida": string;
 }
+
 
 export interface IniciativaAutomatizacion {
   id_iniciativa: number;
+  id_proyecto?: number;
   id_actividades: number[];
   nombre_iniciativa: string;
   objetivo_iniciativa?: string;
@@ -55,16 +66,39 @@ export interface IniciativaAutomatizacion {
 
 export interface ProyectoAutomatizacion {
     id_proyecto: number;
-    id_iniciativa: number;
-    fecha_inicio: string;
-    fecha_fin_estimada: string;
-    responsable_celula?: string;
-    responsable_tecnico: string;
-    presupuesto_usd?: number;
-    estado_proyecto: EstadoProyecto;
-    url_documentacion?: string;
-    tecnologia_utilizada: string;
+    titulo: string; // Title
+
+    descripcionProblema?: string;
+    objetivo?: string;
+    situacionInicial?: string;
+    situacionDeseada?: string;
+    objetivoEspecifico?: string;
+    beneficiosEconomicos?: string;
+    beneficiosCliente?: string;
+    beneficiosColaboradores?: string;
+    datosReferencia?: string;
+    conclusiones?: string;
+    
+    fecha_inicio: string; // Fecha Inicio
+    fecha_fin: string; // Fecha Finalizacion
+    
+    tecnologia?: string; // Tecnología
     beneficios_estado?: string;
+    estado_proyecto: EstadoProyecto;
+
+    varSeniorityTecnico: number;
+    varSeniorityOperativo: number;
+    varTiempo: number;
+    varInvolucrados: number;
+    varFrecuencia: number;
 }
 
-export type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };
+export interface ProyectoConNombre extends ProyectoAutomatizacion {
+    nombre_iniciativa: string;
+}
+
+
+// Re-export Incident and IncidentUpdate to be used in the service pages
+export type { Incident, IncidentUpdate };
+
+    

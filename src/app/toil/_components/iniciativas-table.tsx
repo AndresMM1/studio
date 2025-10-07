@@ -16,20 +16,27 @@ import {
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
-import { Eye, Loader2 } from "lucide-react";
-import type { IniciativaAutomatizacion } from '@/lib/toil/types';
+import { Eye, Loader2, MoreHorizontal, Pencil } from "lucide-react";
+import type { IniciativaAutomatizacion, ActividadDefinicion, GrupoCelula, ProyectoConNombre } from '@/lib/toil/types';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import VerIniciativaDetalle from './ver-iniciativa-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 
 
 interface IniciativasTableProps {
     iniciativas: IniciativaAutomatizacion[];
+    actividades: ActividadDefinicion[];
+    gruposCelula: GrupoCelula[];
+    proyectos: ProyectoConNombre[];
     isLoading: boolean;
+    onEdit: (iniciativa: IniciativaAutomatizacion) => void;
+    onDataChange: () => void;
 }
 
-export default function IniciativasTable({ iniciativas, isLoading }: IniciativasTableProps) {
+export default function IniciativasTable({ iniciativas, actividades, gruposCelula, proyectos, isLoading, onEdit, onDataChange }: IniciativasTableProps) {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedIniciativa, setSelectedIniciativa] = useState<IniciativaAutomatizacion | null>(null);
     const [sorting, setSorting] = useState<SortingState>([])
@@ -87,10 +94,24 @@ export default function IniciativasTable({ iniciativas, isLoading }: Iniciativas
         {
             id: "actions",
             cell: ({ row }) => (
-                <Button variant="outline" size="sm" onClick={() => handleViewDetails(row.original)}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Ver Detalles
-                </Button>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menú</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleViewDetails(row.original)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Ver Detalles
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(row.original)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             ),
         },
     ]
@@ -121,6 +142,16 @@ export default function IniciativasTable({ iniciativas, isLoading }: Iniciativas
     return (
         <>
             <div className="space-y-4">
+                 <div className="flex items-center justify-between">
+                    <Input
+                        placeholder="Filtrar por nombre..."
+                        value={(table.getColumn("nombre_iniciativa")?.getFilterValue() as string) ?? ""}
+                        onChange={(event) =>
+                            table.getColumn("nombre_iniciativa")?.setFilterValue(event.target.value)
+                        }
+                        className="max-w-sm"
+                    />
+                </div>
                 <div className="rounded-md border">
                     <Table>
                         <TableHeader>
@@ -177,7 +208,7 @@ export default function IniciativasTable({ iniciativas, isLoading }: Iniciativas
                                 Información completa de la iniciativa de automatización.
                             </DialogDescription>
                         </DialogHeader>
-                        <VerIniciativaDetalle iniciativa={selectedIniciativa} />
+                        <VerIniciativaDetalle iniciativa={selectedIniciativa} actividades={actividades} gruposCelula={gruposCelula} proyectos={proyectos} onDataChange={onDataChange} />
                     </DialogContent>
                 </Dialog>
             )}

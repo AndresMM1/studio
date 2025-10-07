@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -8,13 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ActividadDefinicionSchema } from "@/lib/toil/schemas";
 import { type ActividadDefinicion, type GrupoCelula } from "@/lib/toil/types";
 import { useToast } from "@/hooks/use-toast";
-import { addActividadDefinicion } from "@/lib/toil/data";
+import { addActividadDefinicion, updateActividadDefinicion } from "@/lib/toil/data";
 
 const complejidadOptions: ActividadDefinicion['complejidad_ejecucion'][] = ["Baja", "Media", "Alta"];
 
@@ -23,38 +22,65 @@ type ActividadDefinicionForm = Omit<ActividadDefinicion, 'id_actividad'>;
 interface DefinirActividadFormProps {
   gruposCelula: GrupoCelula[];
   onSuccess: () => void;
+  actividadToEdit?: ActividadDefinicion | null;
+  isEditMode: boolean;
 }
 
-export default function DefinirActividadForm({ onSuccess, gruposCelula }: DefinirActividadFormProps) {
+const defaultValues: ActividadDefinicionForm = {
+    id_grupo_celula: 0,
+    actividad_practica: "",
+    actividad_detalle: "",
+    origen_operacion: "",
+    origen_alcance: "",
+    impacto_negocio_desc: "",
+    impacto_operacion_desc: "",
+    impacto_negocio: 1,
+    impacto_operacion: 1,
+    complejidad_ejecucion: "Baja",
+    automatizable: false,
+    es_toil: true,
+};
+
+export default function DefinirActividadForm({ onSuccess, gruposCelula, actividadToEdit, isEditMode }: DefinirActividadFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
 
-    const { register, handleSubmit, control, formState: { errors } } = useForm<ActividadDefinicionForm>({
+    const { register, handleSubmit, control, formState: { errors }, reset } = useForm<ActividadDefinicionForm>({
         resolver: zodResolver(ActividadDefinicionSchema.omit({ id_actividad: true })),
-        defaultValues: {
-            id_grupo_celula: 0,
-            actividad_practica: "",
-            actividad_detalle: "",
-            origen_operacion: "",
-            origen_alcance: "",
-            impacto_negocio_desc: "",
-            impacto_operacion_desc: "",
-            impacto_negocio: 1,
-            impacto_operacion: 1,
-            complejidad_ejecucion: "Baja",
-            automatizable: false,
-            es_toil: true,
-        },
+        defaultValues: actividadToEdit ? {
+            ...actividadToEdit,
+             id_grupo_celula: actividadToEdit.id_grupo_celula || 0,
+        } : defaultValues,
     });
+    
+     useEffect(() => {
+        if (actividadToEdit && isEditMode) {
+            reset({
+                ...actividadToEdit,
+                id_grupo_celula: actividadToEdit.id_grupo_celula || 0,
+            });
+        } else {
+            reset(defaultValues);
+        }
+    }, [actividadToEdit, isEditMode, reset]);
+
 
     const onSubmit = async (data: ActividadDefinicionForm) => {
         setIsSubmitting(true);
         try {
-            await addActividadDefinicion(data);
-            toast({
-                title: "Actividad Guardada",
-                description: "La nueva actividad de TOIL ha sido registrada exitosamente.",
-            });
+            if (isEditMode && actividadToEdit) {
+                await updateActividadDefinicion({ ...data, id_actividad: actividadToEdit.id_actividad });
+                 toast({
+                    title: "Actividad Actualizada",
+                    description: "La actividad TOIL ha sido actualizada exitosamente.",
+                });
+            } else {
+                await addActividadDefinicion(data);
+                toast({
+                    title: "Actividad Guardada",
+                    description: "La nueva actividad de TOIL ha sido registrada exitosamente.",
+                });
+            }
             onSuccess();
         } catch (error) {
             console.error("Error al guardar la actividad:", error);
@@ -70,14 +96,14 @@ export default function DefinirActividadForm({ onSuccess, gruposCelula }: Defini
 
   return (
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto pr-4">
                 <div className="space-y-2">
                     <Label htmlFor="id-grupo-celula">Grupo Célula/Chapter</Label>
                     <Controller
                         name="id_grupo_celula"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value.toString()}>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString() || ""}>
                                 <SelectTrigger id="id-grupo-celula">
                                     <SelectValue placeholder="Seleccionar un grupo" />
                                 </SelectTrigger>
@@ -105,7 +131,7 @@ export default function DefinirActividadForm({ onSuccess, gruposCelula }: Defini
                         name="actividad_practica"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                                 <SelectTrigger id="actividad-practica">
                                     <SelectValue placeholder="Seleccionar una práctica" />
                                 </SelectTrigger>
@@ -172,7 +198,7 @@ export default function DefinirActividadForm({ onSuccess, gruposCelula }: Defini
                         name="complejidad_ejecucion"
                         control={control}
                         render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value}>
                                 <SelectTrigger id="complejidad-ejecucion">
                                     <SelectValue placeholder="Seleccionar complejidad" />
                                 </SelectTrigger>
@@ -217,7 +243,7 @@ export default function DefinirActividadForm({ onSuccess, gruposCelula }: Defini
             <div className="flex justify-end">
                 <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isSubmitting ? "Guardando..." : "Guardar Actividad"}
+                    {isSubmitting ? "Guardando..." : isEditMode ? "Guardar Cambios" : "Guardar Actividad"}
                 </Button>
             </div>
       </form>

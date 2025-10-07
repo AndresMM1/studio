@@ -118,31 +118,29 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
   
   const createdIncidentFromApi = await response.json();
 
-  // The API returns the full incident object, let's use it directly.
-  // We'll parse it just like we do in getIncidents to ensure consistency.
-  let priority: Incident["priority"] = "Baja";
-  if(createdIncidentFromApi.AFFECT_PRIORITY) {
-      const p = createdIncidentFromApi.AFFECT_PRIORITY.charAt(0).toUpperCase() + createdIncidentFromApi.AFFECT_PRIORITY.slice(1).toLowerCase();
-      if (p === "Crítica" || p === "Alta" || p === "Media" || p === "Baja") {
-          priority = p;
-      }
+  // The response is { "Incident": "{\"CreatedID\":\"322\"}" }
+  // We need to parse the string inside the "Incident" property
+  if (!createdIncidentFromApi.Incident || typeof createdIncidentFromApi.Incident !== 'string') {
+    throw new Error("API response did not contain an 'Incident' string property.");
   }
 
-  const createdIncident: Incident = {
-    id: createdIncidentFromApi.Id,
-    service: createdIncidentFromApi.AFFECT_SERVICE || "N/A",
-    description: createdIncidentFromApi.AFFECT_DETAILS || "",
-    startTime: createdIncidentFromApi.AFFECT_START_DATE,
-    endDate: createdIncidentFromApi.AFFECT_END_DATE,
-    priority: priority,
-    status: "Proceso",
-    environment: createdIncidentFromApi.AFFECT_ENVIROMENT || "Producción",
-    teamsLink: createdIncidentFromApi.AFFECT_LINK,
-  };
+  const incidentData = JSON.parse(createdIncidentFromApi.Incident);
+  const newIncidentId = incidentData.CreatedID;
 
-  await addIncidentUpdate(createdIncident.id.toString(), 'Incidente creado.');
+  if (!newIncidentId) {
+    throw new Error("Parsed incident data did not contain a CreatedID.");
+  }
 
-  return createdIncident;
+  // Fetch the full incident details using the new ID
+  const newIncident = await getIncidentById(newIncidentId);
+  if (!newIncident) {
+    // Optional: Add retry logic here if needed, or just throw
+    throw new Error(`Failed to fetch newly created incident with ID: ${newIncidentId}`);
+  }
+
+  await addIncidentUpdate(newIncident.id.toString(), 'Incidente creado.');
+
+  return newIncident;
 }
 
 export async function getIncidentById(id: number): Promise<Incident | undefined> {
