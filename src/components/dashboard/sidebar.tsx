@@ -15,7 +15,6 @@ export function DashboardSidebar() {
         <div className="flex h-full max-h-screen flex-col gap-2">
           <div className="flex h-14 items-center justify-center border-sidebar-border lg:h-[60px] px-4">
             <Link href="/" className="flex items-center gap-2 font-semibold text-sidebar-primary-foreground">
-              <img src="https://www.goupayments.com.co/o/theme-gou/images/favicon.ico" className="h-8 w-8" />
               <span className="sr-only">Gestión de Incidentes</span>
             </Link>
           </div>
