@@ -23,6 +23,7 @@ import VerProyectoDetalle from './ver-proyecto-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 
 interface ProyectosTableProps {
     proyectos: ProyectoConNombre[];
@@ -135,6 +136,16 @@ export default function ProyectosTable({ proyectos, isLoading, onEdit }: Proyect
     return (
         <>
             <div className="space-y-4">
+                 <div className="flex items-center justify-between">
+                    <Input
+                        placeholder="Filtrar por título..."
+                        value={(table.getColumn("titulo")?.getFilterValue() as string) ?? ""}
+                        onChange={(event) =>
+                            table.getColumn("titulo")?.setFilterValue(event.target.value)
+                        }
+                        className="max-w-sm"
+                    />
+                </div>
                 <div className="rounded-md border">
                     <Table>
                         <TableHeader>

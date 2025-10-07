@@ -1,15 +1,22 @@
+"use client";
 
 import type { ActividadDefinicion, IniciativaAutomatizacion, GrupoCelula, ProyectoConNombre } from '@/lib/toil/types';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { createProjectedMeasurements } from '@/app/toil/actions';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
+import { Loader2, Zap } from 'lucide-react';
 
 interface VerIniciativaDetalleProps {
     iniciativa: IniciativaAutomatizacion;
     actividades: ActividadDefinicion[];
     gruposCelula: GrupoCelula[];
     proyectos: ProyectoConNombre[];
+    onDataChange: () => void;
 }
 
 const mapImpactoToLabel = (value: number | string): "Bajo" | "Medio" | "Alto" => {
@@ -19,7 +26,10 @@ const mapImpactoToLabel = (value: number | string): "Bajo" | "Medio" | "Alto" =>
     return "Bajo";
 };
 
-export default function VerIniciativaDetalle({ iniciativa, actividades, gruposCelula, proyectos }: VerIniciativaDetalleProps) {
+export default function VerIniciativaDetalle({ iniciativa, actividades, gruposCelula, proyectos, onDataChange }: VerIniciativaDetalleProps) {
+    const { toast } = useToast();
+    const [isCalculating, setIsCalculating] = useState(false);
+
     const prioridadColors: { [key: string]: string } = {
         "Crítica": "bg-red-100 text-red-800",
         "Alta": "bg-orange-100 text-orange-800",
@@ -57,6 +67,28 @@ export default function VerIniciativaDetalle({ iniciativa, actividades, gruposCe
       ? proyectos.find(p => p.id_proyecto === iniciativa.id_proyecto)
       : null;
 
+    const handleCalculateProjection = async () => {
+        if (!proyectoAsociado || !iniciativa) return;
+        setIsCalculating(true);
+        try {
+            const result = await createProjectedMeasurements(iniciativa, proyectoAsociado);
+            toast({
+                title: "Proyección Calculada",
+                description: `${result.count} mediciones proyectadas han sido creadas o actualizadas.`,
+            });
+            onDataChange();
+        } catch (error) {
+             console.error("Error al calcular la proyección:", error);
+             toast({
+                title: "Error de Cálculo",
+                description: "No se pudieron generar las mediciones proyectadas.",
+                variant: "destructive"
+             });
+        } finally {
+            setIsCalculating(false);
+        }
+    }
+
     return (
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-6">
             <div className="space-y-2">
@@ -85,7 +117,16 @@ export default function VerIniciativaDetalle({ iniciativa, actividades, gruposCe
             <Separator />
             
             <div className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground">Proyecto de Automatización Vinculado</h3>
+                <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-medium text-muted-foreground">Proyecto de Automatización Vinculado</h3>
+                    {proyectoAsociado && (
+                        <Button size="sm" onClick={handleCalculateProjection} disabled={isCalculating}>
+                            {isCalculating ? <Loader2 className="mr-2 animate-spin" /> : <Zap className="mr-2"/>}
+                            {isCalculating ? 'Calculando...' : 'Calcular Proyección'}
+                        </Button>
+                    )}
+                </div>
+
                 {proyectoAsociado ? (
                     <Card>
                         <CardHeader className="p-4">

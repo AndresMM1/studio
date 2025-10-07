@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 import { Users, Code, Database, Server, Component, Settings } from 'lucide-react';
 import type { ElementType } from "react";
 import type { ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ProyectoConNombre, EstadoProyecto, ServiceDetails } from "./types";
@@ -26,33 +21,64 @@ export async function updateActividadDefinicion(data: ActividadDefinicion): Prom
 }
 
 export async function addActividadMedicion(data: Omit<ActividadMedicion, 'id_medicion'>): Promise<any> {
-    console.log("Creando nueva medición:", data);
-    // Simulación: en un caso real, aquí iría la llamada a Power Automate.
-    await new Promise(resolve => setTimeout(resolve, 1000));
-     return { ...data, id_medicion: Date.now() };
-  }
+    const endpoint = 'https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/f8f7dae1c48b40a6b400167efa6e5730/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=AWl6LZuFmFGjvkpBALnXK_TJv6SPZU7begukISpvq18';
+    
+    // Mapeo del objeto 'data' al formato que espera Power Automate
+    const apiPayload = {
+      id_actividad: parseInt(data.id_actividad.toString(), 10),
+      fecha_medicion: data["Fecha Medicion"],
+      tipo_medicion: data["Tipo Medicion"],
+      seniority_tecnico: parseInt(data["Señority Tecnico"].toString(), 10),
+      seniority_operativo: parseInt(data["Señority Operativo"].toString(), 10),
+      tiempo_minutos: data["Tiempo Minutos"],
+      personas_involucradas: parseInt(data["Involucrados"].toString(), 10),
+      frecuencia_cantidad: parseInt(data["Cantidad x Mes"].toString(), 10),
+      frecuencia_tipo: data["Unidad Tiempo"],
+    };
+
+    console.log("Enviando nueva medición a la API:", apiPayload);
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiPayload),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Error al crear la medición:', errorBody);
+        throw new Error(`Error de red: ${errorBody}`);
+    }
+    
+    // Si la respuesta es 200 OK pero no tiene cuerpo, devolvemos un objeto de éxito.
+    // Esto evita el error "Unexpected end of JSON input" si Power Automate responde con un 200 y cuerpo vacío.
+    const responseText = await response.text();
+    if (responseText) {
+        try {
+            return JSON.parse(responseText);
+        } catch (e) {
+            console.warn("La respuesta de addActividadMedicion no era un JSON válido, pero la solicitud fue exitosa.", responseText);
+            return { success: true, response: responseText };
+        }
+    }
+    
+    return { success: true };
+}
   
 export async function getLatestMedicionForActividad(id_actividad: number): Promise<ActividadMedicion | null> {
-    // Simulación: En un escenario real, esta función haría una llamada a la API
-    // para obtener la última medición ("Real") de una actividad específica.
-    console.log(`Buscando la última medición para la actividad ${id_actividad}`);
-    await new Promise(resolve => setTimeout(resolve, 200));
+    console.log(`Buscando la última medición 'Real' para la actividad ${id_actividad}`);
+    const mediciones = await getActividadesMedicion();
+    
+    const medicionesDeActividad = mediciones
+        .filter(m => m.id_actividad === id_actividad && m["Tipo Medicion"] === "Real")
+        .sort((a,b) => new Date(b["Fecha Medicion"]).getTime() - new Date(a["Fecha Medicion"]).getTime());
 
-    // Devolvemos un mock de datos para la simulación
-    return {
-        id_medicion: Math.floor(Math.random() * 1000),
-        id_actividad: id_actividad,
-        fecha_medicion: new Date().toISOString(),
-        "Tipo Medicion": "Real",
-        "Señority Tecnico": "Senior",
-        "Señority Operativo": "Semi-Senior",
-        "Tiempo Minutos": 120,
-        "Personas Involucradas": 2,
-        "Frecuencia": 4,
-        "Frecuencia Tipo": "Semanal",
-        "I/O": "Input",
-        "Url Evidencia": "https://example.com/evidence"
-    };
+    if (medicionesDeActividad.length > 0) {
+        return medicionesDeActividad[0];
+    }
+    
+    console.warn(`No se encontró una medición 'Real' para la actividad ${id_actividad}`);
+    return null;
 }
 
 
@@ -72,10 +98,10 @@ export async function addIniciativaAutomatizacion(data: Omit<IniciativaAutomatiz
                     const newMedicion: Omit<ActividadMedicion, 'id_medicion'> = {
                         ...latestMedicion,
                         "Tipo Medicion": "Proyectada",
-                        fecha_medicion: new Date().toISOString(),
+                        "Fecha Medicion": new Date().toISOString(),
                         // Aplicar reducciones
                         "Tiempo Minutos": latestMedicion["Tiempo Minutos"] * (1 - (proyecto.varTiempo / 100)),
-                        "Personas Involucradas": Math.ceil(latestMedicion["Personas Involucradas"] * (1 - (proyecto.varInvolucrados / 100))),
+                        "Involucrados": Math.ceil(latestMedicion["Involucrados"] * (1 - (proyecto.varInvolucrados / 100))),
                         // Aquí podrías agregar más lógica para las otras variables si es necesario
                     };
                     await addActividadMedicion(newMedicion);
@@ -234,6 +260,55 @@ export async function getActividadesDefinicion(): Promise<ActividadDefinicion[]>
         return [];
     }
 }
+
+
+export async function getActividadesMedicion(): Promise<ActividadMedicion[]> {
+    const endpoint = 'https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/6b85c14e3df24cd1b10f4bf64c49d5dc/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=TeFQw28QE_qEgYa2ztOrrgTNBcWHcltPnF6atFAHXz4';
+    try {
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+            console.error('La API de mediciones falló con el estado:', response.status);
+            return [];
+        }
+        const data = await response.json();
+        const medicionesData = data.value || [];
+
+        if (!Array.isArray(medicionesData)) {
+            console.error('La respuesta de la API de mediciones no es un array.', data);
+            return [];
+        }
+
+        return medicionesData.map((item: any): ActividadMedicion => {
+            const tipoMedicion = item.Tipo_x0020_Medicion;
+            let mappedTipo: "Real" | "Proyectada" = "Real";
+            if (tipoMedicion === "Estimada" || tipoMedicion === "Proyectada") {
+                mappedTipo = "Proyectada";
+            }
+
+            return {
+                id_medicion: item.ID,
+                id_actividad: item.Id_x0020_Actividad_x0020_DefinicId,
+                "Tipo Medicion": mappedTipo,
+                "Fecha Medicion": item.Fecha_x0020_Medicion || new Date().toISOString(),
+                "Señority Tecnico": item.Se_x00f1_ority_x0020_Tecnico || 0,
+                "Señority Operativo": item.Se_x00f1_ority_x0020_Operativo || 0,
+                "Tiempo Minutos": item.Tiempo_x0020_Minutos || 0,
+                "Involucrados": item.Involucrados || 0,
+                "Cantidad x Mes": item.Cantidad_x0020_x_x0020_Mes || 0,
+                "Tiempo x Mes": parseFloat(item.Tiempo_x0020_x_x0020_Mes) || 0,
+                "Tiempo Hrs x Mes": parseFloat(item.Tiempo_x0020_Hrs_x0020_x_x0020_M) || 0,
+                "Otra Unidad Medida": item.Otra_x0020_Unidad_x0020_Medida || "",
+                "Unidad Tiempo": item.Unidad_x0020_Tiempo || "Minutos",
+                "Medida": item.Medida || "",
+            }
+        });
+
+    } catch (error) {
+        console.error("Error al obtener las mediciones:", error);
+        return [];
+    }
+}
+
 
 const grupoIconMap: { [key: number]: ElementType } = {
     1: Users,       // Chapter People

@@ -1,0 +1,57 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Esquema de Medición de Actividad",
+    "description": "Describe la estructura de datos para registrar una nueva medición de actividad TOIL.",
+    "type": "object",
+    "properties": {
+        "id_actividad": {
+            "type": "number",
+            "description": "El ID de la actividad TOIL que se está midiendo."
+        },
+        "tipo_medicion": {
+            "type": "string",
+            "description": "Indica si la medición es 'Real' o 'Proyectada'.",
+            "enum": ["Real", "Proyectada"]
+        },
+        "fecha_medicion": {
+            "type": "string",
+            "format": "date-time",
+            "description": "La fecha en que se realizó la medición."
+        },
+        "seniority_tecnico": {
+            "type": "number",
+            "description": "El nivel de seniority del perfil técnico involucrado."
+        },
+        "seniority_operativo": {
+            "type": "number",
+            "description": "El nivel de seniority del perfil operativo involucrado."
+        },
+        "tiempo_minutos": {
+            "type": "number",
+            "description": "El tiempo que toma realizar la actividad una vez, en minutos."
+        },
+        "personas_involucradas": {
+            "type": "integer",
+            "description": "La cantidad de personas necesarias para realizar la actividad."
+        },
+        "frecuencia_cantidad": {
+            "type": "integer",
+            "description": "La cantidad de veces que se realiza la actividad en un mes."
+        },
+        "frecuencia_tipo": {
+            "type": "string",
+            "description": "La unidad de tiempo base para la frecuencia (ej. Minutos, Horas)."
+        }
+    },
+    "required": [
+        "id_actividad",
+        "tipo_medicion",
+        "fecha_medicion",
+        "seniority_tecnico",
+        "seniority_operativo",
+        "tiempo_minutos",
+        "personas_involucradas",
+        "frecuencia_cantidad",
+        "frecuencia_tipo"
+    ]
+}

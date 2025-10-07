@@ -34,17 +34,20 @@ export interface ActividadDefinicion {
 export interface ActividadMedicion {
     id_medicion: number;
     id_actividad: number;
-    fecha_medicion: string;
     "Tipo Medicion": "Real" | "Proyectada";
-    "Señority Tecnico": string;
-    "Señority Operativo": string;
+    "Fecha Medicion": string;
+    "Señority Tecnico": number;
+    "Señority Operativo": number;
     "Tiempo Minutos": number;
-    "Personas Involucradas": number;
-    "Frecuencia": number;
-    "Frecuencia Tipo": "Diaria" | "Semanal" | "Mensual" | "Bimestral" | "Trimestral" | "Semestral" | "Anual";
-    "I/O": "Input" | "Output";
-    "Url Evidencia": string;
+    "Involucrados": number;
+    "Cantidad x Mes": number;
+    "Tiempo x Mes": number;
+    "Tiempo Hrs x Mes": number;
+    "Otra Unidad Medida": string;
+    "Unidad Tiempo": string;
+    "Medida": string;
 }
+
 
 export interface IniciativaAutomatizacion {
   id_iniciativa: number;

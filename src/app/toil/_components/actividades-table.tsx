@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from 'react';
@@ -22,6 +23,7 @@ import VerActividadDetalle from './ver-actividad-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { Input } from '@/components/ui/input';
 
 const impactoColors: { [key: string]: string } = {
     "Alto": "bg-red-100 text-red-800",
@@ -163,7 +165,15 @@ export default function ActividadesTable({ actividades, gruposCelula, isLoading,
     return (
         <>
         <div className="space-y-4">
-            <div className="flex items-center justify-end">
+            <div className="flex items-center justify-between">
+                <Input
+                    placeholder="Filtrar por actividad..."
+                    value={(table.getColumn("actividad_detalle")?.getFilterValue() as string) ?? ""}
+                    onChange={(event) =>
+                        table.getColumn("actividad_detalle")?.setFilterValue(event.target.value)
+                    }
+                    className="max-w-sm"
+                />
                 <div className="flex items-center gap-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

@@ -12,8 +12,7 @@ const prioridadIniciativaEnum: [PrioridadIniciativa, ...PrioridadIniciativa[]] =
 const estadoIniciativaEnum: [EstadoIniciativa, ...EstadoIniciativa[]] = ["Propuesta", "Aprobada", "Rechazada", "En progreso"];
 const estadoProyectoEnum: [EstadoProyecto, ...EstadoProyecto[]] = ["Planificado", "En Ejecución", "Finalizado", "En Pausa", "Cancelado"];
 const tipoMedicionEnum = ["Real", "Proyectada"] as const;
-const frecuenciaTipoEnum = ["Diaria", "Semanal", "Mensual", "Bimestral", "Trimestral", "Semestral", "Anual"] as const;
-const ioEnum = ["Input", "Output"] as const;
+
 
 export const ActividadDefinicionSchema = z.object({
   id_actividad: z.number().int().positive(),
@@ -34,16 +33,18 @@ export const ActividadDefinicionSchema = z.object({
 export const ActividadMedicionSchema = z.object({
     id_medicion: z.number().int().positive(),
     id_actividad: z.number().int().positive("La actividad es requerida."),
-    fecha_medicion: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Fecha inválida" }),
     "Tipo Medicion": z.enum(tipoMedicionEnum),
-    "Señority Tecnico": z.string().min(1, "El seniority técnico es requerido."),
-    "Señority Operativo": z.string().min(1, "El seniority operativo es requerido."),
+    "Fecha Medicion": z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Fecha inválida" }),
+    "Señority Tecnico": z.number().nonnegative("El valor no puede ser negativo."),
+    "Señority Operativo": z.number().nonnegative("El valor no puede ser negativo."),
     "Tiempo Minutos": z.number().nonnegative("El tiempo no puede ser negativo."),
-    "Personas Involucradas": z.number().int().positive("Debe haber al menos una persona involucrada."),
-    "Frecuencia": z.number().int().positive("La frecuencia debe ser al menos 1."),
-    "Frecuencia Tipo": z.enum(frecuenciaTipoEnum),
-    "I/O": z.enum(ioEnum),
-    "Url Evidencia": z.string().url("Debe ser una URL válida.").or(z.literal("")),
+    "Involucrados": z.number().int().positive("Debe haber al menos una persona involucrada."),
+    "Cantidad x Mes": z.number().int().positive("La cantidad debe ser al menos 1."),
+    "Tiempo x Mes": z.number().nonnegative(),
+    "Tiempo Hrs x Mes": z.number().nonnegative(),
+    "Otra Unidad Medida": z.string().optional(),
+    "Unidad Tiempo": z.string().min(1),
+    "Medida": z.string().optional(),
 });
 
 

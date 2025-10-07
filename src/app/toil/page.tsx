@@ -2,8 +2,8 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoConNombre, GrupoCelula } from '@/lib/toil/types';
-import { getActividadesDefinicion, getIniciativasAutomatizacion, getProyectosAutomatizacion, getGruposCelula } from '@/lib/toil/data';
+import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoConNombre, GrupoCelula, ActividadMedicion } from '@/lib/toil/types';
+import { getActividadesDefinicion, getIniciativasAutomatizacion, getProyectosAutomatizacion, getGruposCelula, getActividadesMedicion } from '@/lib/toil/data';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ActividadesTable from './_components/actividades-table';
@@ -21,9 +21,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import MedicionesTable from './_components/mediciones-table';
 
 export default function ToilDashboardPage() {
     const [actividades, setActividades] = useState<ActividadDefinicion[]>([]);
+    const [mediciones, setMediciones] = useState<ActividadMedicion[]>([]);
     const [iniciativas, setIniciativas] = useState<IniciativaAutomatizacion[]>([]);
     const [proyectos, setProyectos] = useState<ProyectoConNombre[]>([]);
     const [gruposCelula, setGruposCelula] = useState<GrupoCelula[]>([]);
@@ -45,13 +47,15 @@ export default function ToilDashboardPage() {
     async function loadData() {
         setIsLoading(true);
         try {
-            const [actividadesData, iniciativasData, proyectosData, gruposData] = await Promise.all([
+            const [actividadesData, medicionesData, iniciativasData, proyectosData, gruposData] = await Promise.all([
                 getActividadesDefinicion(),
+                getActividadesMedicion(),
                 getIniciativasAutomatizacion(),
                 getProyectosAutomatizacion(),
                 getGruposCelula()
             ]);
             setActividades(actividadesData);
+            setMediciones(medicionesData);
             setIniciativas(iniciativasData);
             setProyectos(proyectosData);
             setGruposCelula(gruposData);
@@ -130,8 +134,9 @@ export default function ToilDashboardPage() {
                 <Card>
                     <CardContent className="pt-6">
                         <Tabs defaultValue="actividades">
-                            <TabsList className="grid w-full grid-cols-3">
+                            <TabsList className="grid w-full grid-cols-4">
                                 <TabsTrigger value="actividades">Actividades</TabsTrigger>
+                                <TabsTrigger value="mediciones">Mediciones</TabsTrigger>
                                 <TabsTrigger value="iniciativas">Iniciativas</TabsTrigger>
                                 <TabsTrigger value="proyectos">Proyectos</TabsTrigger>
                             </TabsList>
@@ -143,6 +148,13 @@ export default function ToilDashboardPage() {
                                     onEdit={handleEditActividad}
                                 />
                             </TabsContent>
+                             <TabsContent value="mediciones">
+                                <MedicionesTable 
+                                    mediciones={mediciones}
+                                    actividades={actividades}
+                                    isLoading={isLoading}
+                                />
+                            </TabsContent>
                             <TabsContent value="iniciativas">
                                 <IniciativasTable 
                                     iniciativas={iniciativas}
@@ -151,6 +163,7 @@ export default function ToilDashboardPage() {
                                     proyectos={proyectos}
                                     isLoading={isLoading}
                                     onEdit={handleEditIniciativa}
+                                    onDataChange={loadData}
                                 />
                             </TabsContent>
                             <TabsContent value="proyectos">

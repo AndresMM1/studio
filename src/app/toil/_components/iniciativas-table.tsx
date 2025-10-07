@@ -23,6 +23,7 @@ import VerIniciativaDetalle from './ver-iniciativa-detalle';
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 
 
 interface IniciativasTableProps {
@@ -32,9 +33,10 @@ interface IniciativasTableProps {
     proyectos: ProyectoConNombre[];
     isLoading: boolean;
     onEdit: (iniciativa: IniciativaAutomatizacion) => void;
+    onDataChange: () => void;
 }
 
-export default function IniciativasTable({ iniciativas, actividades, gruposCelula, proyectos, isLoading, onEdit }: IniciativasTableProps) {
+export default function IniciativasTable({ iniciativas, actividades, gruposCelula, proyectos, isLoading, onEdit, onDataChange }: IniciativasTableProps) {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedIniciativa, setSelectedIniciativa] = useState<IniciativaAutomatizacion | null>(null);
     const [sorting, setSorting] = useState<SortingState>([])
@@ -140,6 +142,16 @@ export default function IniciativasTable({ iniciativas, actividades, gruposCelul
     return (
         <>
             <div className="space-y-4">
+                 <div className="flex items-center justify-between">
+                    <Input
+                        placeholder="Filtrar por nombre..."
+                        value={(table.getColumn("nombre_iniciativa")?.getFilterValue() as string) ?? ""}
+                        onChange={(event) =>
+                            table.getColumn("nombre_iniciativa")?.setFilterValue(event.target.value)
+                        }
+                        className="max-w-sm"
+                    />
+                </div>
                 <div className="rounded-md border">
                     <Table>
                         <TableHeader>
@@ -196,7 +208,7 @@ export default function IniciativasTable({ iniciativas, actividades, gruposCelul
                                 Información completa de la iniciativa de automatización.
                             </DialogDescription>
                         </DialogHeader>
-                        <VerIniciativaDetalle iniciativa={selectedIniciativa} actividades={actividades} gruposCelula={gruposCelula} proyectos={proyectos} />
+                        <VerIniciativaDetalle iniciativa={selectedIniciativa} actividades={actividades} gruposCelula={gruposCelula} proyectos={proyectos} onDataChange={onDataChange} />
                     </DialogContent>
                 </Dialog>
             )}
