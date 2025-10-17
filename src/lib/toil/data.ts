@@ -7,23 +7,110 @@ import type { Service } from '../types';
 
 
 export async function addActividadDefinicion(data: Omit<ActividadDefinicion, 'id_actividad'>): Promise<any> {
-  // Simulación: en un caso real, aquí iría la llamada a Power Automate.
-  console.log("Creando nueva actividad:", data);
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return { ...data, id_actividad: Date.now() }; // Retorna el objeto con un ID simulado.
+    const endpoint = 'https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/28b67cdc434c45cab28a611c5c7e322b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=qaYiL86tv7pdupxiUdDgWpmmIpcCCKdMgXYmcjrSCYs';
+
+    const mapActividadPracticaToId = (practica: string): string => {
+        switch (practica) {
+            case "gestion-incidentes": return "84";
+            case "desarrollo-software": return "85";
+            case "analisis-datos": return "86";
+            default: return "0";
+        }
+    };
+
+    const apiPayload = {
+      Id_Grupo_Celula_Chapter: data.id_grupo_celula.toString(),
+      Id_Actividad_Practica: mapActividadPracticaToId(data.actividad_practica),
+      Actividad_Detalle: data.actividad_detalle,
+      Origen_Operacion: data.origen_operacion,
+      Origen_Alcance: data.origen_alcance,
+      Impacto_Negocio_Descripcion: data.impacto_negocio_desc,
+      Impacto_Negocio: data.impacto_negocio.toString(),
+      Impacto_Operacion_Descripcion: data.impacto_operacion_desc,
+      Impacto_Operacion: data.impacto_operacion.toString(),
+      Complejidad_Ejecucion: data.complejidad_ejecucion,
+      Automatizable: data.automatizable,
+      Toil: data.es_toil.toString(),
+    };
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiPayload),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Error al crear la actividad:', errorBody);
+        throw new Error(`Error de red: ${errorBody}`);
+    }
+    
+    const responseText = await response.text();
+    if (responseText) {
+        try {
+            return JSON.parse(responseText);
+        } catch (e) {
+            return { success: true, response: responseText };
+        }
+    }
+    return { success: true };
 }
 
 export async function updateActividadDefinicion(data: ActividadDefinicion): Promise<any> {
-  // Simulación: en un caso real, aquí iría la llamada a Power Automate para actualizar.
-  console.log("Actualizando actividad:", data);
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return data; // Retorna el objeto actualizado.
+    const endpoint = 'https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/a1eaf64469674c0291f432185d7449bc/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MKuKDEmA1aa0HYQkpUdpUkLIdjZ06Hkp_v75w6u57GA';
+    
+    const mapActividadPracticaToId = (practica: string): string => {
+        switch (practica) {
+            case "gestion-incidentes": return "84";
+            case "desarrollo-software": return "85";
+            case "analisis-datos": return "86";
+            default: return "0";
+        }
+    };
+    
+    const apiPayload = {
+      ID: data.id_actividad, // ID de la actividad a actualizar
+      Id_Grupo_Celula_Chapter: data.id_grupo_celula.toString(),
+      Id_Actividad_Practica: mapActividadPracticaToId(data.actividad_practica),
+      Actividad_Detalle: data.actividad_detalle,
+      Origen_Operacion: data.origen_operacion,
+      Origen_Alcance: data.origen_alcance,
+      Impacto_Negocio_Descripcion: data.impacto_negocio_desc,
+      Impacto_Negocio: data.impacto_negocio.toString(),
+      Impacto_Operacion_Descripcion: data.impacto_operacion_desc,
+      Impacto_Operacion: data.impacto_operacion.toString(),
+      Complejidad_Ejecucion: data.complejidad_ejecucion,
+      Automatizable: data.automatizable,
+      Toil: data.es_toil.toString(),
+    };
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(apiPayload),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('Error al actualizar la actividad:', errorBody);
+        throw new Error(`Error de red: ${errorBody}`);
+    }
+    
+    const responseText = await response.text();
+    if (responseText) {
+        try {
+            return JSON.parse(responseText);
+        } catch (e) {
+            return { success: true, response: responseText };
+        }
+    }
+    return { success: true };
 }
+
 
 export async function addActividadMedicion(data: Omit<ActividadMedicion, 'id_medicion'>): Promise<any> {
     const endpoint = 'https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/f8f7dae1c48b40a6b400167efa6e5730/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=AWl6LZuFmFGjvkpBALnXK_TJv6SPZU7begukISpvq18';
     
-    // Mapeo del objeto 'data' al formato que espera Power Automate
     const apiPayload = {
       id_actividad: parseInt(data.id_actividad.toString(), 10),
       fecha_medicion: data["Fecha Medicion"],
@@ -35,8 +122,6 @@ export async function addActividadMedicion(data: Omit<ActividadMedicion, 'id_med
       frecuencia_cantidad: parseInt(data["Cantidad x Mes"].toString(), 10),
       frecuencia_tipo: data["Unidad Tiempo"],
     };
-
-    console.log("Enviando nueva medición a la API:", apiPayload);
 
     const response = await fetch(endpoint, {
         method: 'POST',
@@ -50,14 +135,12 @@ export async function addActividadMedicion(data: Omit<ActividadMedicion, 'id_med
         throw new Error(`Error de red: ${errorBody}`);
     }
     
-    // Si la respuesta es 200 OK pero no tiene cuerpo, devolvemos un objeto de éxito.
-    // Esto evita el error "Unexpected end of JSON input" si Power Automate responde con un 200 y cuerpo vacío.
     const responseText = await response.text();
     if (responseText) {
         try {
             return JSON.parse(responseText);
         } catch (e) {
-            console.warn("La respuesta de addActividadMedicion no era un JSON válido, pero la solicitud fue exitosa.", responseText);
+             console.warn("La respuesta de addActividadMedicion no era un JSON válido, pero la solicitud fue exitosa.", responseText);
             return { success: true, response: responseText };
         }
     }
@@ -84,11 +167,9 @@ export async function getLatestMedicionForActividad(id_actividad: number): Promi
 
 export async function addIniciativaAutomatizacion(data: Omit<IniciativaAutomatizacion, 'id_iniciativa'>): Promise<any> {
     console.log("Creando nueva iniciativa:", data);
-    // Simulación de la creación de la iniciativa
     await new Promise(resolve => setTimeout(resolve, 1000));
     const newIniciativa = { ...data, id_iniciativa: Date.now() };
 
-    // Lógica para crear mediciones proyectadas si la iniciativa está vinculada a un proyecto
     if (data.id_proyecto && data.id_actividades.length > 0) {
         const proyecto = await getProyectoById(data.id_proyecto);
         if (proyecto) {
@@ -99,12 +180,10 @@ export async function addIniciativaAutomatizacion(data: Omit<IniciativaAutomatiz
                         ...latestMedicion,
                         "Tipo Medicion": "Proyectada",
                         "Fecha Medicion": new Date().toISOString(),
-                        // Aplicar reducciones
                         "Tiempo Minutos": latestMedicion["Tiempo Minutos"] * (1 - (proyecto.varTiempo / 100)),
                         "Involucrados": Math.ceil(latestMedicion["Involucrados"] * (1 - (proyecto.varInvolucrados / 100))),
-                        // Aquí podrías agregar más lógica para las otras variables si es necesario
                     };
-                    await addActividadMedicion(newMedicion);
+                    addActividadMedicion(newMedicion);
                 }
             }
         }
@@ -117,12 +196,10 @@ export async function updateIniciativaAutomatizacion(data: IniciativaAutomatizac
     console.log("Actualizando iniciativa:", data);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Aquí también se podría añadir la lógica de cálculo si el proyecto se asigna en una actualización
     if (data.id_proyecto && data.id_actividades.length > 0) {
          const proyecto = await getProyectoById(data.id_proyecto);
          if (proyecto) {
              console.log(`Recalculando mediciones para iniciativa ${data.id_iniciativa} con proyecto ${proyecto.titulo}`);
-             // La lógica de cálculo iría aquí, similar a `addIniciativaAutomatizacion`
          }
     }
 
@@ -169,7 +246,8 @@ export async function addProyectoAutomatizacion(data: Omit<ProyectoAutomatizacio
         throw new Error(`Error de red: ${errorBody}`);
     }
     
-    return response.json();
+    const responseText = await response.text();
+    return responseText ? JSON.parse(responseText) : {};
 }
 
 export async function updateProyectoAutomatizacion(data: ProyectoAutomatizacion): Promise<any> {
@@ -213,7 +291,8 @@ export async function updateProyectoAutomatizacion(data: ProyectoAutomatizacion)
         throw new Error(`Error de red: ${errorBody}`);
     }
     
-    return response.json();
+    const responseText = await response.text();
+    return responseText ? JSON.parse(responseText) : {};
 }
 
 const mapActividadPractica = (id: number): string => {
@@ -232,7 +311,8 @@ export async function getActividadesDefinicion(): Promise<ActividadDefinicion[]>
             console.error('La API de actividades falló con el estado:', response.status);
             return [];
         }
-        const data = await response.json();
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : { value: [] };
         const actividadesData = data.value || [];
 
         if (!Array.isArray(actividadesData)) {
@@ -253,7 +333,7 @@ export async function getActividadesDefinicion(): Promise<ActividadDefinicion[]>
             impacto_operacion: item.Impacto_x0020_Operacion || 0,
             complejidad_ejecucion: item.Complejidad_x0020_Ejecucion || "Baja",
             automatizable: item.Automatizable || false,
-            es_toil: item.Toil || false,
+            es_toil: item.Toil === 'TRUE',
         }));
     } catch (error) {
         console.error("Error al obtener las actividades:", error);
@@ -270,7 +350,8 @@ export async function getActividadesMedicion(): Promise<ActividadMedicion[]> {
             console.error('La API de mediciones falló con el estado:', response.status);
             return [];
         }
-        const data = await response.json();
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : { value: [] };
         const medicionesData = data.value || [];
 
         if (!Array.isArray(medicionesData)) {
@@ -326,7 +407,8 @@ export async function getGruposCelula(): Promise<GrupoCelula[]> {
             console.error('La API de grupos de célula falló con el estado:', response.status);
             return [];
         }
-        const data = await response.json();
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : { value: [] };
         const gruposData = data.value || [];
 
         if (!Array.isArray(gruposData)) {
@@ -358,10 +440,12 @@ async function getIniciativaActividadLinks(): Promise<Map<number, number[]>> {
     try {
         const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/897f219c997040eab1ef511676088e88/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=F__TEB918blfCn7GGQJeEVu2v8q5tRwwG9Jz4P6ZnOs');
         if (!response.ok) {
-            console.error('La API de enlaces iniciativa-actividad falló:', response.status);
+            const errorBody = await response.text();
+            console.error('La API de enlaces iniciativa-actividad falló:', response.status, errorBody);
             return linksMap;
         }
-        const data = await response.json();
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : { value: [] };
         const linksData = data.value || [];
 
         if (!Array.isArray(linksData)) {
@@ -395,7 +479,8 @@ export async function getIniciativasAutomatizacion(): Promise<IniciativaAutomati
             console.error('La API de iniciativas falló con el estado:', iniciativasResponse.status);
             return [];
         }
-        const data = await iniciativasResponse.json();
+        const text = await iniciativasResponse.text();
+        const data = text ? JSON.parse(text) : { value: [] };
         const iniciativasData = data.value || [];
 
         if (!Array.isArray(iniciativasData)) {
@@ -428,10 +513,12 @@ export async function getProyectosAutomatizacion(): Promise<ProyectoConNombre[]>
     try {
         const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/5f7a21bba65d47119d4b909be9a98889/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Gvzl4O3H20UWyLprc2n-9OdW6TWv5GtX-bJsSxDFycQ');
         if (!response.ok) {
-            console.error('La API de proyectos falló con el estado:', response.status);
+            const errorBody = await response.text();
+            console.error('La API de proyectos falló con el estado:', response.status, errorBody);
             return [];
         }
-        const data = await response.json();
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : { value: [] };
         const proyectosData = data.value || [];
 
         if (!Array.isArray(proyectosData)) {
@@ -582,3 +669,6 @@ export async function getServiceById(id: number, services: Service[]): Promise<S
     
 
     
+
+
+

@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { ActividadDefinicion, IniciativaAutomatizacion, ProyectoConNombre, GrupoCelula, ActividadMedicion } from '@/lib/toil/types';
 import { getActividadesDefinicion, getIniciativasAutomatizacion, getProyectosAutomatizacion, getGruposCelula, getActividadesMedicion } from '@/lib/toil/data';
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import IniciativasTable from './_components/iniciativas-table';
 import ProyectosTable from './_components/proyectos-table';
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import DefinirActividadForm from "./_components/definir-actividad-form";
 import RegistrarIniciativaForm from "./_components/registrar-iniciativa-form";
 import CrearProyectoForm from "./_components/crear-proyecto-form";
@@ -22,6 +22,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import MedicionesTable from './_components/mediciones-table';
+import ComparacionMedicionesChart from './_components/comparacion-mediciones-chart';
+import TotalAhorroChart from './_components/total-ahorro-chart';
+import AhorroPorProyectoChart from './_components/impact-matrix-chart';
 
 export default function ToilDashboardPage() {
     const [actividades, setActividades] = useState<ActividadDefinicion[]>([]);
@@ -42,7 +45,6 @@ export default function ToilDashboardPage() {
     const isEditModeActividad = !!actividadToEdit;
     const isEditModeIniciativa = !!iniciativaToEdit;
     const isEditModeProyecto = !!proyectoToEdit;
-
 
     async function loadData() {
         setIsLoading(true);
@@ -106,6 +108,64 @@ export default function ToilDashboardPage() {
         if (!isProyectoDialogOpen) setProyectoToEdit(null);
     }, [isActividadDialogOpen, isCreateIniciativaOpen, isProyectoDialogOpen]);
 
+    const { chartData, totalReal, totalProyectado, ahorroPorProyectoData } = useMemo(() => {
+        const proyectoMap = new Map<number, { real: number, proyectada: number, nombre: string }>();
+
+        for (const proyecto of proyectos) {
+            proyectoMap.set(proyecto.id_proyecto, { real: 0, proyectada: 0, nombre: proyecto.titulo });
+        }
+
+        const medicionesPorActividad = new Map<number, { real?: ActividadMedicion, proyectada?: ActividadMedicion }>();
+        for (const medicion of mediciones) {
+            const entry = medicionesPorActividad.get(medicion.id_actividad) || {};
+            if (medicion["Tipo Medicion"] === "Real") {
+                if (!entry.real || new Date(medicion["Fecha Medicion"]) > new Date(entry.real["Fecha Medicion"])) {
+                    entry.real = medicion;
+                }
+            } else if (medicion["Tipo Medicion"] === "Proyectada") {
+                if (!entry.proyectada || new Date(medicion["Fecha Medicion"]) > new Date(entry.proyectada["Fecha Medicion"])) {
+                    entry.proyectada = medicion;
+                }
+            }
+            medicionesPorActividad.set(medicion.id_actividad, entry);
+        }
+
+        for (const iniciativa of iniciativas) {
+            if (iniciativa.id_proyecto && proyectoMap.has(iniciativa.id_proyecto)) {
+                const proyectoEntry = proyectoMap.get(iniciativa.id_proyecto)!;
+                for (const actividadId of iniciativa.id_actividades) {
+                    const medicionesActividad = medicionesPorActividad.get(actividadId);
+                    if (medicionesActividad?.real) {
+                        proyectoEntry.real += medicionesActividad.real["Tiempo Hrs x Mes"];
+                    }
+                    if (medicionesActividad?.proyectada) {
+                        proyectoEntry.proyectada += medicionesActividad.proyectada["Tiempo Hrs x Mes"];
+                    }
+                }
+            }
+        }
+        
+        const resultChartData = Array.from(proyectoMap.values())
+            .filter(p => p.real > 0 || p.proyectada > 0)
+            .map(p => ({
+                proyecto: p.nombre,
+                real: p.real,
+                proyectada: p.proyectada,
+            }));
+
+        const resultAhorroData = resultChartData.map(p => ({
+            proyecto: p.proyecto,
+            ahorro: p.real - p.proyectada
+        })).filter(p => p.ahorro > 0);
+
+
+        const totalReal = resultChartData.reduce((sum, p) => sum + p.real, 0);
+        const totalProyectado = resultChartData.reduce((sum, p) => sum + p.proyectada, 0);
+
+        return { chartData: resultChartData, totalReal, totalProyectado, ahorroPorProyectoData: resultAhorroData };
+    }, [mediciones, iniciativas, proyectos]);
+
+
     return (
         <div className="flex flex-col h-full">
             <header className="flex h-14 items-center justify-between  px-4 lg:h-[60px] lg:px-6">
@@ -133,8 +193,9 @@ export default function ToilDashboardPage() {
             <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
                 <Card>
                     <CardContent className="pt-6">
-                        <Tabs defaultValue="actividades">
-                            <TabsList className="grid w-full grid-cols-4">
+                        <Tabs defaultValue="analisis">
+                            <TabsList className="grid w-full grid-cols-5">
+                                <TabsTrigger value="analisis">Análisis</TabsTrigger>
                                 <TabsTrigger value="actividades">Actividades</TabsTrigger>
                                 <TabsTrigger value="mediciones">Mediciones</TabsTrigger>
                                 <TabsTrigger value="iniciativas">Iniciativas</TabsTrigger>
@@ -172,6 +233,22 @@ export default function ToilDashboardPage() {
                                     isLoading={isLoading} 
                                     onEdit={handleEditProyecto}
                                 />
+                            </TabsContent>
+                             <TabsContent value="analisis" className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-6">
+                               <div className="lg:col-span-2 flex flex-col gap-6">
+                                    <AhorroPorProyectoChart data={ahorroPorProyectoData} isLoading={isLoading} />
+                                    <ComparacionMedicionesChart 
+                                        data={chartData} 
+                                        isLoading={isLoading}
+                                    />
+                               </div>
+                               <div className="lg:col-span-1 flex flex-col gap-6">
+                                    <TotalAhorroChart 
+                                     totalReal={totalReal}
+                                     totalProyectado={totalProyectado}
+                                     isLoading={isLoading}
+                                   />
+                               </div>
                             </TabsContent>
                         </Tabs>
                     </CardContent>

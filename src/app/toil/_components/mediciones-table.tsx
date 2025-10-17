@@ -49,11 +49,12 @@ export default function MedicionesTable({ mediciones, actividades, isLoading }: 
     const columns: ColumnDef<ActividadMedicion>[] = [
         {
             accessorKey: "id_medicion",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="ID Medición" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="ID Med." />,
+            cell: ({ row }) => <div className="w-12">{row.getValue("id_medicion")}</div>
         },
         {
             accessorKey: "id_actividad",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="ID Actividad" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="ID Act." />,
             cell: ({ row }) => {
                 const idActividad = row.getValue("id_actividad") as number;
                 const descripcion = actividadMap.get(idActividad) || "Descripción no encontrada";
@@ -61,7 +62,7 @@ export default function MedicionesTable({ mediciones, actividades, isLoading }: 
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger className="cursor-help">
-                                <span className="underline decoration-dotted">{idActividad}</span>
+                                <span className="underline decoration-dotted w-12 block">{idActividad}</span>
                             </TooltipTrigger>
                             <TooltipContent>
                                 <p className="max-w-xs">{descripcion}</p>
@@ -69,7 +70,8 @@ export default function MedicionesTable({ mediciones, actividades, isLoading }: 
                         </Tooltip>
                     </TooltipProvider>
                 )
-            }
+            },
+            size: 50,
         },
         {
             accessorKey: "Tipo Medicion",
@@ -79,27 +81,28 @@ export default function MedicionesTable({ mediciones, actividades, isLoading }: 
         {
             accessorKey: "Fecha Medicion",
             header: ({ column }) => <DataTableColumnHeader column={column} title="Fecha" />,
-            cell: ({ row }) => formatDate(row.getValue("Fecha Medicion")),
+            cell: ({ row }) => <div className="w-24">{formatDate(row.getValue("Fecha Medicion"))}</div>,
         },
         {
             accessorKey: "Señority Tecnico",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Seniority Técnico" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Sen. Téc." />,
         },
         {
             accessorKey: "Señority Operativo",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Seniority Operativo" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Sen. Op." />,
         },
         {
             accessorKey: "Tiempo Minutos",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Tiempo (Min)" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="T. Min" />,
+             cell: ({ row }) => <div className="w-16 text-center">{(row.getValue("Tiempo Minutos") as number)}</div>,
         },
         {
             accessorKey: "Involucrados",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Involucrados" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Pers." />,
         },
          {
             accessorKey: "Cantidad x Mes",
-            header: ({ column }) => <DataTableColumnHeader column={column} title="Cantidad/Mes" />,
+            header: ({ column }) => <DataTableColumnHeader column={column} title="Cant/Mes" />,
         },
         {
             accessorKey: "Tiempo Hrs x Mes",
@@ -155,7 +158,7 @@ export default function MedicionesTable({ mediciones, actividades, isLoading }: 
                             <TableRow key={headerGroup.id}>
                             {headerGroup.headers.map((header) => {
                                 return (
-                                <TableHead key={header.id}>
+                                <TableHead key={header.id} style={{ width: header.getSize() !== 150 ? `${header.getSize()}px` : undefined }}>
                                     {header.isPlaceholder
                                     ? null
                                     : flexRender(
