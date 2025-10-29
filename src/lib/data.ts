@@ -1,6 +1,7 @@
 import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion ,GrupoCelula,ClosureData} from "./types";
 import { Users, Code, Database, Server, Component, Settings } from 'lucide-react';
 import type { ElementType } from "react";
+import { sendWhatsAppGroupMessage } from "./notifications";
 
 type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };
 function parseAffectDetails(details: string): { service: string; description: string } {
@@ -140,6 +141,14 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
 
   await addIncidentUpdate(newIncident.id.toString(), 'Incidente creado.');
 
+    // Send WhatsApp notification (fire-and-forget). Message in Markdown.
+    try {
+        const md = `**Nuevo incidente creado**\n\n**ID:** ${newIncident.id}\n**Servicio:** ${newIncident.service}\n**Prioridad:** ${newIncident.priority}\n**Descripción:**\n${newIncident.description}\n**Inicio:** ${newIncident.startTime}`;
+        sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (create incident):', err));
+    } catch (e) {
+        console.error('Failed to prepare WhatsApp message for new incident:', e);
+    }
+
   return newIncident;
 }
 
@@ -210,13 +219,23 @@ export async function addIncidentUpdate(incidentId: string, text: string): Promi
             console.error('Error al agregar la actualización del incidente. Estado:', response.status, 'Cuerpo:', errorBody);
             throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
         }
-        const createdUpdateFromApi = await response.json();
-        return {
-            id: createdUpdateFromApi.Id || Date.now(),
-            incidentId: parseInt(incidentId, 10),
-            text: text,
-            timestamp: timestamp
-        };
+                const createdUpdateFromApi = await response.json();
+                const updateObj: IncidentUpdate = {
+                        id: createdUpdateFromApi.Id || Date.now(),
+                        incidentId: parseInt(incidentId, 10),
+                        text: text,
+                        timestamp: timestamp
+                };
+
+                // Send WhatsApp notification for the update (fire-and-forget)
+                try {
+                    const md = `**Actualización de incidente**\n\n**ID:** ${incidentId}\n**Mensaje:**\n${text}\n**Timestamp:** ${timestamp}`;
+                    sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (incident update):', err));
+                } catch (e) {
+                    console.error('Failed to prepare WhatsApp message for incident update:', e);
+                }
+
+                return updateObj;
 
     } catch (error) {
         console.error('Error al agregar la actualización del incidente:', error);
@@ -239,6 +258,13 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
         }
         
         const updatedIncident = await getIncidentById(id);
+                // Notify via WhatsApp about the status change (fire-and-forget)
+                try {
+                    const md = `**Estado de incidente actualizado**\n\n**ID:** ${id}\n**Nuevo Estado:** ${status}`;
+                    sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (status change):', err));
+                } catch (e) {
+                    console.error('Failed to prepare WhatsApp message for status change:', e);
+                }
         return updatedIncident;
 
     } catch (error) {
@@ -440,6 +466,13 @@ export async function sendClosureDocumentation(data: ClosureData): Promise<void>
         if (!response.ok) {
             throw new Error('Failed to send closure documentation');
         }
+                // Send WhatsApp notification about incident closure (fire-and-forget)
+                try {
+                    const md = `**Cierre de incidente**\n\n**ID:** ${data.incidentId}\n**Servicio:** ${data.service}\n**Inicio:** ${data.startTime}\n**Fin:** ${data.endTime}\n**Solución:**\n${data.solution}`;
+                    sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (closure docs):', err));
+                } catch (e) {
+                    console.error('Failed to prepare WhatsApp message for incident closure:', e);
+                }
     } catch (error) {
         console.error("Error sending closure documentation:", error);
         throw error;
