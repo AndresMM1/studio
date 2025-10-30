@@ -1,6 +1,10 @@
 "use client";
 
 import { Search } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { sendWhatsAppGroupMessage } from "@/lib/notifications";
 
 interface DashboardHeaderProps {
   onSearch: (term: string) => void;
@@ -15,6 +19,22 @@ export function DashboardHeader({
   selectedChannel,
   onChannelChange,
 }: DashboardHeaderProps) {
+  const [isSending, setIsSending] = useState(false);
+  const { toast } = useToast();
+
+  const handleTestClick = async () => {
+    setIsSending(true);
+    try {
+      const md = `**Prueba de Notificación**\n\nMensaje de prueba enviado desde la aplicación.`;
+      await sendWhatsAppGroupMessage(md);
+      toast({ title: "Notificación enviada", description: "Mensaje de prueba enviado al grupo WhatsApp." });
+    } catch (err: any) {
+      console.error("Test WhatsApp send failed:", err);
+      toast({ title: "Error al enviar", description: String(err?.message ?? err) });
+    } finally {
+      setIsSending(false);
+    }
+  };
   return (
     <header className="flex items-center justify-between gap-4 mb-6">
       <div className="flex items-center gap-4">
@@ -42,7 +62,11 @@ export function DashboardHeader({
           </select>
         </div>
       </div>
-      {/* You can add the Aval logo SVG here if needed */}
+      <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={handleTestClick} disabled={isSending}>
+          {isSending ? "Enviando..." : "Probar WhatsApp"}
+        </Button>
+      </div>
     </header>
   );
 }
