@@ -1,7 +1,7 @@
 export async function sendWhatsAppGroupMessage(message: string, groupName?: string, endpoint?: string): Promise<any> {
   // Use globalThis to safely read process.env without requiring @types/node in client builds
   const env = (globalThis as any).process?.env ?? {};
-  const targetEndpoint = endpoint ?? env.NEXT_PUBLIC_WHATSAPP_ENDPOINT ?? env.WHATSAPP_ENDPOINT ?? "https://fb803158572d.ngrok-free.app/send-group";
+  const targetEndpoint = endpoint ?? env.NEXT_PUBLIC_WHATSAPP_ENDPOINT ?? env.WHATSAPP_ENDPOINT ?? "https://edacffc65d5f.ngrok-free.app/send-group";
   const targetGroup = groupName ?? env.NEXT_PUBLIC_WHATSAPP_GROUP_NAME ?? env.WHATSAPP_GROUP_NAME ?? "testingau";
 
   try {
