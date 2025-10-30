@@ -25,7 +25,26 @@ export function DashboardHeader({
   const handleTestClick = async () => {
     setIsSending(true);
     try {
-      const md = `**Prueba de Notificación**\n\nMensaje de prueba enviado desde la aplicación.`;
+      const md = `**Buenas tardes**,  
+
+Se envía **reporte de salud de servicios** para hoy **Martes 28 de octubre de 2025, 16:00**, por parte de **SETI**:  
+
+- ✅ **Internet (Portales)**  
+- ✅ **Banca Empresas**  
+- ⚠️ **BackOffice:** Sixpro *(en validación)*  
+- ✅ **Integración**  
+- ✅ **Transversales**  
+- ✅ **Switch (Dispositivos)**  
+- ✅ **Aplicaciones Internas**  
+
+---
+
+- ✅ **Analítica Automatización**  
+- ✅ **Servicios Cloud**  
+- ✅ **SO Windows**  
+- ✅ **SO UNIX**  
+- ✅ **Bases de Datos**
+`;
       await sendWhatsAppGroupMessage(md);
       toast({ title: "Notificación enviada", description: "Mensaje de prueba enviado al grupo WhatsApp." });
     } catch (err: any) {
