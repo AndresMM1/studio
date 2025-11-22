@@ -1,31 +1,32 @@
-"use client";
-import Link from "next/link";
-import { AlertOctagon, GitPullRequestIcon, Cog, User, LayoutDashboard, BarChart3 } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { AlertOctagon, User } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/auth-context";
-import { usePathname } from "next/navigation";
+
+import gouLogo from "@/assets/gou-logo.ico";
 
 export function DashboardSidebar() {
   const { user } = useAuth();
-  const pathname = usePathname();
+  const location = useLocation();
+  const pathname = location.pathname;
 
   return (
     <TooltipProvider>
-      <div className="hidden border-r bg-sidebar text-sidebar-foreground md:block">
+      <div className="hidden border-r bg-gradient-to-b from-sidebar to-primary/5 text-sidebar-foreground md:block shadow-xl z-10">
         <div className="flex h-full max-h-screen flex-col gap-2">
-          <div className="flex h-14 items-center justify-center border-sidebar-border lg:h-[60px] px-4">
-            <Link href="/" className="flex items-center gap-2 font-semibold text-sidebar-primary-foreground">
-              <span className="sr-only">Gestión de Incidentes</span>
+          <div className="flex h-14 items-center justify-center border-sidebar-border lg:h-[60px]">
+            <Link to="/" className="flex h-10 w-10 items-center justify-center">
+              <img src={gouLogo} alt="Gou Payments" className="h-8 w-8" />
             </Link>
           </div>
           <div className="flex-1">
-            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+            <nav className="flex flex-col items-center gap-4 px-2 py-4">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
-                    href="/"
+                    to="/"
                     className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
-                      ${pathname === "/" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
+                      ${pathname === "/" ? "bg-primary/10 text-primary" : "text-gray-500 hover:text-primary hover:bg-primary/10"}
                     `}
                   >
                     <AlertOctagon className="h-5 w-5" />
@@ -34,69 +35,13 @@ export function DashboardSidebar() {
                 </TooltipTrigger>
                 <TooltipContent side="right">Incidentes</TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/dashboard"
-                    className={`mt-2 flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
-                      ${pathname === "/dashboard" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
-                    `}
-                  >
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span className="sr-only">Servicios</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Servicios</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/"
-                    className={`mt-2 flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
-                      ${pathname === "/" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
-                    `}
-                  >
-                    <GitPullRequestIcon className="h-5 w-5" />
-                    <span className="sr-only">Cambios</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Cambios</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/toil"
-                    className={`mt-2 flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
-                      ${pathname === "/toil" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
-                    `}
-                  >
-                    <Cog className="h-5 w-5" />
-                    <span className="sr-only">Toil</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Toil</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href="/informes"
-                    className={`mt-2 flex h-9 w-9 items-center justify-center rounded-lg transition-colors md:h-8 md:w-8
-                      ${pathname === "/informes" ? "bg-sidebar-accent text-sidebar-accent-foreground hover:text-sidebar-primary-foreground" : "text-sidebar-foreground hover:text-sidebar-primary-foreground"}
-                    `}
-                  >
-                    <BarChart3 className="h-5 w-5" />
-                    <span className="sr-only">Informes</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">Informes</TooltipContent>
-              </Tooltip>
             </nav>
           </div>
           <div className="mt-auto p-4 flex justify-center">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-sidebar-accent cursor-pointer">
-                  <User className="h-5 w-5 text-sidebar-accent-foreground" />
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 cursor-pointer">
+                  <User className="h-5 w-5 text-primary" />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="right">

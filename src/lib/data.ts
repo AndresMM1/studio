@@ -1,28 +1,18 @@
-import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion ,GrupoCelula,ClosureData} from "./types";
-import { Users, Code, Database, Server, Component, Settings } from 'lucide-react';
-import type { ElementType } from "react";
+import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ActividadDefinicion, ActividadMedicion, IniciativaAutomatizacion, ProyectoAutomatizacion, GrupoCelula, ClosureData } from "./types";
 import { sendWhatsAppGroupMessage } from "./notifications";
 
 type ProyectoConNombre = ProyectoAutomatizacion & { nombre_iniciativa: string };
-function parseAffectDetails(details: string): { service: string; description: string } {
-  const serviceMatch = details.match(/Servicio:\s*(.*?)\s*Descripción:/);
-  const descriptionMatch = details.match(/Descripción:\s*(.*)/);
 
-  const service = serviceMatch ? serviceMatch[1].trim() : "N/A";
-  const description = descriptionMatch ? descriptionMatch[1].trim() : details;
-
-  return { service, description };
-}
 
 export async function getServices(): Promise<Service[]> {
     try {
-        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/a567f422ff1e4c5c9467fae1912dde4a/triggers/manual/paths/invoke/?api-version=1&tenantId=tId&environmentId=045498d8-c2ea-e9f4-994f-58cd02cb99e0&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=UUSBLv0BTlB4DtDpw6ZmI5TX8u4G6-6AGDLIHMK2YyI');
+        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/a567f422ff1e4c5c9467fa1912dde4a/triggers/manual/paths/invoke/?api-version=1&tenantId=tId&environmentId=045498d8-c2ea-e9f4-994f-58cd02cb99e0&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=UUSBLv0BTlB4DtDpw6ZmI5TX8u4G6-6AGDLIHMK2YyI');
         if (!response.ok) {
             console.error('La API de servicios falló con el estado:', response.status);
             return [];
         }
         const data: ServiceApiResponse = await response.json();
-        
+
         const servicesData = data.value || [];
 
         if (!Array.isArray(servicesData)) {
@@ -40,106 +30,106 @@ export async function getServices(): Promise<Service[]> {
 
 
 export async function getIncidents(): Promise<Incident[]> {
-  try {
-    const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/de271aba90734dbfbf3276dc9791b5e0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=BR1gsw9rIACMMFNdaLQ8C6hP-UQVfNcs4uflH_lY0-A'); 
-    if (!response.ok) {
-       console.error('La API de incidentes falló con el estado:', response.status);
-      return [];
+    try {
+        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/de271aba90734dbfbf3276dc9791b5e0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=BR1gsw9rIACMMFNdaLQ8C6hP-UQVfNcs4uflH_lY0-A');
+        if (!response.ok) {
+            console.error('La API de incidentes falló con el estado:', response.status);
+            return [];
+        }
+        const data = await response.json();
+
+        const incidentsData = data.value || [];
+
+        if (!Array.isArray(incidentsData)) {
+            console.error('La respuesta de la API de incidentes no es un array y no se pudo encontrar un array de incidentes en el objeto de respuesta.', data);
+            return [];
+        }
+
+        // Map API response to Incident[]
+        return incidentsData.map((item: any): Incident => {
+            let priority: Incident["priority"] = "Baja";
+            if (item.AFFECT_PRIORITY) {
+                const p = item.AFFECT_PRIORITY.charAt(0).toUpperCase() + item.AFFECT_PRIORITY.slice(1).toLowerCase();
+                if (p === "Crítica" || p === "Alta" || p === "Media" || p === "Baja") {
+                    priority = p;
+                }
+            }
+
+            let status: Incident["status"] = "Proceso";
+            if (item.AFFECT_STATE) {
+                const s = item.AFFECT_STATE.charAt(0).toUpperCase() + item.AFFECT_STATE.slice(1).toLowerCase();
+                if (s === "Proceso" || s === "En espera" || s === "Cerrado" || s === "Cerrada") {
+                    status = s;
+                }
+            }
+
+
+            return {
+                id: item.Id,
+                service: item.AFFECT_SERVICE || "N/A",
+                description: item.AFFECT_DETAILS || "",
+                startTime: item.AFFECT_START_DATE,
+                endDate: item.AFFECT_END_DATE,
+                priority: priority,
+                status: status,
+                environment: item.AFFECT_ENVIROMENT || "Producción",
+                teamsLink: item.AFFECT_LINK,
+            };
+        });
+    } catch (error) {
+        console.error('Error al obtener incidentes:', error);
+        return [];
     }
-    const data = await response.json();
-
-    const incidentsData = data.value || [];
-
-    if (!Array.isArray(incidentsData)) {
-      console.error('La respuesta de la API de incidentes no es un array y no se pudo encontrar un array de incidentes en el objeto de respuesta.', data);
-      return [];
-    }
-    
-    // Map API response to Incident[]
-    return incidentsData.map((item: any): Incident => {
-      let priority: Incident["priority"] = "Baja";
-      if(item.AFFECT_PRIORITY) {
-          const p = item.AFFECT_PRIORITY.charAt(0).toUpperCase() + item.AFFECT_PRIORITY.slice(1).toLowerCase();
-          if (p === "Crítica" || p === "Alta" || p === "Media" || p === "Baja") {
-              priority = p;
-          }
-      }
-
-      let status: Incident["status"] = "Proceso";
-       if(item.AFFECT_STATE) {
-          const s = item.AFFECT_STATE.charAt(0).toUpperCase() + item.AFFECT_STATE.slice(1).toLowerCase();
-          if (s === "Proceso" || s === "En espera" || s === "Cerrado" || s === "Cerrada") {
-              status = s;
-          }
-      }
-
-
-      return {
-        id: item.Id,
-        service: item.AFFECT_SERVICE || "N/A",
-        description: item.AFFECT_DETAILS || "",
-        startTime: item.AFFECT_START_DATE,
-        endDate: item.AFFECT_END_DATE,
-        priority: priority,
-        status: status,
-        environment: item.AFFECT_ENVIROMENT || "Producción",
-        teamsLink: item.AFFECT_LINK,
-      };
-    });
-  } catch (error) {
-    console.error('Error al obtener incidentes:', error);
-    return [];
-  }
 }
 
 export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'endDate'>, userEmail: string): Promise<Incident> {
-  const apiPayload = {
-    AFFECT_STATE: 'Proceso',
-    AFFECT_DETAILS: incident.description,
-    AFFECT_START_DATE: incident.startTime,
-    PERSON_EMAIL: userEmail,
-    AFFECT_PRIORITY: incident.priority,
-    AFFECT_ENVIRONMENT: incident.environment,
-    AFFECT_SERVICE: incident.service,
-    AFFECT_LINK: incident.teamsLink || ''
-  };
-  
-  const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ef5686f87ba64be5b5eddf78a326b9f9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JNjQ7w17Wf2W6KASNfz0IuKddW_Zd3bSMK8ysI0RZeY', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(apiPayload),
-  });
-  if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('La respuesta de la red no fue correcta. Estado:', response.status, 'Cuerpo:', errorBody);
-      throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
-  }
-  
-  const createdIncidentFromApi = await response.json();
+    const apiPayload = {
+        AFFECT_STATE: 'Proceso',
+        AFFECT_DETAILS: incident.description,
+        AFFECT_START_DATE: incident.startTime,
+        PERSON_EMAIL: userEmail,
+        AFFECT_PRIORITY: incident.priority,
+        AFFECT_ENVIRONMENT: incident.environment,
+        AFFECT_SERVICE: incident.service,
+        AFFECT_LINK: incident.teamsLink || ''
+    };
 
-  // The response is { "Incident": "{\"CreatedID\":\"322\"}" }
-  // We need to parse the string inside the "Incident" property
-  if (!createdIncidentFromApi.Incident || typeof createdIncidentFromApi.Incident !== 'string') {
-    throw new Error("API response did not contain an 'Incident' string property.");
-  }
+    const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ef5686f87ba64be5b5eddf78a326b9f9/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=JNjQ7w17Wf2W6KASNfz0IuKddW_Zd3bSMK8ysI0RZeY', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(apiPayload),
+    });
+    if (!response.ok) {
+        const errorBody = await response.text();
+        console.error('La respuesta de la red no fue correcta. Estado:', response.status, 'Cuerpo:', errorBody);
+        throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
+    }
 
-  const incidentData = JSON.parse(createdIncidentFromApi.Incident);
-  const newIncidentId = incidentData.CreatedID;
+    const createdIncidentFromApi = await response.json();
 
-  if (!newIncidentId) {
-    throw new Error("Parsed incident data did not contain a CreatedID.");
-  }
+    // The response is { "Incident": "{\"CreatedID\":\"322\"}" }
+    // We need to parse the string inside the "Incident" property
+    if (!createdIncidentFromApi.Incident || typeof createdIncidentFromApi.Incident !== 'string') {
+        throw new Error("API response did not contain an 'Incident' string property.");
+    }
 
-  // Fetch the full incident details using the new ID
-  const newIncident = await getIncidentById(newIncidentId);
-  if (!newIncident) {
-    // Optional: Add retry logic here if needed, or just throw
-    throw new Error(`Failed to fetch newly created incident with ID: ${newIncidentId}`);
-  }
+    const incidentData = JSON.parse(createdIncidentFromApi.Incident);
+    const newIncidentId = incidentData.CreatedID;
 
-  await addIncidentUpdate(newIncident.id.toString(), 'Incidente creado.');
+    if (!newIncidentId) {
+        throw new Error("Parsed incident data did not contain a CreatedID.");
+    }
+
+    // Fetch the full incident details using the new ID
+    const newIncident = await getIncidentById(newIncidentId);
+    if (!newIncident) {
+        // Optional: Add retry logic here if needed, or just throw
+        throw new Error(`Failed to fetch newly created incident with ID: ${newIncidentId}`);
+    }
+
+    await addIncidentUpdate(newIncident.id.toString(), 'Incidente creado.');
 
     // Send WhatsApp notification (fire-and-forget). Message in Markdown.
     try {
@@ -149,16 +139,16 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
         console.error('Failed to prepare WhatsApp message for new incident:', e);
     }
 
-  return newIncident;
+    return newIncident;
 }
 
 export async function getIncidentById(id: number): Promise<Incident | undefined> {
-   const incidents = await getIncidents();
-   return incidents.find(incident => incident.id === id);
+    const incidents = await getIncidents();
+    return incidents.find(incident => incident.id === id);
 }
 
 async function getIncidentUpdatesFromApi(incidentId: number): Promise<IncidentUpdate[]> {
-    
+
     try {
         const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/3e000975fbe940c591ac1b834c53d0c2/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6_2Ws-GkXV-gq9MAgeQMJ8taCuL8Y7LO6glAOBui3d4', {
             method: 'POST',
@@ -204,7 +194,7 @@ export async function getIncidentUpdates(incidentId: number): Promise<IncidentUp
 export async function addIncidentUpdate(incidentId: string, text: string): Promise<IncidentUpdate> {
     const timestamp = new Date().toISOString();
     const newUpdateData = {
-        AFFECT_ID: incidentId.toString( ),
+        AFFECT_ID: incidentId.toString(),
         MONITORING_DATE: timestamp,
         MONITORING_DS: text,
     };
@@ -219,23 +209,23 @@ export async function addIncidentUpdate(incidentId: string, text: string): Promi
             console.error('Error al agregar la actualización del incidente. Estado:', response.status, 'Cuerpo:', errorBody);
             throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
         }
-                const createdUpdateFromApi = await response.json();
-                const updateObj: IncidentUpdate = {
-                        id: createdUpdateFromApi.Id || Date.now(),
-                        incidentId: parseInt(incidentId, 10),
-                        text: text,
-                        timestamp: timestamp
-                };
+        const createdUpdateFromApi = await response.json();
+        const updateObj: IncidentUpdate = {
+            id: createdUpdateFromApi.Id || Date.now(),
+            incidentId: parseInt(incidentId, 10),
+            text: text,
+            timestamp: timestamp
+        };
 
-                // Send WhatsApp notification for the update (fire-and-forget)
-                try {
-                    const md = `**Actualización de incidente**\n\n**ID:** ${incidentId}\n**Mensaje:**\n${text}\n**Timestamp:** ${timestamp}`;
-                    sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (incident update):', err));
-                } catch (e) {
-                    console.error('Failed to prepare WhatsApp message for incident update:', e);
-                }
+        // Send WhatsApp notification for the update (fire-and-forget)
+        try {
+            const md = `**Actualización de incidente**\n\n**ID:** ${incidentId}\n**Mensaje:**\n${text}\n**Timestamp:** ${timestamp}`;
+            sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (incident update):', err));
+        } catch (e) {
+            console.error('Failed to prepare WhatsApp message for incident update:', e);
+        }
 
-                return updateObj;
+        return updateObj;
 
     } catch (error) {
         console.error('Error al agregar la actualización del incidente:', error);
@@ -256,15 +246,15 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
             console.error('Error al actualizar el estado del incidente. Estado:', response.status, 'Cuerpo:', errorBody);
             throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
         }
-        
+
         const updatedIncident = await getIncidentById(id);
-                // Notify via WhatsApp about the status change (fire-and-forget)
-                try {
-                    const md = `**Estado de incidente actualizado**\n\n**ID:** ${id}\n**Nuevo Estado:** ${status}`;
-                    sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (status change):', err));
-                } catch (e) {
-                    console.error('Failed to prepare WhatsApp message for status change:', e);
-                }
+        // Notify via WhatsApp about the status change (fire-and-forget)
+        try {
+            const md = `**Estado de incidente actualizado**\n\n**ID:** ${id}\n**Nuevo Estado:** ${status}`;
+            sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (status change):', err));
+        } catch (e) {
+            console.error('Failed to prepare WhatsApp message for status change:', e);
+        }
         return updatedIncident;
 
     } catch (error) {
@@ -274,72 +264,67 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
 }
 
 export async function addActividadDefinicion(data: Omit<ActividadDefinicion, 'id_actividad'>): Promise<any> {
-  const response = await fetch('https://your-power-automate-url-for-actividad-definicion', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
+    const response = await fetch('https://your-power-automate-url-for-actividad-definicion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Error al crear la actividad: ${errorBody}`);
-  }
+    if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Error al crear la actividad: ${errorBody}`);
+    }
 
-  return response.json();
+    return response.json();
 }
 
 export async function addActividadMedicion(data: Omit<ActividadMedicion, 'id_medicion'>): Promise<any> {
     const response = await fetch('https://your-power-automate-url-for-actividad-medicion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
     });
-  
+
     if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Error al guardar la medición: ${errorBody}`);
+        const errorBody = await response.text();
+        throw new Error(`Error al guardar la medición: ${errorBody}`);
     }
-  
+
     return response.json();
-  }
-  
-  export async function addIniciativaAutomatizacion(data: Omit<IniciativaAutomatizacion, 'id_iniciativa'>): Promise<any> {
+}
+
+export async function addIniciativaAutomatizacion(data: Omit<IniciativaAutomatizacion, 'id_iniciativa'>): Promise<any> {
     const response = await fetch('https://your-power-automate-url-for-iniciativa-automatizacion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
     });
-  
+
     if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Error al crear la iniciativa: ${errorBody}`);
+        const errorBody = await response.text();
+        throw new Error(`Error al crear la iniciativa: ${errorBody}`);
     }
-  
+
     return response.json();
-  }
-  
-  export async function addProyectoAutomatizacion(data: Omit<ProyectoAutomatizacion, 'id_proyecto'>): Promise<any> {
+}
+
+export async function addProyectoAutomatizacion(data: Omit<ProyectoAutomatizacion, 'id_proyecto'>): Promise<any> {
     const response = await fetch('https://your-power-automate-url-for-proyecto-automatizacion', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
     });
-  
+
     if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Error al crear el proyecto: ${errorBody}`);
+        const errorBody = await response.text();
+        throw new Error(`Error al crear el proyecto: ${errorBody}`);
     }
-  
+
     return response.json();
-  }
+}
 
 // --- TOIL Mock Data / API ---
-const mapImpactoToLabel = (value: number | string): "Bajo" | "Medio" | "Alto" => {
-    const numValue = Number(value);
-    if (numValue >= 7) return "Alto";
-    if (numValue >= 4) return "Medio";
-    return "Bajo";
-};
+
 
 const mapActividadPractica = (id: number): string => {
     switch (id) {
@@ -401,7 +386,7 @@ export async function getIniciativasAutomatizacion(): Promise<IniciativaAutomati
 }
 
 export async function getProyectosAutomatizacion(): Promise<ProyectoConNombre[]> {
-    
+
     const proyectosConNombres = mockProyectos.map(proyecto => {
         const iniciativa = mockIniciativas.find(i => i.id_iniciativa === proyecto.id_iniciativa);
         return {
@@ -418,9 +403,9 @@ export async function getProyectoById(id: number): Promise<ProyectoConNombre | u
     return proyectos.find(p => p.id_proyecto === id);
 }
 
-    
 
-    export async function getGruposCelula(): Promise<GrupoCelula[]> {
+
+export async function getGruposCelula(): Promise<GrupoCelula[]> {
     try {
         const response = await fetch('https://bb1c482e0f77e8d6bb0369c6726081.01.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/b0efb844dc1847fe99fae7983095a17b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=APZ908nzc7TUqNhXzVUBYDXmEVi0OUmpmmA3KZ_um5c');
         if (!response.ok) {
@@ -443,13 +428,13 @@ export async function getProyectoById(id: number): Promise<ProyectoConNombre | u
 }
 export async function sendClosureDocumentation(data: ClosureData): Promise<void> {
     const apiPayload = {
-       incidentId: data.incidentId,
+        incidentId: data.incidentId,
         startTime: data.startTime,
         endTime: data.endTime,
         service: data.service,
         description: data.description,
         solution: data.solution,
-        generatedAlerts: data.generatedAlerts? "Sí" : "No",
+        generatedAlerts: data.generatedAlerts ? "Sí" : "No",
         docResponsible: data.docResponsible,
         domainResponsible: data.domainResponsible,
     };
@@ -466,13 +451,13 @@ export async function sendClosureDocumentation(data: ClosureData): Promise<void>
         if (!response.ok) {
             throw new Error('Failed to send closure documentation');
         }
-                // Send WhatsApp notification about incident closure (fire-and-forget)
-                try {
-                    const md = `**Cierre de incidente**\n\n**ID:** ${data.incidentId}\n**Servicio:** ${data.service}\n**Inicio:** ${data.startTime}\n**Fin:** ${data.endTime}\n**Solución:**\n${data.solution}`;
-                    sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (closure docs):', err));
-                } catch (e) {
-                    console.error('Failed to prepare WhatsApp message for incident closure:', e);
-                }
+        // Send WhatsApp notification about incident closure (fire-and-forget)
+        try {
+            const md = `**Cierre de incidente**\n\n**ID:** ${data.incidentId}\n**Servicio:** ${data.service}\n**Inicio:** ${data.startTime}\n**Fin:** ${data.endTime}\n**Solución:**\n${data.solution}`;
+            sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (closure docs):', err));
+        } catch (e) {
+            console.error('Failed to prepare WhatsApp message for incident closure:', e);
+        }
     } catch (error) {
         console.error("Error sending closure documentation:", error);
         throw error;
@@ -483,7 +468,7 @@ export async function generateTeamsMeetingLink(serviceName: string): Promise<str
     // IMPORTANT: Replace with your actual API endpoint for generating a Teams link
     const TEAMS_LINK_ENDPOINT = 'https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/f30c59b512a143feb378af616fbccd1b/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=dve5mMpvN9aVfh90IAPd3vm0d-FnA8Qcea6frrmcbGM';
     try {
-        const response = await fetch(TEAMS_LINK_ENDPOINT, { 
+        const response = await fetch(TEAMS_LINK_ENDPOINT, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

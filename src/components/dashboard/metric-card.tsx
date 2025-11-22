@@ -20,7 +20,7 @@ export function MetricCard({ title, value, icon: Icon }: MetricCardProps) {
           </CardContent>
         </div>
         <div className="flex items-center justify-center px-4">
-          <Icon className="text-blue-500 h-8 w-8" />
+          <Icon className="text-primary h-8 w-8" />
         </div>
       </div>
     </Card>

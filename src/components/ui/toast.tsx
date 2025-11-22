@@ -1,5 +1,5 @@
 "use client"
-import Image from "next/image"
+
 import imagenSucces from '@/public/AbejaSucess.png';
 import imagenFailure from '@/public/AbejaFail.png';
 
@@ -47,7 +47,7 @@ const toastVariants = cva(
 const Toast = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Root>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> &
-    VariantProps<typeof toastVariants>
+  VariantProps<typeof toastVariants>
 >(({ className, variant, children, ...props }, ref) => {
   const imageSrc = variant === "destructive" ? imagenFailure : imagenSucces;
   return (
@@ -56,11 +56,17 @@ const Toast = React.forwardRef<
       className={cn(toastVariants({ variant }), className)}
       {...props}
     >
-      <Image src={imageSrc} alt="" width={60} height={60} className={
+      <img
+        alt=""
+        width={40}
+        height={40}
+        src={typeof imageSrc === 'string' ? imageSrc : (imageSrc as any).src}
+        className={
           variant === "destructive"
             ? "mr-2 invert brightness-0"
             : "mr-2"
-        } />
+        }
+      />
       <div className="flex flex-col flex-1">
         {children}
       </div>

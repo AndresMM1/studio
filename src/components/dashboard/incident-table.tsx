@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert, HardHat, CheckCircle2, CircleOff, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 
 interface IncidentTableProps {
   incidents: Incident[];
@@ -29,7 +29,7 @@ const priorityMap: Record<IncidentPriority, { icon: React.ElementType; className
   "Crítica": { icon: ShieldAlert, className: "text-red-500", badgeClassName: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300" },
   "Alta": { icon: TriangleAlert, className: "text-orange-500", badgeClassName: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300" },
   "Media": { icon: AlertCircle, className: "text-yellow-500", badgeClassName: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300" },
-  "Baja": { icon: Info, className: "text-blue-500", badgeClassName: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300" },
+  "Baja": { icon: Info, className: "text-primary", badgeClassName: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" },
 };
 
 const statusMap: Record<IncidentStatus, { icon: React.ElementType; className: string; badgeClassName: string }> = {
@@ -43,15 +43,15 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
   return (
     <div className="mt-4">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Servicio</TableHead>
-            <TableHead>Prioridad</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead>Hora de inicio</TableHead>
-            <TableHead>Fecha de Finalización</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+        <TableHeader className="bg-primary/5">
+          <TableRow className="hover:bg-transparent border-primary/20">
+            <TableHead className="text-primary font-semibold">Servicio</TableHead>
+            <TableHead className="text-primary font-semibold">Prioridad</TableHead>
+            <TableHead className="text-primary font-semibold">Estado</TableHead>
+            <TableHead className="text-primary font-semibold">Descripción</TableHead>
+            <TableHead className="text-primary font-semibold">Hora de inicio</TableHead>
+            <TableHead className="text-primary font-semibold">Fecha de Finalización</TableHead>
+            <TableHead className="text-right text-primary font-semibold">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -66,11 +66,11 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
               const isOpen = incident.status === "Proceso" || incident.status === "En espera";
 
               return (
-                <TableRow 
+                <TableRow
                   key={incident.id}
                   className={cn(isOpen && "bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 animate-pulse")}
                 >
-                  <TableCell className="font-medium">{incident.service}</TableCell>
+                  <TableCell className="font-bold text-primary">{incident.service}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn("border-0 font-medium", priorityBadgeClassName)}>
                       <div className="flex items-center gap-2">
@@ -118,12 +118,12 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/incident/${incident.id}`}>
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          Ver detalle
-                        </Link>
-                      </Button>
+                    <Button asChild variant="outline" size="sm" className="border-primary text-primary hover:bg-primary hover:text-white transition-colors">
+                      <Link to={`/incident/${incident.id}`}>
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Ver detalle
+                      </Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               );
