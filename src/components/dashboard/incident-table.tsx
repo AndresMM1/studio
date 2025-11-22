@@ -67,6 +67,7 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
 
               return (
                 <TableRow
+                  onClick={() => window.location.href = `/incident/${incident.id}`}
                   key={incident.id}
                   className={cn(isOpen && "bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 animate-pulse")}
                 >
@@ -120,12 +121,16 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm" className="border-primary text-primary hover:bg-primary hover:text-white transition-colors">
                       <Link to={`/incident/${incident.id}`}>
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Ver detalle
+                        <ExternalLink className=" h-4 w-4" />
+
                       </Link>
                     </Button>
                   </TableCell>
+
+
+
                 </TableRow>
+
               );
             })
           ) : (

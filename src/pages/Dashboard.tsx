@@ -47,7 +47,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+    Tooltip,
+    TooltipContent,
     TooltipProvider,
+    TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -269,10 +272,20 @@ function DashboardPage() {
                         <div className="ml-auto flex items-center gap-4">
                             <Sheet open={isCreateModalOpen} onOpenChange={setCreateModalOpen}>
                                 <SheetTrigger asChild>
-                                    <Button className="mt-1">
-                                        <PlusCircle className="mr-2 h-4 w-4" />
-                                        Crear Incidente
-                                    </Button>
+
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger >
+                                                <Button className="rounded-full" >
+                                                    <PlusCircle className=" h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p className="max-w-md">Crear Incidente</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+
                                 </SheetTrigger>
                                 <SheetContent side="right" className="sm:max-w-[425px] overflow-y-auto">
                                     <form onSubmit={handleCreateIncident} className="mt-6">
