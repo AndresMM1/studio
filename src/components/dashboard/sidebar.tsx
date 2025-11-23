@@ -1,12 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
-import { AlertOctagon, User } from "lucide-react";
+import { AlertOctagon, User, Moon, Sun } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
+import { useTheme } from "@/contexts/theme-context";
 
 import gouLogo from "@/assets/gou-logo.ico";
 
 export function DashboardSidebar() {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const pathname = location.pathname;
 
@@ -37,18 +40,35 @@ export function DashboardSidebar() {
               </Tooltip>
             </nav>
           </div>
-          <div className="mt-auto p-4 flex justify-center">
+          <div className="mt-auto p-4 flex flex-col items-center gap-4">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 cursor-pointer">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleTheme}
+                  className="h-9 w-9"
+                >
+                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p className="font-bold">{user?.name}</p>
-                <p className="text-sm">{user?.email}</p>
+                {theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
               </TooltipContent>
             </Tooltip>
+            <div className="flex justify-center">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 cursor-pointer">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p className="font-bold">{user?.name}</p>
+                  <p className="text-sm">{user?.email}</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
         </div>
       </div>

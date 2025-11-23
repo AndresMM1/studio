@@ -271,22 +271,18 @@ function DashboardPage() {
                         <h1 className="text-xl font-bold tracking-tight">Gestión de Incidentes</h1>
                         <div className="ml-auto flex items-center gap-4">
                             <Sheet open={isCreateModalOpen} onOpenChange={setCreateModalOpen}>
-                                <SheetTrigger asChild>
-
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger >
-                                                <Button className="rounded-full" >
-                                                    <PlusCircle className=" h-4 w-4" />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p className="max-w-md">Crear Incidente</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-
-                                </SheetTrigger>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <SheetTrigger asChild>
+                                            <Button className="rounded-full">
+                                                <PlusCircle className="h-4 w-4" />
+                                            </Button>
+                                        </SheetTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p className="max-w-md">Crear Incidente</p>
+                                    </TooltipContent>
+                                </Tooltip>
                                 <SheetContent side="right" className="sm:max-w-[425px] overflow-y-auto">
                                     <form onSubmit={handleCreateIncident} className="mt-6">
                                         <SheetHeader>

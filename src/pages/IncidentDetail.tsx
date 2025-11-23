@@ -146,6 +146,11 @@ export default function IncidentDetailPage() {
 
         if (newStatus === "Cerrado") {
             setEndTime(getGmt5DateString());
+            // Populate initialAnalysis with the first avance (oldest update)
+            if (updates.length > 0) {
+                const firstUpdate = updates[updates.length - 1]; // Last item is the oldest
+                setInitialAnalysis(firstUpdate.text);
+            }
             setIsCloseDialogOpen(true);
             return;
         }
@@ -370,7 +375,15 @@ export default function IncidentDetailPage() {
                                 {incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && (
                                     <Button type="button" variant="destructive" disabled={isSubmitting} onClick={() => setIsCloseDialogOpen(true)}>Cerrar Incidente</Button>
                                 )}
-                                <Button type="button" variant="secondary" onClick={() => setIsCloseDialogOpen(true)}>Test Modal</Button>
+                                <Button type="button" variant="secondary" onClick={() => {
+                                    setEndTime(getGmt5DateString());
+                                    // Populate initialAnalysis with the first avance (oldest update)
+                                    if (updates.length > 0) {
+                                        const firstUpdate = updates[updates.length - 1]; // Last item is the oldest
+                                        setInitialAnalysis(firstUpdate.text);
+                                    }
+                                    setIsCloseDialogOpen(true);
+                                }}>Test Modal</Button>
                             </div>
                             <Button type="submit" disabled={isSubmitting || newUpdate.trim() === ''}>
                                 {isSubmitting ? "Enviando..." : "Agregar Actualización"}
