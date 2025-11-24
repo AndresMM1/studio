@@ -411,17 +411,16 @@ export default function IncidentDetailPage() {
                                 {incident.status !== 'En espera' && incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && <Button onClick={() => handleStatusChange("En espera")} type="button" variant="outline" disabled={isSubmitting}>Poner en espera</Button>}
                                 {(incident.status === 'En espera' || incident.status === 'Cerrado' || incident.status === 'Cerrada') && <Button onClick={() => handleStatusChange("Proceso")} type="button" variant="outline" disabled={isSubmitting}>Reabrir Incidente</Button>}
                                 {incident.status !== 'Cerrado' && incident.status !== 'Cerrada' && (
-                                    <Button type="button" variant="destructive" disabled={isSubmitting} onClick={() => setIsCloseDialogOpen(true)}>Cerrar Incidente</Button>
+                                    <Button type="button" variant="destructive" disabled={isSubmitting} onClick={() => {
+                                        setEndTime(getGmt5DateString());
+                                        if (updates.length > 0) {
+                                            const firstUpdate = updates[0];
+                                            setInitialAnalysis(firstUpdate.text);
+                                        }
+                                        setIsCloseDialogOpen(true);
+                                    }}>Cerrar Incidente</Button>
                                 )}
-                                <Button type="button" variant="secondary" onClick={() => {
-                                    setEndTime(getGmt5DateString());
-                                    // Populate initialAnalysis with the first avance (oldest update)
-                                    if (updates.length > 0) {
-                                        const firstUpdate = updates[0]; // First item in array
-                                        setInitialAnalysis(firstUpdate.text);
-                                    }
-                                    setIsCloseDialogOpen(true);
-                                }}>Test Modal</Button>
+
                             </div>
                             <Button type="submit" disabled={isSubmitting || newUpdate.trim() === ''}>
                                 {isSubmitting ? "Enviando..." : "Agregar Actualización"}
@@ -509,12 +508,11 @@ export default function IncidentDetailPage() {
                                     >
                                         <option value="">Seleccionar responsable...</option>
                                         <option value="Yuliana Ramos">Yuliana Ramos</option>
-                                        <option value="Edwin Restrepo">Edwin Restrepo</option>
                                         <option value="Laura Abello">Laura Abello</option>
                                         <option value="Daren Espinosa">Daren Espinosa</option>
                                         <option value="Carlos Chaves">Carlos Chaves</option>
                                         <option value="Omar Melo">Omar Melo</option>
-                                        <option value="Yina Milan">Yina Milan</option>
+                                        <option value="Yina Millan">Yina Millan</option>
                                         <option value="Yina Milan">...</option>
                                     </select>
                                 </div>
