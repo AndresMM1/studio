@@ -106,8 +106,6 @@ export default function IncidentDetailPage() {
     const [rootCauseIdentified, setRootCauseIdentified] = useState(false);
     const [repetitiveIncident, setRepetitiveIncident] = useState(false);
     const [solutionActivities, setSolutionActivities] = useState('');
-    const [closurePriority, setClosurePriority] = useState<IncidentPriority>('Media');
-    const [impact, setImpact] = useState('');
     const [actionPlans, setActionPlans] = useState('');
     const [asdResponsible, setAsdResponsible] = useState('');
 
@@ -267,8 +265,6 @@ export default function IncidentDetailPage() {
             setRootCauseIdentified(false);
             setRepetitiveIncident(false);
             setSolutionActivities('');
-            setClosurePriority('Media');
-            setImpact('');
             setActionPlans('');
             setAsdResponsible('');
         }

@@ -24,12 +24,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-
-import {
     Sheet,
     SheetContent,
     SheetHeader,
@@ -53,7 +47,6 @@ import {
     CardHeader,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
