@@ -515,6 +515,7 @@ export default function IncidentDetailPage() {
                                         <option value="Carlos Chaves">Carlos Chaves</option>
                                         <option value="Omar Melo">Omar Melo</option>
                                         <option value="Yina Milan">Yina Milan</option>
+                                        <option value="Yina Milan">...</option>
                                     </select>
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
