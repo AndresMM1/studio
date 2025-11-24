@@ -8,8 +8,8 @@ import {
     PlusCircle,
     Search,
     Link2,
-    Check,
     ChevronsUpDown,
+    Check,
 } from "lucide-react";
 import { getIncidents, addIncident, getServices, generateTeamsMeetingLink } from "@/lib/data";
 import { type Incident, type IncidentPriority, type IncidentStatus, type Service } from "@/lib/types";
@@ -28,13 +28,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-    Command,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-} from "@/components/ui/command";
+
 import {
     Sheet,
     SheetContent,
@@ -59,13 +53,14 @@ import {
     CardHeader,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 
 
 const priorities: IncidentPriority[] = ["Crítica", "Alta", "Media", "Baja"];
-const statuses: IncidentStatus[] = ["Proceso", "En espera", "Cerrada", "Cerrada"];
+const statuses: IncidentStatus[] = ["Proceso", "En espera", "Cerrado"];
 const environments = ["Producción", "Contingencia"];
 
 const ITEMS_PER_PAGE = 5;
@@ -89,8 +84,9 @@ function DashboardPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [isCreateModalOpen, setCreateModalOpen] = useState(false);
     const [isCreatingIncident, setIsCreatingIncident] = useState(false);
-    const [isServiceComboboxOpen, setServiceComboboxOpen] = useState(false);
     const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+    const [isServiceComboboxOpen, setServiceComboboxOpen] = useState(false);
+    const [serviceSearch, setServiceSearch] = useState("");
 
     // Form state for new incident
     const [newIncidentService, setNewIncidentService] = useState<string | undefined>(undefined);
@@ -293,47 +289,90 @@ function DashboardPage() {
                                                 <Label htmlFor="service" className="text-right">
                                                     Servicio
                                                 </Label>
-                                                <Popover open={isServiceComboboxOpen} onOpenChange={setServiceComboboxOpen}>
-                                                    <PopoverTrigger asChild>
+                                                <div className="col-span-3">
+                                                    <div className="relative">
                                                         <Button
                                                             variant="outline"
                                                             role="combobox"
                                                             aria-expanded={isServiceComboboxOpen}
-                                                            className="col-span-3 justify-between"
+                                                            className="w-full justify-between"
+                                                            onClick={() => setServiceComboboxOpen(!isServiceComboboxOpen)}
                                                         >
-                                                            {newIncidentService
-                                                                ? services.find((s) => s.SERVICE_NAME === newIncidentService)?.SERVICE_NAME
-                                                                : "Seleccionar servicio..."}
+                                                            {newIncidentService || "Seleccionar servicio..."}
                                                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                                         </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-[300px] p-0">
-                                                        <Command>
-                                                            <CommandInput placeholder="Buscar servicio..." />
-                                                            <CommandEmpty>No se encontró el servicio.</CommandEmpty>
-                                                            <CommandGroup>
-                                                                {services.map((s) => (
-                                                                    <CommandItem
-                                                                        key={s.ID}
-                                                                        value={s.SERVICE_NAME}
-                                                                        onSelect={(currentValue) => {
-                                                                            setNewIncidentService(currentValue === newIncidentService ? "" : currentValue);
-                                                                            setServiceComboboxOpen(false);
-                                                                        }}
-                                                                    >
-                                                                        <Check
-                                                                            className={cn(
-                                                                                "mr-2 h-4 w-4",
-                                                                                newIncidentService === s.SERVICE_NAME ? "opacity-100" : "opacity-0"
-                                                                            )}
-                                                                        />
-                                                                        {s.SERVICE_NAME}
-                                                                    </CommandItem>
-                                                                ))}
-                                                            </CommandGroup>
-                                                        </Command>
-                                                    </PopoverContent>
-                                                </Popover>
+                                                        {isServiceComboboxOpen && (
+                                                            <>
+                                                                <div
+                                                                    className="fixed inset-0 z-40"
+                                                                    onClick={() => setServiceComboboxOpen(false)}
+                                                                />
+                                                                <div className="absolute top-full z-50 mt-1 w-[300px] rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95">
+                                                                    <div className="flex flex-col">
+                                                                        <div className="flex items-center border-b px-3 py-2">
+                                                                            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                                                                            <Input
+                                                                                placeholder="Buscar servicio..."
+                                                                                className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 h-8"
+                                                                                value={serviceSearch}
+                                                                                onChange={(e) => setServiceSearch(e.target.value)}
+                                                                                autoFocus
+                                                                            />
+                                                                        </div>
+                                                                        <div className="h-[300px] overflow-y-auto p-1">
+                                                                            {(services || [])
+                                                                                .filter((s) =>
+                                                                                    s.SERVICE_NAME && s.SERVICE_NAME.toLowerCase().includes(serviceSearch.toLowerCase())
+                                                                                )
+                                                                                .map((s) => (
+                                                                                    <button
+                                                                                        key={s.SERVICE_NAME}
+                                                                                        type="button"
+                                                                                        className={cn(
+                                                                                            "relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground",
+                                                                                            newIncidentService === s.SERVICE_NAME && "bg-accent"
+                                                                                        )}
+                                                                                        onClick={() => {
+                                                                                            setNewIncidentService(s.SERVICE_NAME);
+                                                                                            setServiceComboboxOpen(false);
+                                                                                            setServiceSearch("");
+                                                                                        }}
+                                                                                    >
+                                                                                        <Check
+                                                                                            className={cn(
+                                                                                                "mr-2 h-4 w-4",
+                                                                                                newIncidentService === s.SERVICE_NAME ? "opacity-100" : "opacity-0"
+                                                                                            )}
+                                                                                        />
+                                                                                        {s.SERVICE_NAME}
+                                                                                    </button>
+                                                                                ))}
+                                                                            {(services || []).filter((s) =>
+                                                                                s.SERVICE_NAME && s.SERVICE_NAME.toLowerCase().includes(serviceSearch.toLowerCase())
+                                                                            ).length === 0 && (
+                                                                                    <div className="py-6 text-center text-sm">
+                                                                                        No se encontró el servicio.
+                                                                                    </div>
+                                                                                )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-4 items-center gap-4">
+                                                <Label htmlFor="canal" className="text-right">
+                                                    Canal
+                                                </Label>
+                                                <Input
+                                                    id="canal"
+                                                    value={newIncidentService && services ? (services.find(s => s.SERVICE_NAME === newIncidentService)?.Canal || "") : ""}
+                                                    className="col-span-3"
+                                                    disabled
+                                                    placeholder="Seleccione un servicio primero"
+                                                />
                                             </div>
                                             <div className="grid grid-cols-4 items-center gap-4">
                                                 <Label htmlFor="description" className="text-right">

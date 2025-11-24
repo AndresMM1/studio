@@ -53,7 +53,7 @@ export function DashboardSidebar() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                {theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                {theme === "dark" ? "Modo Claro" : "Modo Oscuro"}
               </TooltipContent>
             </Tooltip>
             <div className="flex justify-center">

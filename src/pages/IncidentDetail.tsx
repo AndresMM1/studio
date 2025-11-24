@@ -1,14 +1,15 @@
 import { AbejaEmpty } from "@/components/icons/AbejaEmpty";
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getIncidentById, getIncidentUpdates, addIncidentUpdate, updateIncidentStatus, sendClosureDocumentation } from "@/lib/data";
-import { type Incident, type IncidentUpdate, type IncidentStatus, type IncidentPriority } from "@/lib/types";
+import { getIncidentById, getIncidentUpdates, addIncidentUpdate, updateIncidentStatus, sendClosureDocumentation, getServices } from "@/lib/data";
+import { type Incident, type IncidentUpdate, type IncidentStatus, type IncidentPriority, type Service } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     Card,
     CardContent,
@@ -50,6 +51,20 @@ const statusMap: Record<IncidentStatus, { icon: React.ElementType; className: st
     "Cerrada": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300" },
 };
 
+const causeCategories = [
+    "Error de usuario funcional",
+    "Falla Aplicación",
+    "Falla Aplicación / Obsolescencia",
+    "Falla Configuración Cambio",
+    "Falla de Comunicación",
+    "Falla de Infraestructura",
+    "Falla Humana",
+    "Falla Plataforma",
+    "Identificada por Tercero",
+    "Simulacro",
+    "Sin Identificar"
+];
+
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1500; // 1.5 segundos
 
@@ -75,6 +90,7 @@ export default function IncidentDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+    const [services, setServices] = useState<Service[]>([]);
 
     // State for the close incident form
     const [solution, setSolution] = useState('');
@@ -118,6 +134,23 @@ export default function IncidentDetailPage() {
     }, []);
 
     useEffect(() => {
+        const loadServices = async () => {
+            const fetchedServices = await getServices();
+            setServices(fetchedServices);
+        };
+        loadServices();
+    }, []);
+
+    useEffect(() => {
+        if (incident && services.length > 0) {
+            const matchedService = services.find(s => s.SERVICE_NAME === incident.service);
+            if (matchedService) {
+                setDomainResponsible(matchedService.Canal);
+            }
+        }
+    }, [incident, services]);
+
+    useEffect(() => {
         if (params.id) {
             const id = parseInt(params.id as string, 10);
             if (!isNaN(id)) {
@@ -148,7 +181,8 @@ export default function IncidentDetailPage() {
             setEndTime(getGmt5DateString());
             // Populate initialAnalysis with the first avance (oldest update)
             if (updates.length > 0) {
-                const firstUpdate = updates[updates.length - 1]; // Last item is the oldest
+                console.log(updates)
+                const firstUpdate = updates[0]; // First item in array
                 setInitialAnalysis(firstUpdate.text);
             }
             setIsCloseDialogOpen(true);
@@ -194,6 +228,14 @@ export default function IncidentDetailPage() {
                     generatedAlerts: generatedAlerts,
                     docResponsible: docResponsible,
                     domainResponsible: domainResponsible,
+                    initialAnalysis: initialAnalysis,
+                    rootCause: rootCauseIdentified ? rootCause : "No se encuentra",
+                    causeCategory: rootCauseIdentified ? causeCategory : "No se encuentra",
+                    rootCauseIdentified: rootCauseIdentified,
+                    repetitiveIncident: repetitiveIncident,
+                    solutionActivities: solutionActivities,
+                    actionPlans: actionPlans,
+                    asdResponsible: asdResponsible,
                 })
             ]);
 
@@ -379,7 +421,7 @@ export default function IncidentDetailPage() {
                                     setEndTime(getGmt5DateString());
                                     // Populate initialAnalysis with the first avance (oldest update)
                                     if (updates.length > 0) {
-                                        const firstUpdate = updates[updates.length - 1]; // Last item is the oldest
+                                        const firstUpdate = updates[0]; // First item in array
                                         setInitialAnalysis(firstUpdate.text);
                                     }
                                     setIsCloseDialogOpen(true);
@@ -408,7 +450,7 @@ export default function IncidentDetailPage() {
                                     <Label htmlFor="endTime">Hora de Fin</Label>
                                     <Input id="endTime" type="datetime-local" value={endTime} onChange={e => setEndTime(e.target.value)} required />
                                 </div>
-                                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="flex items-center justify-between rounded-lg  p-3 shadow-sm">
                                     <Label htmlFor="alerts">¿Generó Alertas?</Label>
                                     <Switch id="alerts" checked={generatedAlerts} onCheckedChange={setGeneratedAlerts} />
                                 </div>
@@ -428,7 +470,7 @@ export default function IncidentDetailPage() {
                                     <Label htmlFor="initialAnalysis">Análisis Inicial</Label>
                                     <Textarea id="initialAnalysis" value={initialAnalysis} onChange={e => setInitialAnalysis(e.target.value)} />
                                 </div>
-                                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="flex items-center justify-between rounded-lg  p-3 shadow-sm">
                                     <Label htmlFor="rootCauseIdentified">¿Causa Raíz Identificada?</Label>
                                     <Switch id="rootCauseIdentified" checked={rootCauseIdentified} onCheckedChange={setRootCauseIdentified} />
                                 </div>
@@ -440,35 +482,44 @@ export default function IncidentDetailPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="causeCategory">Categoría Causa</Label>
-                                            <Input id="causeCategory" value={causeCategory} onChange={e => setCauseCategory(e.target.value)} />
+                                            <Select value={causeCategory} onValueChange={setCauseCategory}>
+                                                <SelectTrigger id="causeCategory">
+                                                    <SelectValue placeholder="Seleccionar categoría" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {causeCategories.map((category) => (
+                                                        <SelectItem key={category} value={category}>
+                                                            {category}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </div>
                                     </>
                                 )}
-                                <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                                <div className="flex items-center justify-between rounded-lg  p-3 shadow-sm">
                                     <Label htmlFor="repetitiveIncident">¿Incidente Repetitivo?</Label>
                                     <Switch id="repetitiveIncident" checked={repetitiveIncident} onCheckedChange={setRepetitiveIncident} />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="closurePriority">Prioridad</Label>
-                                    <select
-                                        id="closurePriority"
-                                        value={closurePriority}
-                                        onChange={e => setClosurePriority(e.target.value as IncidentPriority)}
-                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        <option value="Crítica">Crítica</option>
-                                        <option value="Alta">Alta</option>
-                                        <option value="Media">Media</option>
-                                        <option value="Baja">Baja</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="impact">Impacto</Label>
-                                    <Input id="impact" value={impact} onChange={e => setImpact(e.target.value)} />
-                                </div>
+
+
                                 <div className="space-y-2">
                                     <Label htmlFor="asdResponsible">Resp. ASD</Label>
-                                    <Input id="asdResponsible" value={asdResponsible} onChange={e => setAsdResponsible(e.target.value)} />
+                                    <select
+                                        id="asdResponsible"
+                                        value={asdResponsible}
+                                        onChange={e => setAsdResponsible(e.target.value)}
+                                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <option value="">Seleccionar responsable...</option>
+                                        <option value="Yuliana Ramos">Yuliana Ramos</option>
+                                        <option value="Edwin Restrepo">Edwin Restrepo</option>
+                                        <option value="Laura Abello">Laura Abello</option>
+                                        <option value="Daren Espinosa">Daren Espinosa</option>
+                                        <option value="Carlos Chaves">Carlos Chaves</option>
+                                        <option value="Omar Melo">Omar Melo</option>
+                                        <option value="Yina Milan">Yina Milan</option>
+                                    </select>
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
                                     <Label htmlFor="solutionActivities">Actividades de Solución</Label>
