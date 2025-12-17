@@ -52,7 +52,7 @@ export function Chatbot() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/ask', {
+            const response = await fetch('/ask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
