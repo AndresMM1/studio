@@ -52,11 +52,7 @@ export function Chatbot() {
         setIsLoading(true);
 
         try {
-            const API_URL = import.meta.env.DEV
-                ? '/api/ask'
-                : 'https://alvaro-extrapolative-pseudoimpartially.ngrok-free.dev/ask';
-
-            const response = await fetch(API_URL, {
+            const response = await fetch('/api/ask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
