@@ -6,6 +6,7 @@ import { Layout } from "@/components/Layout";
 import LoginPage from "@/pages/Login";
 import DashboardPage from "@/pages/Dashboard";
 import IncidentDetailPage from "@/pages/IncidentDetail";
+import { Chatbot } from "@/components/Chatbot";
 
 function App() {
     return (
@@ -21,6 +22,7 @@ function App() {
                     </Routes>
                 </Router>
                 <Toaster />
+                <Chatbot />
             </AuthProvider>
         </ThemeProvider>
     );
