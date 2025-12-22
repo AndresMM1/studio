@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { MessageCircle, X, Send, Paperclip, X as RemoveIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -7,11 +7,21 @@ import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+// Declare dotlottie-wc custom element for TypeScript
+declare global {
+    namespace JSX {
+        interface IntrinsicElements {
+            'dotlottie-wc': any;
+        }
+    }
+}
+
 interface Message {
     id: string;
     text: string;
     sender: 'user' | 'bot';
     timestamp: Date;
+    image?: string;
 }
 
 export function Chatbot() {
@@ -26,7 +36,9 @@ export function Chatbot() {
     ]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -35,29 +47,54 @@ export function Chatbot() {
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
             }
         }
-    }, [messages, isOpen]);
+    }, [messages, isOpen, selectedImage]);
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSelectedImage(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleRemoveImage = () => {
+        setSelectedImage(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     const handleSendMessage = async () => {
-        if (!inputValue.trim()) return;
+        if (!inputValue.trim() && !selectedImage) return;
 
         const userMessage: Message = {
             id: Date.now().toString(),
             text: inputValue,
+            image: selectedImage || undefined,
             sender: 'user',
             timestamp: new Date(),
         };
 
         setMessages((prev) => [...prev, userMessage]);
         setInputValue('');
+        setSelectedImage(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
         setIsLoading(true);
 
         try {
+            // Use the absolute URL as requested by the user, though /api/ask is recommended for production
             const response = await fetch('https://alvaro-extrapolative-pseudoimpartially.ngrok-free.dev/ask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ question: userMessage.text }),
+                body: JSON.stringify({
+                    question: userMessage.text,
+                    image: userMessage.image
+                }),
             });
 
             if (!response.ok) {
@@ -66,37 +103,14 @@ export function Chatbot() {
 
             const data = await response.json();
 
-            // Assuming the API returns a JSON with an 'answer' or similar field, 
-            // or if it returns just text. Adjusting based on common patterns, 
-            // but the prompt example showed input: {"question":...}
-            // Let's assume the output is also JSON or we might need to adjust.
-            // If the response is direct text, we use it. If it's JSON, we extract it.
-            // Let's try to handle both or assume a standard structure.
-            // Given the prompt didn't specify output format, I'll assume it returns a JSON object.
-            // If it's just the text, I'll handle that too.
-
             let botResponseText = 'Lo siento, no pude procesar tu solicitud.';
 
-            // Check content type
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                // The prompt implies a simple Q&A. Let's assume the response has an 'answer' or 'response' field,
-                // or just returns the text if it's a simple string response.
-                // However, often these simple endpoints might return just the answer string or a JSON.
-                // Let's dump the whole JSON if we can't find a specific field, or look for common keys.
-                // For now, let's assume the API returns the answer in a field called 'answer' or 'response' or just the body is the answer if it's not JSON.
-                // Actually, let's look at the prompt again: 
-                // curl -X POST ... -d "{\"question\":\"...\"}"
-                // It doesn't show the response. I will assume it returns a JSON with 'answer' or 'text'.
-
-                if (data.answer) botResponseText = data.answer;
-                else if (data.response) botResponseText = data.response;
-                else if (data.text) botResponseText = data.text;
-                else if (typeof data === 'string') botResponseText = data;
-                else botResponseText = JSON.stringify(data); // Fallback
-            } else {
-                botResponseText = await response.text();
-            }
+            // Check content type or assume JSON
+            if (data.answer) botResponseText = data.answer;
+            else if (data.response) botResponseText = data.response;
+            else if (data.text) botResponseText = data.text;
+            else if (typeof data === 'string') botResponseText = data;
+            else botResponseText = JSON.stringify(data);
 
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -118,6 +132,15 @@ export function Chatbot() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const formatMessageText = (text: string) => {
+        // Regex to match "incident 12", "id 12", "ticket 12", "#12", "ID: 12"
+        // Uses word boundary \b to avoid matching inside words like "grid 12"
+
+        return text.replace(/(?:(?:\b(?:incident|incidente|ticket|id))\s*:?\s*(?:#)?|#)(\d+)/gi, (match, id) => {
+            return `[${match}](/incident/${id})`;
+        });
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -156,39 +179,83 @@ export function Chatbot() {
                                             : "bg-muted self-start"
                                     )}
                                 >
+                                    {message.image && (
+                                        <div className="mb-2 rounded-md overflow-hidden bg-black/10">
+                                            <img src={message.image} alt="Uploaded content" className="max-w-full h-auto object-cover max-h-[200px]" />
+                                        </div>
+                                    )}
                                     <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4">
                                         <ReactMarkdown
                                             remarkPlugins={[remarkGfm]}
                                             components={{
-                                                a: ({ node, ...props }) => <a {...props} className="underline font-medium" target="_blank" rel="noopener noreferrer" />,
+                                                a: ({ node, ...props }) => <a {...props} className="underline font-medium text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer" />,
                                                 code: ({ node, ...props }) => <code {...props} className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5" />,
                                                 pre: ({ node, ...props }) => <pre {...props} className="bg-black/10 dark:bg-white/10 rounded p-2 overflow-x-auto my-2" />,
                                             }}
                                         >
-                                            {message.text}
+                                            {formatMessageText(message.text)}
                                         </ReactMarkdown>
                                     </div>
                                 </div>
                             ))}
                             {isLoading && (
-                                <div className="bg-muted self-start rounded-lg p-3 max-w-[80%]">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                <div className="bg-muted self-start rounded-lg p-3 max-w-[80%] flex items-center justify-center">
+                                    <dotlottie-wc
+                                        src="https://lottie.host/3f3e821d-2eac-415d-b247-3e834227acaa/mCAwvZO7MO.lottie"
+                                        autoplay
+                                        loop
+                                        style={{ width: '100px', height: '100px', opacity: 0.75 }}
+                                    />
                                 </div>
                             )}
                         </div>
                     </ScrollArea>
 
-                    {/* Input */}
+                    {/* Input Area */}
                     <div className="p-4 border-t bg-background">
-                        <div className="flex gap-2">
+                        {selectedImage && (
+                            <div className="mb-3 relative inline-block">
+                                <div className="h-16 w-16 rounded-md border overflow-hidden relative group">
+                                    <img src={selectedImage} alt="Preview" className="h-full w-full object-cover" />
+                                    <button
+                                        onClick={handleRemoveImage}
+                                        className="absolute top-0.5 right-0.5 bg-black/50 text-white rounded-full p-0.5 hover:bg-black/70 transition-colors"
+                                    >
+                                        <RemoveIcon className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        <div className="flex gap-2 items-center">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                ref={fileInputRef}
+                                onChange={handleFileSelect}
+                            />
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                className="shrink-0"
+                                onClick={() => fileInputRef.current?.click()}
+                                title="Adjuntar imagen"
+                            >
+                                <Paperclip className="h-4 w-4" />
+                            </Button>
                             <Input
                                 placeholder="Escribe tu pregunta..."
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 disabled={isLoading}
+                                className="flex-1"
                             />
-                            <Button size="icon" onClick={handleSendMessage} disabled={isLoading || !inputValue.trim()}>
+                            <Button
+                                size="icon"
+                                onClick={handleSendMessage}
+                                disabled={isLoading || (!inputValue.trim() && !selectedImage)}
+                            >
                                 <Send className="h-4 w-4" />
                             </Button>
                         </div>
