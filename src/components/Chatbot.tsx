@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Paperclip, X as RemoveIcon } from 'lucide-react';
+import { MessageCircle, X, Send, Paperclip, X as RemoveIcon, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useAuth } from '@/contexts/auth-context';
+
 
 // Declare dotlottie-wc custom element for TypeScript
 declare global {
@@ -31,7 +33,9 @@ interface Message {
 }
 
 export function Chatbot() {
+    const { user } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
@@ -40,6 +44,20 @@ export function Chatbot() {
             timestamp: new Date(),
         },
     ]);
+
+    // Update greeting when user name is available
+    useEffect(() => {
+        if (user?.name && messages.length === 1 && messages[0].id === '1') {
+            setMessages([
+                {
+                    ...messages[0],
+                    text: `Hola ${user.name}! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?`,
+                }
+            ]);
+        }
+    }, [user?.name]);
+
+    const lastBotMessageId = messages.filter(m => m.sender === 'bot').pop()?.id;
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -123,10 +141,11 @@ export function Chatbot() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    question: userMessage.text,
+                    question: user?.name ? `${user.name}: ${userMessage.text}` : userMessage.text,
                     image: userMessage.image
                 }),
             });
+
 
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -202,116 +221,101 @@ export function Chatbot() {
 
                     {/* Messages */}
                     <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-6">
                             {messages.map((message) => (
                                 <div
                                     key={message.id}
                                     className={cn(
-                                        "max-w-[80%] rounded-lg p-3 text-sm",
-                                        message.sender === 'user'
-                                            ? "bg-primary text-primary-foreground self-end"
-                                            : "bg-muted self-start"
+                                        "flex gap-3 max-w-[85%]",
+                                        message.sender === 'user' ? "self-end flex-row-reverse" : "self-start"
                                     )}
                                 >
-                                    {message.image && (
-                                        <div className="mb-2 rounded-md overflow-hidden bg-black/10">
-                                            <img src={message.image} alt="Uploaded content" className="max-w-full h-auto object-cover max-h-[200px]" />
-                                        </div>
-                                    )}
-                                    {message.sender === 'bot' && typingMessageId === message.id ? (
-                                        <div className="flex items-start gap-3">
-                                            {/* Mascot avatar while typing */}
-                                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                <img
-                                                    src={MASCOT_TYPING}
-                                                    alt="Mascot typing"
-                                                    className="w-14 h-14 object-contain"
-                                                    onError={(e) => {
-                                                        // Fallback to a simple icon if image not found
-                                                        e.currentTarget.style.display = 'none';
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4">
-                                                    <ReactMarkdown
-                                                        remarkPlugins={[remarkGfm]}
-                                                        components={{
-                                                            a: ({ node, ...props }) => <a {...props} className="underline font-medium text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer" />,
-                                                            code: ({ node, ...props }) => <code {...props} className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5" />,
-                                                            pre: ({ node, ...props }) => <pre {...props} className="bg-black/10 dark:bg-white/10 rounded p-2 overflow-x-auto my-2" />,
-                                                        }}
-                                                    >
-                                                        {formatMessageText(displayedText)}
-                                                    </ReactMarkdown>
-                                                </div>
-                                                {/* Typing animation below text */}
-                                                <div className="mt-1">
-                                                    <dotlottie-wc
-                                                        src="https://lottie.host/3f3e821d-2eac-415d-b247-3e834227acaa/mCAwvZO7MO.lottie"
-                                                        autoplay
-                                                        loop
-                                                        style={{ width: '60px', height: '30px', opacity: 0.6 }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : message.sender === 'bot' ? (
-                                        <div className="flex items-start gap-3">
-                                            {/* Mascot avatar for completed messages */}
-                                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                <img
-                                                    src={MASCOT_AVATAR}
-                                                    alt="Mascot"
-                                                    className="w-14 h-14 object-contain"
-                                                    onError={(e) => {
-                                                        e.currentTarget.style.display = 'none';
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4 flex-1">
-                                                <ReactMarkdown
-                                                    remarkPlugins={[remarkGfm]}
-                                                    components={{
-                                                        a: ({ node, ...props }) => <a {...props} className="underline font-medium text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer" />,
-                                                        code: ({ node, ...props }) => <code {...props} className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5" />,
-                                                        pre: ({ node, ...props }) => <pre {...props} className="bg-black/10 dark:bg-white/10 rounded p-2 overflow-x-auto my-2" />,
-                                                    }}
-                                                >
-                                                    {formatMessageText(message.text)}
-                                                </ReactMarkdown>
-                                            </div>
+                                    {/* Avatar */}
+                                    {message.sender === 'user' ? (
+                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-auto">
+                                            <User className="w-6 h-6 text-primary" />
                                         </div>
                                     ) : (
-                                        <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4">
-                                            <ReactMarkdown
-                                                remarkPlugins={[remarkGfm]}
-                                                components={{
-                                                    a: ({ node, ...props }) => <a {...props} className="underline font-medium text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer" />,
-                                                    code: ({ node, ...props }) => <code {...props} className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5" />,
-                                                    pre: ({ node, ...props }) => <pre {...props} className="bg-black/10 dark:bg-white/10 rounded p-2 overflow-x-auto my-2" />,
-                                                }}
-                                            >
-                                                {formatMessageText(message.text)}
-                                            </ReactMarkdown>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                            {isLoading && (
-                                <div className="bg-muted self-start rounded-lg p-3 max-w-[80%]">
-                                    <div className="flex items-center gap-3">
-                                        {/* Mascot avatar while loading */}
-                                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-auto">
                                             <img
-                                                src={MASCOT_AVATAR}
-                                                alt="Mascot thinking"
-                                                className="w-14 h-14 object-contain animate-bounce"
+                                                src={typingMessageId === message.id ? MASCOT_TYPING : MASCOT_AVATAR}
+                                                alt="Mascot"
+                                                className={cn(
+                                                    "w-14 h-14 object-contain transition-all duration-300",
+                                                    (isLoading || (message.id !== lastBotMessageId && typingMessageId !== message.id)) && "grayscale opacity-50"
+                                                )}
                                                 onError={(e) => {
                                                     e.currentTarget.style.display = 'none';
                                                 }}
                                             />
                                         </div>
+                                    )}
+
+                                    {/* Message Bubble */}
+                                    <div
+                                        className={cn(
+                                            "rounded-2xl p-4 text-sm shadow-sm relative",
+                                            message.sender === 'user'
+                                                ? "bg-primary text-primary-foreground rounded-br-sm"
+                                                : "bg-muted rounded-bl-sm"
+                                        )}
+                                    >
+                                        {message.image && (
+                                            <div className="mb-3 rounded-lg overflow-hidden bg-black/10">
+                                                <img src={message.image} alt="Uploaded content" className="max-w-full h-auto object-cover max-h-[200px]" />
+                                            </div>
+                                        )}
+
+                                        <div className={cn(
+                                            "prose prose-sm max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4",
+                                            message.sender === 'user' ? "dark:prose-invert text-primary-foreground" : "dark:prose-invert"
+                                        )}>
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    a: ({ node, ...props }) => <a {...props} className={cn("underline font-medium", message.sender === 'user' ? "text-white/90 hover:text-white" : "text-blue-600 dark:text-blue-400")} target="_blank" rel="noopener noreferrer" />,
+                                                    code: ({ node, ...props }) => <code {...props} className={cn("rounded px-1 py-0.5", message.sender === 'user' ? "bg-white/20" : "bg-black/10 dark:bg-white/10")} />,
+                                                    pre: ({ node, ...props }) => <pre {...props} className={cn("rounded p-2 overflow-x-auto my-2", message.sender === 'user' ? "bg-white/20" : "bg-black/10 dark:bg-white/10")} />,
+                                                }}
+                                            >
+                                                {message.sender === 'bot' && typingMessageId === message.id
+                                                    ? formatMessageText(displayedText)
+                                                    : formatMessageText(message.text)}
+                                            </ReactMarkdown>
+                                        </div>
+
+                                        {message.sender === 'bot' && typingMessageId === message.id && (
+                                            <div className="mt-2">
+                                                <dotlottie-wc
+                                                    src="https://lottie.host/3f3e821d-2eac-415d-b247-3e834227acaa/mCAwvZO7MO.lottie"
+                                                    autoplay
+                                                    loop
+                                                    style={{ width: '40px', height: '20px', opacity: 0.6 }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+
+                            {isLoading && (
+                                <div className="flex gap-3 max-w-[85%] self-start">
+                                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-auto">
+                                        <img
+                                            src={MASCOT_AVATAR}
+                                            alt="Mascot thinking"
+                                            className="w-14 h-14 object-contain animate-bounce"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="bg-muted rounded-2xl rounded-bl-sm p-4 text-sm flex items-center shadow-sm h-fit self-center">
+                                        <span className="flex gap-1">
+                                            <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                            <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                            <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce"></span>
+                                        </span>
                                     </div>
                                 </div>
                             )}
