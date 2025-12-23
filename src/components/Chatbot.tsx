@@ -16,6 +16,12 @@ declare global {
     }
 }
 
+import mascotImage from '@/assets/mascot.png';
+
+// Use the imported image for both avatar and typing state
+const MASCOT_AVATAR = mascotImage;
+const MASCOT_TYPING = mascotImage;
+
 interface Message {
     id: string;
     text: string;
@@ -37,8 +43,33 @@ export function Chatbot() {
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
+    const [displayedText, setDisplayedText] = useState<string>('');
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Typewriter effect
+    useEffect(() => {
+        if (!typingMessageId) return;
+
+        const message = messages.find(m => m.id === typingMessageId);
+        if (!message) return;
+
+        const fullText = message.text;
+        let currentIndex = 0;
+
+        const typingInterval = setInterval(() => {
+            if (currentIndex <= fullText.length) {
+                setDisplayedText(fullText.slice(0, currentIndex));
+                currentIndex++;
+            } else {
+                clearInterval(typingInterval);
+                setTypingMessageId(null);
+            }
+        }, 20); // Speed of typing (milliseconds per character)
+
+        return () => clearInterval(typingInterval);
+    }, [typingMessageId, messages]);
 
     useEffect(() => {
         if (scrollAreaRef.current) {
@@ -47,7 +78,7 @@ export function Chatbot() {
                 scrollContainer.scrollTop = scrollContainer.scrollHeight;
             }
         }
-    }, [messages, isOpen, selectedImage]);
+    }, [messages, isOpen, selectedImage, displayedText]);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -120,6 +151,8 @@ export function Chatbot() {
             };
 
             setMessages((prev) => [...prev, botMessage]);
+            setTypingMessageId(botMessage.id);
+            setDisplayedText('');
         } catch (error) {
             console.error('Error sending message:', error);
             const errorMessage: Message = {
@@ -129,6 +162,8 @@ export function Chatbot() {
                 timestamp: new Date(),
             };
             setMessages((prev) => [...prev, errorMessage]);
+            setTypingMessageId(errorMessage.id);
+            setDisplayedText('');
         } finally {
             setIsLoading(false);
         }
@@ -152,10 +187,9 @@ export function Chatbot() {
     return (
         <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-4">
             {isOpen && (
-                <div className="w-[350px] h-[500px] bg-background border rounded-lg shadow-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
+                <div className="w-[400px] h-[600px] bg-background border rounded-lg shadow-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300">
                     {/* Header */}
                     <div className="p-4 border-b bg-primary text-primary-foreground flex justify-between items-center">
-                        <h3 className="font-semibold">Asistente Virtual</h3>
                         <Button
                             variant="ghost"
                             size="icon"
@@ -184,28 +218,101 @@ export function Chatbot() {
                                             <img src={message.image} alt="Uploaded content" className="max-w-full h-auto object-cover max-h-[200px]" />
                                         </div>
                                     )}
-                                    <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4">
-                                        <ReactMarkdown
-                                            remarkPlugins={[remarkGfm]}
-                                            components={{
-                                                a: ({ node, ...props }) => <a {...props} className="underline font-medium text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer" />,
-                                                code: ({ node, ...props }) => <code {...props} className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5" />,
-                                                pre: ({ node, ...props }) => <pre {...props} className="bg-black/10 dark:bg-white/10 rounded p-2 overflow-x-auto my-2" />,
-                                            }}
-                                        >
-                                            {formatMessageText(message.text)}
-                                        </ReactMarkdown>
-                                    </div>
+                                    {message.sender === 'bot' && typingMessageId === message.id ? (
+                                        <div className="flex items-start gap-3">
+                                            {/* Mascot avatar while typing */}
+                                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <img
+                                                    src={MASCOT_TYPING}
+                                                    alt="Mascot typing"
+                                                    className="w-14 h-14 object-contain"
+                                                    onError={(e) => {
+                                                        // Fallback to a simple icon if image not found
+                                                        e.currentTarget.style.display = 'none';
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4">
+                                                    <ReactMarkdown
+                                                        remarkPlugins={[remarkGfm]}
+                                                        components={{
+                                                            a: ({ node, ...props }) => <a {...props} className="underline font-medium text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer" />,
+                                                            code: ({ node, ...props }) => <code {...props} className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5" />,
+                                                            pre: ({ node, ...props }) => <pre {...props} className="bg-black/10 dark:bg-white/10 rounded p-2 overflow-x-auto my-2" />,
+                                                        }}
+                                                    >
+                                                        {formatMessageText(displayedText)}
+                                                    </ReactMarkdown>
+                                                </div>
+                                                {/* Typing animation below text */}
+                                                <div className="mt-1">
+                                                    <dotlottie-wc
+                                                        src="https://lottie.host/3f3e821d-2eac-415d-b247-3e834227acaa/mCAwvZO7MO.lottie"
+                                                        autoplay
+                                                        loop
+                                                        style={{ width: '60px', height: '30px', opacity: 0.6 }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : message.sender === 'bot' ? (
+                                        <div className="flex items-start gap-3">
+                                            {/* Mascot avatar for completed messages */}
+                                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                <img
+                                                    src={MASCOT_AVATAR}
+                                                    alt="Mascot"
+                                                    className="w-14 h-14 object-contain"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = 'none';
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4 flex-1">
+                                                <ReactMarkdown
+                                                    remarkPlugins={[remarkGfm]}
+                                                    components={{
+                                                        a: ({ node, ...props }) => <a {...props} className="underline font-medium text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer" />,
+                                                        code: ({ node, ...props }) => <code {...props} className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5" />,
+                                                        pre: ({ node, ...props }) => <pre {...props} className="bg-black/10 dark:bg-white/10 rounded p-2 overflow-x-auto my-2" />,
+                                                    }}
+                                                >
+                                                    {formatMessageText(message.text)}
+                                                </ReactMarkdown>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:pl-4 [&>ol]:list-decimal [&>ol]:pl-4">
+                                            <ReactMarkdown
+                                                remarkPlugins={[remarkGfm]}
+                                                components={{
+                                                    a: ({ node, ...props }) => <a {...props} className="underline font-medium text-blue-600 dark:text-blue-400" target="_blank" rel="noopener noreferrer" />,
+                                                    code: ({ node, ...props }) => <code {...props} className="bg-black/10 dark:bg-white/10 rounded px-1 py-0.5" />,
+                                                    pre: ({ node, ...props }) => <pre {...props} className="bg-black/10 dark:bg-white/10 rounded p-2 overflow-x-auto my-2" />,
+                                                }}
+                                            >
+                                                {formatMessageText(message.text)}
+                                            </ReactMarkdown>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {isLoading && (
-                                <div className="bg-muted self-start rounded-lg p-3 max-w-[80%] flex items-center justify-center">
-                                    <dotlottie-wc
-                                        src="https://lottie.host/3f3e821d-2eac-415d-b247-3e834227acaa/mCAwvZO7MO.lottie"
-                                        autoplay
-                                        loop
-                                        style={{ width: '100px', height: '100px', opacity: 0.75 }}
-                                    />
+                                <div className="bg-muted self-start rounded-lg p-3 max-w-[80%]">
+                                    <div className="flex items-center gap-3">
+                                        {/* Mascot avatar while loading */}
+                                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                            <img
+                                                src={MASCOT_AVATAR}
+                                                alt="Mascot thinking"
+                                                className="w-14 h-14 object-contain animate-bounce"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
