@@ -11,9 +11,10 @@ import {
     ChevronsUpDown,
     Check,
 } from "lucide-react";
-import { getIncidents, addIncident, getServices, generateTeamsMeetingLink } from "@/lib/data";
-import { type Incident, type IncidentPriority, type IncidentStatus, type Service } from "@/lib/types";
+import { getIncidents, addIncident, getServices, generateTeamsMeetingLink, getDashboardStats } from "@/lib/data";
+import { type Incident, type IncidentPriority, type IncidentStatus, type Service, type DashboardStats } from "@/lib/types";
 import { IncidentTable } from "@/components/dashboard/incident-table";
+import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -90,6 +91,7 @@ function DashboardPage() {
     const [newIncidentTeamsLink, setNewIncidentTeamsLink] = useState("");
     const [incidents, setIncidents] = useState<Incident[]>([]);
     const [services, setServices] = useState<Service[]>([]);
+    const [stats, setStats] = useState<DashboardStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
 
@@ -97,12 +99,14 @@ function DashboardPage() {
         async function loadInitialData() {
             setIsLoading(true);
             try {
-                const [fetchedIncidents, fetchedServices] = await Promise.all([
+                const [fetchedIncidents, fetchedServices, fetchedStats] = await Promise.all([
                     getIncidents(),
                     getServices(),
+                    getDashboardStats()
                 ]);
                 setIncidents(fetchedIncidents);
                 setServices(fetchedServices);
+                setStats(fetchedStats);
             } catch (error) {
                 toast({
                     title: "Error al cargar datos",
@@ -119,7 +123,9 @@ function DashboardPage() {
         const intervalId = setInterval(async () => {
             try {
                 const fetchedIncidents = await getIncidents();
+                const fetchedStats = await getDashboardStats();
                 setIncidents(fetchedIncidents);
+                setStats(fetchedStats);
             } catch (error) {
                 console.error("Failed to refresh incidents:", error);
                 // Optionally, show a non-intrusive toast notification
@@ -152,14 +158,6 @@ function DashboardPage() {
     const totalPages = Math.ceil(filteredIncidents.length / ITEMS_PER_PAGE);
 
 
-    const metrics = useMemo(() => {
-        const totalIncidents = filteredIncidents.length;
-        // Dummy calculations for metrics
-        const avgResponseTime = totalIncidents > 0 ? "35m" : "N/A";
-        const avgResolutionTime = totalIncidents > 0 ? "4h 15m" : "N/A";
-        const incidentRate = totalIncidents > 0 ? "0" : "N/A";
-        return { totalIncidents, avgResponseTime, avgResolutionTime, incidentRate };
-    }, [filteredIncidents]);
 
     const handleCreateIncident = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -455,23 +453,23 @@ function DashboardPage() {
                                 <div className="flex items-center space-x-4 text-sm text-muted-foreground pt-2">
                                     <div className="flex items-center gap-2">
                                         <BarChart className="h-5 w-5" />
-                                        <span><span className="font-bold text-foreground">{metrics.totalIncidents}</span> Incidentes Totales</span>
+                                        <span><span className="font-bold text-foreground">{stats?.totalIncidents || 0}</span> Incidentes Totales</span>
                                     </div>
                                     <Separator orientation="vertical" className="h-6" />
                                     <div className="flex items-center gap-2">
                                         <Server className="h-5 w-5" />
-                                        <span><span className="font-bold text-foreground">{metrics.incidentRate}</span> Incidentes Abiertos</span>
+                                        <span><span className="font-bold text-foreground">{stats?.activeIncidents || 0}</span> Incidentes Activos</span>
                                     </div>
                                     <Separator orientation="vertical" className="h-6" />
                                     <div className="flex items-center gap-2">
                                         <Clock className="h-5 w-5" />
-                                        <span><span className="font-bold text-foreground">{metrics.avgResolutionTime}</span> Tiempo Promedio de Resolución</span>
+                                        <span><span className="font-bold text-foreground">{stats?.criticalIncidents || 0}</span> Incidentes Críticos</span>
                                     </div>
                                 </div>
                             </CardHeader>
                             <Separator />
-                            <CardContent className="pt-6">
-                                <div className="flex flex-col gap-4 rounded-lg md:flex-row md:items-center">
+                            <CardContent className="pt-4">
+                                <div className="flex flex-col gap-4 rounded-lg md:flex-row md:items-center mt-6">
                                     <div className="relative flex-1">
                                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -563,6 +561,7 @@ function DashboardPage() {
                                         </div>
                                     </>
                                 )}
+                                {stats && !isLoading && <DashboardCharts stats={stats} />}
                             </CardContent>
                         </Card>
                     </main>

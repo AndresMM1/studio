@@ -1,4 +1,4 @@
-import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ClosureData } from "./types";
+import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ClosureData, DashboardStats } from "./types";
 import { sendWhatsAppGroupMessage } from "./notifications";
 
 export async function getServices(): Promise<Service[]> {
@@ -344,4 +344,104 @@ export async function generateTeamsMeetingLink(serviceName: string): Promise<str
         console.error("Error generating Teams link:", error);
         throw error;
     }
+}
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+    const incidents = await getIncidents();
+
+    const totalIncidents = incidents.length;
+    const activeIncidents = incidents.filter(i => i.status === 'Proceso').length;
+    const criticalIncidents = incidents.filter(i => i.priority === 'Crítica' || i.priority === 'Alta').length;
+
+    const priorityCounts: Record<string, number> = {};
+    const statusCounts: Record<string, number> = {};
+    const serviceCounts: Record<string, number> = {};
+
+    const recent7Days: DashboardStats['recent7Days'] = {
+        priorityCounts: {} as Record<string, number>,
+        serviceCounts: {} as Record<string, number>,
+        resolutionStats: {
+            avgMinutes: 0,
+            maxMinutes: 0,
+            dailyTrend: []
+        }
+    };
+
+    // Helper structures for calculation
+    const dailyTimeMap: Record<string, { totalMinutes: number; count: number }> = {};
+    const resolutionTimes: number[] = [];
+    let maxResolutionTime = 0;
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    incidents.forEach(incident => {
+        // Global stats
+        if (incident.priority) {
+            priorityCounts[incident.priority] = (priorityCounts[incident.priority] || 0) + 1;
+        }
+
+        if (incident.status) {
+            statusCounts[incident.status] = (statusCounts[incident.status] || 0) + 1;
+        }
+
+        const serviceName = incident.service || "Desconocido";
+        serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+
+        // Recent 7 Days stats
+        const incidentDate = new Date(incident.startTime);
+        if (incidentDate >= sevenDaysAgo) {
+            if (incident.priority) {
+                recent7Days.priorityCounts[incident.priority] = (recent7Days.priorityCounts[incident.priority] || 0) + 1;
+            }
+            recent7Days.serviceCounts[serviceName] = (recent7Days.serviceCounts[serviceName] || 0) + 1;
+
+            // Resolution Times Calculation
+            if ((incident.status === 'Cerrado' || incident.status === 'Cerrada') && incident.endDate) {
+                const endDate = new Date(incident.endDate);
+                const durationMs = endDate.getTime() - incidentDate.getTime();
+                const durationMinutes = Math.floor(durationMs / 60000);
+
+                if (durationMinutes > 0) {
+                    resolutionTimes.push(durationMinutes);
+                    if (durationMinutes > maxResolutionTime) {
+                        maxResolutionTime = durationMinutes;
+                    }
+
+                    const dateKey = incidentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+                    if (!dailyTimeMap[dateKey]) {
+                        dailyTimeMap[dateKey] = { totalMinutes: 0, count: 0 };
+                    }
+                    dailyTimeMap[dateKey].totalMinutes += durationMinutes;
+                    dailyTimeMap[dateKey].count += 1;
+                }
+            }
+        }
+    });
+
+    // Aggregate Resolution Stats
+    const totalResolutionTime = resolutionTimes.reduce((a, b) => a + b, 0);
+    const avgResolutionTime = resolutionTimes.length > 0 ? Math.floor(totalResolutionTime / resolutionTimes.length) : 0;
+
+    // Sort dates and format for trend
+    const dailyTrend = Object.keys(dailyTimeMap).sort().map(date => ({
+        date,
+        avgMinutes: Math.floor(dailyTimeMap[date].totalMinutes / dailyTimeMap[date].count)
+    }));
+
+    recent7Days.resolutionStats = {
+        avgMinutes: avgResolutionTime,
+        maxMinutes: maxResolutionTime,
+        dailyTrend: dailyTrend
+    };
+
+    return {
+        totalIncidents,
+        activeIncidents,
+        criticalIncidents,
+        priorityCounts,
+        statusCounts,
+        serviceCounts,
+        recent7Days
+    };
 }

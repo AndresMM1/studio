@@ -34,11 +34,6 @@ export interface User {
   email: string;
 }
 
-
-
-
-
-
 export interface ClosureData {
   incidentId: number;
   startTime: string;
@@ -57,4 +52,22 @@ export interface ClosureData {
   solutionActivities: string;
   actionPlans: string;
   asdResponsible: string;
+}
+
+export interface DashboardStats {
+  totalIncidents: number;
+  activeIncidents: number;
+  criticalIncidents: number;
+  priorityCounts: Record<string, number>;
+  statusCounts: Record<string, number>;
+  serviceCounts: Record<string, number>;
+  recent7Days: {
+    priorityCounts: Record<string, number>;
+    serviceCounts: Record<string, number>;
+    resolutionStats: {
+      avgMinutes: number;
+      maxMinutes: number;
+      dailyTrend: { date: string; avgMinutes: number }[];
+    };
+  };
 }

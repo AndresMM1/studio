@@ -66,7 +66,7 @@ export function Chatbot() {
     const scrollAreaRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Typewriter effect
+    // Typewriter effect (Word by word)
     useEffect(() => {
         if (!typingMessageId) return;
 
@@ -77,14 +77,23 @@ export function Chatbot() {
         let currentIndex = 0;
 
         const typingInterval = setInterval(() => {
-            if (currentIndex <= fullText.length) {
+            if (currentIndex < fullText.length) {
+                // Find next word boundary
+                const nextSpace = fullText.indexOf(' ', currentIndex + 1);
+
+                if (nextSpace === -1) {
+                    currentIndex = fullText.length;
+                } else {
+                    currentIndex = nextSpace + 1;
+                }
+
                 setDisplayedText(fullText.slice(0, currentIndex));
-                currentIndex++;
             } else {
+                setDisplayedText(fullText); // Ensure full text is shown
                 clearInterval(typingInterval);
                 setTypingMessageId(null);
             }
-        }, 20); // Speed of typing (milliseconds per character)
+        }, 30); // Speed of typing (milliseconds per word chunk)
 
         return () => clearInterval(typingInterval);
     }, [typingMessageId, messages]);
