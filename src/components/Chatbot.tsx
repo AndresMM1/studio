@@ -144,7 +144,7 @@ export function Chatbot() {
 
         try {
             // Use the absolute URL as requested by the user, though /api/ask is recommended for production
-            const response = await fetch('https://alvaro-extrapolative-pseudoimpartially.ngrok-free.dev/ask', {
+            const response = await fetch('http://100.31.139.146:8000/ask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
