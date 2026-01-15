@@ -105,7 +105,6 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
     }
 
     const createdIncidentFromApi = await response.json();
-    console.log("Create Incident API Response:", createdIncidentFromApi);
 
     let newIncidentId;
 
@@ -116,7 +115,6 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
     // Handle legacy/alternative case where response is { Incident: "{\"CreatedID\":\"...\"}" }
     else if (createdIncidentFromApi.Incident && typeof createdIncidentFromApi.Incident === 'string') {
         const incidentData = JSON.parse(createdIncidentFromApi.Incident);
-        console.log("Parsed Incident Data:", incidentData);
         newIncidentId = incidentData.CreatedID;
     } else {
         console.error("Unexpected API response format:", createdIncidentFromApi);

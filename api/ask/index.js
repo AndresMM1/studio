@@ -13,7 +13,7 @@ module.exports = async function (context, req) {
         }
     };
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const proxyReq = https.request(options, (res) => {
             let body = '';
             res.on('data', (chunk) => body += chunk);

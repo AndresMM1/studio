@@ -125,7 +125,7 @@ export default function IncidentDetailPage() {
                 setError("El incidente que estás buscando no existe.");
                 setIsLoading(false);
             }
-        } catch (e) {
+        } catch {
             setError("Ocurrió un error al cargar el incidente.");
             setIsLoading(false);
         }
@@ -179,7 +179,6 @@ export default function IncidentDetailPage() {
             setEndTime(getGmt5DateString());
             // Populate initialAnalysis with the first avance (oldest update)
             if (updates.length > 0) {
-                console.log(updates)
                 const firstUpdate = updates[0]; // First item in array
                 setInitialAnalysis(firstUpdate.text);
             }

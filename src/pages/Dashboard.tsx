@@ -107,7 +107,7 @@ function DashboardPage() {
                 setIncidents(fetchedIncidents);
                 setServices(fetchedServices);
                 setStats(fetchedStats);
-            } catch (error) {
+            } catch {
                 toast({
                     title: "Error al cargar datos",
                     description: "No se pudieron cargar los datos iniciales. Intente refrescar la página.",
@@ -211,7 +211,7 @@ function DashboardPage() {
                 title: "Incidente Creado",
                 description: "El nuevo incidente ha sido creado exitosamente.",
             });
-        } catch (error) {
+        } catch {
             toast({
                 title: "Error al crear el incidente",
                 description: "No se pudo crear el incidente. Por favor, inténtelo de nuevo.",
@@ -239,7 +239,7 @@ function DashboardPage() {
                 title: "Link de Teams Generado",
                 description: "El link se ha copiado en el campo correspondiente.",
             });
-        } catch (error) {
+        } catch {
             toast({
                 title: "Error al generar el link",
                 description: "No se pudo crear el link de la reunión. Por favor, créelo manualmente.",

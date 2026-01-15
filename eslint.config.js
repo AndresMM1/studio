@@ -1,5 +1,6 @@
-import eslint from 'eslint';
 import globals from 'globals';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
 
 export default [
     {
@@ -8,15 +9,22 @@ export default [
             ecmaVersion: 2022,
             sourceType: 'module',
             globals: globals.browser,
-            parser: '@typescript-eslint/parser',
+            parser: tsParser,
         },
         plugins: {
-            '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
+            '@typescript-eslint': tsPlugin,
         },
         rules: {
             // Add any project-specific rules here
             'no-console': 'warn',
-            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+            '@typescript-eslint/no-unused-vars': ['error', {
+                argsIgnorePattern: '^_',
+                varsIgnorePattern: '^_',
+                caughtErrorsIgnorePattern: '^_'
+            }],
         },
+    },
+    {
+        ignores: ['dist/'],
     },
 ];

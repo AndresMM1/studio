@@ -28,7 +28,7 @@ export default function LoginPage() {
         try {
             await login(email);
             navigate("/");
-        } catch (error) {
+        } catch {
             toast({
                 title: "Error de inicio de sesión",
                 description: "El correo electrónico es incorrecto. Por favor, inténtelo de nuevo.",

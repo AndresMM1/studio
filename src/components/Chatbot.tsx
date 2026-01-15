@@ -144,7 +144,7 @@ export function Chatbot() {
 
         try {
             // Use the absolute URL as requested by the user, though /api/ask is recommended for production
-            const response = await fetch('http://100.31.139.146:8000/ask', {
+            const response = await fetch('https://fbc428c71a0a.ngrok-free.app/ask', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -282,9 +282,9 @@ export function Chatbot() {
                                             <ReactMarkdown
                                                 remarkPlugins={[remarkGfm]}
                                                 components={{
-                                                    a: ({ node, ...props }) => <a {...props} className={cn("underline font-medium", message.sender === 'user' ? "text-white/90 hover:text-white" : "text-blue-600 dark:text-blue-400")} target="_blank" rel="noopener noreferrer" />,
-                                                    code: ({ node, ...props }) => <code {...props} className={cn("rounded px-1 py-0.5", message.sender === 'user' ? "bg-white/20" : "bg-black/10 dark:bg-white/10")} />,
-                                                    pre: ({ node, ...props }) => <pre {...props} className={cn("rounded p-2 overflow-x-auto my-2", message.sender === 'user' ? "bg-white/20" : "bg-black/10 dark:bg-white/10")} />,
+                                                    a: ({ node: _node, ...props }) => <a {...props} className={cn("underline font-medium", message.sender === 'user' ? "text-white/90 hover:text-white" : "text-blue-600 dark:text-blue-400")} target="_blank" rel="noopener noreferrer" />,
+                                                    code: ({ node: _node, ...props }) => <code {...props} className={cn("rounded px-1 py-0.5", message.sender === 'user' ? "bg-white/20" : "bg-black/10 dark:bg-white/10")} />,
+                                                    pre: ({ node: _node, ...props }) => <pre {...props} className={cn("rounded p-2 overflow-x-auto my-2", message.sender === 'user' ? "bg-white/20" : "bg-black/10 dark:bg-white/10")} />,
                                                 }}
                                             >
                                                 {message.sender === 'bot' && typingMessageId === message.id

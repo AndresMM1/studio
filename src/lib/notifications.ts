@@ -20,10 +20,11 @@ export async function sendWhatsAppGroupMessage(message: string, groupName?: stri
     // return parsed response if any
     try {
       return await res.json();
-    } catch (e) {
+    } catch {
       return null;
     }
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error("sendWhatsAppGroupMessage error:", err);
     throw err;
   }
