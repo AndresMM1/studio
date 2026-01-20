@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import IncidentDetailPage from './IncidentDetail'
+import IncidentDetailPage from '@/pages/IncidentDetail'
 import { BrowserRouter } from 'react-router-dom'
 
 // Mocks
@@ -34,7 +34,7 @@ vi.mock('@/lib/data', () => ({
 
 vi.mock('@/components/ui/sheet', () => ({
     Sheet: ({ children }: any) => <div>{children}</div>,
-    SheetTrigger: ({ children }: any) => <div role="button">{children}</div>,
+    SheetTrigger: ({ children }: any) => <button>{children}</button>,
     SheetContent: ({ children }: any) => <div>{children}</div>,
     SheetHeader: ({ children }: any) => <div>{children}</div>,
     SheetTitle: ({ children }: any) => <h2>{children}</h2>,
@@ -45,23 +45,22 @@ vi.mock('@/components/ui/sheet', () => ({
 
 vi.mock('@/components/ui/select', () => ({
     Select: ({ onValueChange, children }: any) => (
-        <div data-testid="select" onClick={(e: any) => {
-            if (e.target.dataset.value) {
-                onValueChange(e.target.dataset.value)
-            }
+        <select data-testid="select" onChange={(e: any) => {
+            onValueChange(e.target.value)
         }}>
             {children}
-        </div>
+        </select>
     ),
-    SelectTrigger: ({ children }: any) => <div role="button">{children}</div>,
-    SelectValue: ({ placeholder }: any) => <div>{placeholder}</div>,
-    SelectContent: ({ children }: any) => <div>{children}</div>,
-    SelectItem: ({ children, value }: any) => <button data-value={value}>{children}</button>,
+    SelectTrigger: ({ children }: any) => <>{children}</>,
+    SelectValue: ({ placeholder }: any) => <option>{placeholder}</option>,
+    SelectContent: ({ children }: any) => <>{children}</>,
+    SelectItem: ({ children, value }: any) => <option value={value}>{children}</option>,
 }))
 
 vi.mock('@/components/ui/switch', () => ({
     Switch: ({ onCheckedChange, checked, id }: any) => (
         <label htmlFor={id}>
+            <span className="sr-only">Switch control</span>
             <input
                 id={id}
                 type="checkbox"
@@ -196,6 +195,110 @@ describe('IncidentDetailPage', () => {
         await waitFor(() => {
             expect(sendClosureDocumentation).toHaveBeenCalled()
             expect(updateIncidentStatus).toHaveBeenCalledWith(1, 'Cerrado')
+        })
+    })
+
+    it('renders incident detail page', async () => {
+        render(
+            <BrowserRouter>
+                <IncidentDetailPage />
+            </BrowserRouter>
+        )
+
+        await waitFor(() => {
+            expect(screen.getByText('Media')).toBeInTheDocument()
+        })
+    })
+
+    it('displays incident service information', async () => {
+        render(
+            <BrowserRouter>
+                <IncidentDetailPage />
+            </BrowserRouter>
+        )
+
+        await waitFor(() => {
+            expect(screen.getByText('Service A')).toBeInTheDocument()
+        })
+    })
+
+    it('displays incident updates', async () => {
+        render(
+            <BrowserRouter>
+                <IncidentDetailPage />
+            </BrowserRouter>
+        )
+
+        await waitFor(() => {
+            expect(screen.getByText(/Avances/i)).toBeInTheDocument()
+        })
+    })
+
+    it('can change incident status to waiting', async () => {
+        ; (updateIncidentStatus as any).mockResolvedValueOnce({ ...mockIncident, status: 'En espera' })
+        render(
+            <BrowserRouter>
+                <IncidentDetailPage />
+            </BrowserRouter>
+        )
+
+        await waitFor(() => {
+            expect(screen.getByText('Proceso')).toBeInTheDocument()
+        })
+
+        const putOnWaitButton = screen.getByRole('button', { name: /Poner en espera/i })
+        fireEvent.click(putOnWaitButton)
+
+        await waitFor(() => {
+            expect(updateIncidentStatus).toHaveBeenCalledWith(1, 'En espera')
+        })
+    })
+
+    it('can reopen incident', async () => {
+        // Mock incident with closed status
+        const closedIncident = { ...mockIncident, status: 'Cerrado' }
+        ; (getIncidentById as any).mockResolvedValueOnce(closedIncident)
+        ; (updateIncidentStatus as any).mockResolvedValueOnce({ ...closedIncident, status: 'Proceso' })
+
+        render(
+            <BrowserRouter>
+                <IncidentDetailPage />
+            </BrowserRouter>
+        )
+
+        await waitFor(() => {
+            expect(screen.getByText('Cerrado')).toBeInTheDocument()
+        })
+
+        const reopenButton = screen.getByRole('button', { name: /Reabrir Incidente/i })
+        fireEvent.click(reopenButton)
+
+        await waitFor(() => {
+            expect(updateIncidentStatus).toHaveBeenCalledWith(1, 'Proceso')
+        })
+    })
+
+    it('adds incident update', async () => {
+        ; (addIncidentUpdate as any).mockResolvedValueOnce({ id: 2, text: 'New Update', timestamp: new Date().toISOString() })
+
+        render(
+            <BrowserRouter>
+                <IncidentDetailPage />
+            </BrowserRouter>
+        )
+
+        await waitFor(() => {
+            expect(screen.getByText('Media')).toBeInTheDocument()
+        })
+
+        const textarea = screen.getByPlaceholderText('Proporcionar una actualización sobre el incidente...')
+        fireEvent.change(textarea, { target: { value: 'New Update' } })
+
+        const submitButton = screen.getByRole('button', { name: /Agregar Actualización/i })
+        fireEvent.click(submitButton)
+
+        await waitFor(() => {
+            expect(addIncidentUpdate).toHaveBeenCalled()
         })
     })
 })

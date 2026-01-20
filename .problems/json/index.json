@@ -1,0 +1,46 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "totalIssues": 33,
+  "groups": {
+    "misc": {
+      "count": 22,
+      "file": "major/misc.json",
+      "textFile": ""
+    },
+    "S4325": {
+      "count": 1,
+      "file": "major/S4325.json",
+      "textFile": ""
+    },
+    "S5256": {
+      "count": 1,
+      "file": "major/S5256.json",
+      "textFile": ""
+    },
+    "S6754": {
+      "count": 1,
+      "file": "major/S6754.json",
+      "textFile": ""
+    },
+    "S6759": {
+      "count": 1,
+      "file": "major/S6759.json",
+      "textFile": ""
+    },
+    "S6819": {
+      "count": 1,
+      "file": "major/S6819.json",
+      "textFile": ""
+    },
+    "S7764": {
+      "count": 5,
+      "file": "major/S7764.json",
+      "textFile": ""
+    },
+    "S7781": {
+      "count": 1,
+      "file": "major/S7781.json",
+      "textFile": ""
+    }
+  }
+}

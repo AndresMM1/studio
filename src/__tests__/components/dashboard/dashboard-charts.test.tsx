@@ -1,7 +1,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
-import { DashboardCharts } from './dashboard-charts'
+import { DashboardCharts } from '@/components/dashboard/dashboard-charts'
 import { DashboardStats } from '@/lib/types'
 
 // Mock Recharts to avoid DOM issues and simplify assertions
@@ -66,7 +66,7 @@ describe('DashboardCharts', () => {
         // The first one is likely the Service chart based on order in component
         const serviceChart = barCharts[0]
 
-        const data = JSON.parse(serviceChart.getAttribute('data-data') || '[]')
+        const data = JSON.parse(serviceChart.dataset.data ?? '[]')
 
         // precise check for sorting (descending) and top 5
         expect(data).toHaveLength(5)
@@ -83,7 +83,7 @@ describe('DashboardCharts', () => {
         render(<DashboardCharts stats={mockStats} />)
 
         const pie = screen.getByTestId('pie')
-        const data = JSON.parse(pie.getAttribute('data-data') || '[]')
+        const data = JSON.parse(pie.dataset.data ?? '[]')
 
         // Priority Counts: Alta: 10, Media: 5
         expect(data).toHaveLength(2)

@@ -150,13 +150,13 @@ export default function IncidentDetailPage() {
 
     useEffect(() => {
         if (params.id) {
-            const id = parseInt(params.id as string, 10);
-            if (!isNaN(id)) {
-                setIsLoading(true);
-                fetchIncidentWithRetries(id, MAX_RETRIES);
-            } else {
+            const id = Number.parseInt(params.id as string, 10);
+            if (Number.isNaN(id)) {
                 setError("ID de incidente no válido.");
                 setIsLoading(false);
+            } else {
+                setIsLoading(true);
+                fetchIncidentWithRetries(id, MAX_RETRIES);
             }
         }
     }, [params.id, fetchIncidentWithRetries]);

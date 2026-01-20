@@ -76,7 +76,7 @@ function DashboardPage() {
     const [environment, setEnvironment] = useState<string>("all");
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isCreatingIncident, setIsCreatingIncident] = useState(false);
     const [isGeneratingLink, setIsGeneratingLink] = useState(false);
     const [isServiceComboboxOpen, setServiceComboboxOpen] = useState(false);
@@ -191,7 +191,7 @@ function DashboardPage() {
             };
             const newIncident = await addIncident(newIncidentData, user.email);
             setIncidents(prevIncidents => [newIncident, ...prevIncidents]);
-            setCreateModalOpen(false);
+            setIsCreateModalOpen(false);
             // Reset form
             setNewIncidentService(undefined);
             setNewIncidentDescription("");
@@ -257,7 +257,7 @@ function DashboardPage() {
                     <header className="flex h-14 items-center gap-4 bg-muted/40 px-4 lg:h-[60px] lg:px-6">
                         <h1 className="text-xl font-bold tracking-tight">Gestión de Incidentes</h1>
                         <div className="ml-auto flex items-center gap-4">
-                            <Sheet open={isCreateModalOpen} onOpenChange={setCreateModalOpen}>
+                            <Sheet open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <SheetTrigger asChild>
@@ -294,9 +294,16 @@ function DashboardPage() {
                                                         </Button>
                                                         {isServiceComboboxOpen && (
                                                             <>
-                                                                <div
+                                                                <button
                                                                     className="fixed inset-0 z-40"
                                                                     onClick={() => setServiceComboboxOpen(false)}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Escape' || e.key === 'Enter') {
+                                                                            setServiceComboboxOpen(false)
+                                                                        }
+                                                                    }}
+                                                                    aria-label="Close service selector"
+                                                                    type="button"
                                                                 />
                                                                 <div className="absolute top-full z-50 mt-1 w-[300px] rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95">
                                                                     <div className="flex flex-col">
@@ -313,7 +320,7 @@ function DashboardPage() {
                                                                         <div className="h-[300px] overflow-y-auto p-1">
                                                                             {(services || [])
                                                                                 .filter((s) =>
-                                                                                    s.SERVICE_NAME && s.SERVICE_NAME.toLowerCase().includes(serviceSearch.toLowerCase())
+                                                                                    s.SERVICE_NAME?.toLowerCase().includes(serviceSearch.toLowerCase())
                                                                                 )
                                                                                 .map((s) => (
                                                                                     <button
@@ -339,7 +346,7 @@ function DashboardPage() {
                                                                                     </button>
                                                                                 ))}
                                                                             {(services || []).filter((s) =>
-                                                                                s.SERVICE_NAME && s.SERVICE_NAME.toLowerCase().includes(serviceSearch.toLowerCase())
+                                                                                s.SERVICE_NAME?.toLowerCase().includes(serviceSearch.toLowerCase())
                                                                             ).length === 0 && (
                                                                                     <div className="py-6 text-center text-sm">
                                                                                         No se encontró el servicio.
@@ -513,7 +520,7 @@ function DashboardPage() {
                                             </SelectContent>
                                         </Select>
                                         <Select value={environment} onValueChange={(value) => {
-                                            setEnvironment(value as "all" | string);
+                                            setEnvironment(value as string);
                                             setCurrentPage(1);
                                         }}>
                                             <SelectTrigger className="w-full md:w-[180px]">

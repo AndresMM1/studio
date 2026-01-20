@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "rule": "S6754",
+  "count": 1,
+  "details": {
+    "code": "typescript:S6754",
+    "source": "SonarLintScanner",
+    "path": "/Users/andmor/Incidentes/studio"
+  },
+  "occurrences": [
+    {
+      "key": "src/pages/Dashboard.tsx:81:10:6",
+      "file": "src/pages/Dashboard.tsx",
+      "line": 82,
+      "textRange": {
+        "startLine": 82,
+        "endLine": 82,
+        "startOffset": 10,
+        "endOffset": 57
+      },
+      "message": "useState call is not destructured into value + setter pair",
+      "severity": "MAJOR"
+    }
+  ]
+}

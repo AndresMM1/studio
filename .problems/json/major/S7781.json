@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "rule": "S7781",
+  "count": 1,
+  "details": {
+    "code": "typescript:S7781",
+    "source": "SonarLintScanner",
+    "path": "/Users/andmor/Incidentes/studio"
+  },
+  "occurrences": [
+    {
+      "key": "src/components/Chatbot.tsx:228:20:2",
+      "file": "src/components/Chatbot.tsx",
+      "line": 229,
+      "textRange": {
+        "startLine": 229,
+        "endLine": 229,
+        "startOffset": 20,
+        "endOffset": 27
+      },
+      "message": "Prefer `String#replaceAll()` over `String#replace()`.",
+      "severity": "MAJOR"
+    }
+  ]
+}

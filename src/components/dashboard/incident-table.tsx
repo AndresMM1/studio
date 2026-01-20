@@ -39,7 +39,7 @@ const statusMap: Record<IncidentStatus, { icon: React.ElementType; className: st
   "Cerrada": { icon: CheckCircle2, className: "text-purple-600", badgeClassName: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300" },
 };
 
-export function IncidentTable({ incidents }: IncidentTableProps) {
+export function IncidentTable({ incidents }: Readonly<IncidentTableProps>) {
   return (
     <div className="mt-4">
       <Table>
@@ -67,7 +67,17 @@ export function IncidentTable({ incidents }: IncidentTableProps) {
 
               return (
                 <TableRow
-                  onClick={() => window.location.href = `/incident/${incident.id}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    globalThis.location.href = `/incident/${incident.id}`
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      globalThis.location.href = `/incident/${incident.id}`
+                    }
+                  }}
                   key={incident.id}
                   className={cn(isOpen && "bg-red-100 dark:bg-red-900/20 hover:bg-red-200 dark:hover:bg-red-900/30 animate-pulse")}
                 >

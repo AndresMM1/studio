@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "rule": "S4325",
+  "count": 1,
+  "details": {
+    "code": "typescript:S4325",
+    "source": "SonarLintScanner",
+    "path": "/Users/andmor/Incidentes/studio"
+  },
+  "occurrences": [
+    {
+      "key": "src/components/Chatbot.test.tsx:55:24:4",
+      "file": "src/components/Chatbot.test.tsx",
+      "line": 56,
+      "textRange": {
+        "startLine": 56,
+        "endLine": 56,
+        "startOffset": 24,
+        "endOffset": 35
+      },
+      "message": "This assertion is unnecessary since the receiver accepts the original type of the expression.",
+      "severity": "MAJOR"
+    }
+  ]
+}

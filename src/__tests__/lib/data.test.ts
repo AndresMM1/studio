@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getServices, getIncidents, addIncident, getDashboardStats, updateIncidentStatus, sendClosureDocumentation, generateTeamsMeetingLink } from './data'
+import * as dataLib from '@/lib/data'
+import { getServices, getIncidents, addIncident, getDashboardStats, updateIncidentStatus, sendClosureDocumentation, generateTeamsMeetingLink, getIncidentById } from '@/lib/data'
 
 // Mock fetch
 const fetchMock = vi.fn()
-global.fetch = fetchMock
+globalThis.fetch = fetchMock
 
 vi.mock('./notifications', () => ({
     sendWhatsAppGroupMessage: vi.fn().mockResolvedValue(undefined)
@@ -58,6 +59,23 @@ describe('Data Library', () => {
             expect(incidents).toHaveLength(1)
             expect(incidents[0].id).toBe(1)
             expect(incidents[0].priority).toBe('Alta')
+        })
+
+        it('returns empty array on fetch failure', async () => {
+            fetchMock.mockResolvedValueOnce({ ok: false })
+            const incidents = await getIncidents()
+            expect(incidents).toEqual([])
+        })
+    })
+
+    describe('getIncidentById', () => {
+        it('returns incident from cached list', async () => {
+            fetchMock.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ value: [{ Id: 42, AFFECT_SERVICE: 'Svc', AFFECT_DETAILS: 'd' }] })
+            })
+            const incident = await getIncidentById(42)
+            expect(incident?.id).toBe(42)
         })
     })
 
@@ -135,6 +153,24 @@ describe('Data Library', () => {
             expect(newIncident.id).toBe(123)
             expect(newIncident.status).toBe('Proceso')
         })
+
+        it('parses legacy Incident payload', async () => {
+            const legacy = { Incident: JSON.stringify({ CreatedID: "321" }) }
+            fetchMock.mockResolvedValue({ ok: true, json: async () => legacy })
+
+            const incident = {
+                service: 'Service B',
+                description: 'Legacy',
+                priority: 'Baja' as const,
+                startTime: new Date().toISOString(),
+                environment: 'Producción',
+                teamsLink: ''
+            }
+
+            const created = await addIncident(incident, 'legacy@example.com')
+            expect(created.id).toBe(321)
+            expect(created.service).toBe('Service B')
+        })
     })
 
     describe('updateIncidentStatus', () => {
@@ -201,6 +237,45 @@ describe('Data Library', () => {
         it('throws on failure', async () => {
             fetchMock.mockResolvedValueOnce({ ok: false })
             await expect(generateTeamsMeetingLink('Service A')).rejects.toThrow()
+        })
+    })
+
+    describe('getIncidentUpdates', () => {
+        it('returns mapped updates from API', async () => {
+            fetchMock.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ value: [{ ID: 11, AFFECT_ID: 7, MONITORING_DS: 'note', MONITORING_DATE: '2024-01-01' }] })
+            })
+
+            const updates = await dataLib.getIncidentUpdates(7)
+            expect(updates).toHaveLength(1)
+            expect(updates[0]).toMatchObject({ id: 11, incidentId: 7, text: 'note' })
+        })
+
+        it('returns empty array on fetch failure', async () => {
+            fetchMock.mockResolvedValueOnce({ ok: false, text: async () => 'fail' })
+            const updates = await dataLib.getIncidentUpdates(99)
+            expect(updates).toEqual([])
+        })
+    })
+
+    describe('addIncidentUpdate', () => {
+        it('sends update and returns structured object', async () => {
+            vi.useFakeTimers()
+            vi.setSystemTime(new Date('2024-01-02T10:00:00Z'))
+
+            fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ Id: 555 }) })
+
+            const update = await dataLib.addIncidentUpdate('44', 'follow up')
+
+            expect(update).toMatchObject({ id: 555, incidentId: 44, text: 'follow up', timestamp: '2024-01-02T10:00:00.000Z' })
+
+            vi.useRealTimers()
+        })
+
+        it('throws when API call fails', async () => {
+            fetchMock.mockResolvedValueOnce({ ok: false, text: async () => 'Error' })
+            await expect(dataLib.addIncidentUpdate('1', 'bad')).rejects.toThrow()
         })
     })
 })

@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "rule": "S6819",
+  "count": 1,
+  "details": {
+    "code": "typescript:S6819",
+    "source": "SonarLintScanner",
+    "path": "/Users/andmor/Incidentes/studio"
+  },
+  "occurrences": [
+    {
+      "key": "src/components/ui/carousel.tsx:198:4:5",
+      "file": "src/components/ui/carousel.tsx",
+      "line": 199,
+      "textRange": {
+        "startLine": 199,
+        "endLine": 209,
+        "startOffset": 4,
+        "endOffset": 6
+      },
+      "message": "Use <img alt=...> instead of the \"presentation\" role to ensure accessibility across all devices.",
+      "severity": "MAJOR"
+    }
+  ]
+}

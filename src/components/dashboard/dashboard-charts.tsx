@@ -8,12 +8,12 @@ interface DashboardChartsProps {
 
 const COLORS = ['#0EA5E9', '#22C55E', '#EAB308', '#EF4444', '#8B5CF6'];
 
-export function DashboardCharts({ stats }: DashboardChartsProps) {
+export function DashboardCharts({ stats }: Readonly<DashboardChartsProps>) {
     const priorityData = Object.entries(stats.recent7Days.priorityCounts).map(([name, value]) => ({ name, value }));
     const serviceData = Object.entries(stats.recent7Days.serviceCounts).map(([name, value]) => ({ name, value }));
 
     // Sort service data by value descending and take top 5
-    const topServices = serviceData.sort((a, b) => b.value - a.value).slice(0, 5);
+    const topServices = [...serviceData].sort((a, b) => b.value - a.value).slice(0, 5);
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-8">
@@ -69,8 +69,8 @@ export function DashboardCharts({ stats }: DashboardChartsProps) {
                                 paddingAngle={5}
                                 dataKey="value"
                             >
-                                {priorityData.map((_entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                {priorityData.map((entry, index) => (
+                                    <Cell key={entry.name || `cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
                             <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />

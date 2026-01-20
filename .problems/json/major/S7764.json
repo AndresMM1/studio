@@ -1,0 +1,77 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "rule": "S7764",
+  "count": 5,
+  "details": {
+    "code": "typescript:S7764",
+    "source": "SonarLintScanner",
+    "path": "/Users/andmor/Incidentes/studio"
+  },
+  "occurrences": [
+    {
+      "key": "src/components/dashboard/incident-table.test.tsx:45:33:8",
+      "file": "src/components/dashboard/incident-table.test.tsx",
+      "line": 46,
+      "textRange": {
+        "startLine": 46,
+        "endLine": 46,
+        "startOffset": 33,
+        "endOffset": 39
+      },
+      "message": "Prefer `globalThis` over `window`.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/components/dashboard/incident-table.test.tsx:46:16:9",
+      "file": "src/components/dashboard/incident-table.test.tsx",
+      "line": 47,
+      "textRange": {
+        "startLine": 47,
+        "endLine": 47,
+        "startOffset": 16,
+        "endOffset": 22
+      },
+      "message": "Prefer `globalThis` over `window`.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/components/dashboard/incident-table.test.tsx:47:8:10",
+      "file": "src/components/dashboard/incident-table.test.tsx",
+      "line": 48,
+      "textRange": {
+        "startLine": 48,
+        "endLine": 48,
+        "startOffset": 8,
+        "endOffset": 14
+      },
+      "message": "Prefer `globalThis` over `window`.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/components/dashboard/incident-table.test.tsx:56:15:11",
+      "file": "src/components/dashboard/incident-table.test.tsx",
+      "line": 57,
+      "textRange": {
+        "startLine": 57,
+        "endLine": 57,
+        "startOffset": 15,
+        "endOffset": 21
+      },
+      "message": "Prefer `globalThis` over `window`.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/components/dashboard/incident-table.test.tsx:58:8:12",
+      "file": "src/components/dashboard/incident-table.test.tsx",
+      "line": 59,
+      "textRange": {
+        "startLine": 59,
+        "endLine": 59,
+        "startOffset": 8,
+        "endOffset": 14
+      },
+      "message": "Prefer `globalThis` over `window`.",
+      "severity": "MAJOR"
+    }
+  ]
+}

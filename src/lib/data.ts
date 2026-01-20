@@ -1,82 +1,86 @@
 import type { Incident, IncidentStatus, IncidentUpdate, Service, ServiceApiResponse, ClosureData, DashboardStats } from "./types";
 import { sendWhatsAppGroupMessage } from "./notifications";
 
-export async function getServices(): Promise<Service[]> {
+type FetchResult<T> = { data: T | null; status?: number; bodyText?: string };
+
+async function fetchJsonWithLogging<T>(
+    url: string,
+    options: RequestInit,
+    context: string,
+    fallback: T
+): Promise<FetchResult<T>> {
     try {
-        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/04b1144263da4f43a8073aac608d2cb2/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=H8Dkdab2KfRMjcnNndqj3Y3-cukCBotl7JYnTZURPes');
+        const response = await fetch(url, options);
         if (!response.ok) {
-            console.error('La API de servicios falló con el estado:', response.status);
-            return [];
+            const bodyText = await response.text().catch(() => "");
+            console.error(`[${context}] HTTP ${response.status}`, bodyText || "<empty body>");
+            return { data: fallback, status: response.status, bodyText };
         }
-        const data: ServiceApiResponse = await response.json();
-
-        const servicesData = data.value || [];
-
-        if (!Array.isArray(servicesData)) {
-            console.error('La respuesta de la API de servicios no es un array y no se pudo encontrar un array de servicios en el objeto de respuesta.', data);
-            return [];
-        }
-
-        return servicesData;
-
+        const data = await response.json();
+        return { data };
     } catch (error) {
-        console.error('Error al obtener los servicios:', error);
-        return [];
+        console.error(`[${context}]`, error);
+        return { data: fallback };
     }
+}
+
+function ensureArray<T>(candidate: unknown, context: string): T[] {
+    if (Array.isArray(candidate)) return candidate;
+    console.error(`[${context}] Expected array in response`, candidate);
+    return [];
+}
+
+function normalizePriority(raw: string | undefined): Incident["priority"] {
+    const normalized = raw ? raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase() : "";
+    return normalized === "Crítica" || normalized === "Alta" || normalized === "Media" || normalized === "Baja"
+        ? normalized
+        : "Baja";
+}
+
+function normalizeStatus(raw: string | undefined): Incident["status"] {
+    const normalized = raw ? raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase() : "";
+    return normalized === "Proceso" || normalized === "En espera" || normalized === "Cerrado" || normalized === "Cerrada"
+        ? normalized
+        : "Proceso";
+}
+
+function mapIncidentItem(item: any): Incident {
+    return {
+        id: item.Id,
+        service: item.AFFECT_SERVICE || "N/A",
+        description: item.AFFECT_DETAILS || "",
+        startTime: item.AFFECT_START_DATE,
+        endDate: item.AFFECT_END_DATE,
+        priority: normalizePriority(item.AFFECT_PRIORITY),
+        status: normalizeStatus(item.AFFECT_STATE),
+        environment: item.AFFECT_ENVIROMENT || "Producción",
+        teamsLink: item.AFFECT_LINK,
+    };
+}
+
+export async function getServices(): Promise<Service[]> {
+    const { data } = await fetchJsonWithLogging<ServiceApiResponse>(
+        'https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/04b1144263da4f43a8073aac608d2cb2/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=H8Dkdab2KfRMjcnNndqj3Y3-cukCBotl7JYnTZURPes',
+        { method: 'GET' },
+        'Servicios',
+        { value: [] }
+    );
+
+    const servicesData = ensureArray<Service>(data?.value ?? [], 'Servicios');
+    return servicesData;
 }
 
 
 export async function getIncidents(): Promise<Incident[]> {
-    try {
-        const response = await fetch('https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/de271aba90734dbfbf3276dc9791b5e0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=BR1gsw9rIACMMFNdaLQ8C6hP-UQVfNcs4uflH_lY0-A');
-        if (!response.ok) {
-            console.error('La API de incidentes falló con el estado:', response.status);
-            return [];
-        }
-        const data = await response.json();
+    const { data } = await fetchJsonWithLogging<any>(
+        'https://045498d8c2eae9f4994f58cd02cb99.e0.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/de271aba90734dbfbf3276dc9791b5e0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=BR1gsw9rIACMMFNdaLQ8C6hP-UQVfNcs4uflH_lY0-A',
+        { method: 'GET' },
+        'Incidentes',
+        { value: [] }
+    );
 
-        const incidentsData = data.value || [];
-
-        if (!Array.isArray(incidentsData)) {
-            console.error('La respuesta de la API de incidentes no es un array y no se pudo encontrar un array de incidentes en el objeto de respuesta.', data);
-            return [];
-        }
-
-        // Map API response to Incident[]
-        return incidentsData.map((item: any): Incident => {
-            let priority: Incident["priority"] = "Baja";
-            if (item.AFFECT_PRIORITY) {
-                const p = item.AFFECT_PRIORITY.charAt(0).toUpperCase() + item.AFFECT_PRIORITY.slice(1).toLowerCase();
-                if (p === "Crítica" || p === "Alta" || p === "Media" || p === "Baja") {
-                    priority = p;
-                }
-            }
-
-            let status: Incident["status"] = "Proceso";
-            if (item.AFFECT_STATE) {
-                const s = item.AFFECT_STATE.charAt(0).toUpperCase() + item.AFFECT_STATE.slice(1).toLowerCase();
-                if (s === "Proceso" || s === "En espera" || s === "Cerrado" || s === "Cerrada") {
-                    status = s;
-                }
-            }
-
-
-            return {
-                id: item.Id,
-                service: item.AFFECT_SERVICE || "N/A",
-                description: item.AFFECT_DETAILS || "",
-                startTime: item.AFFECT_START_DATE,
-                endDate: item.AFFECT_END_DATE,
-                priority: priority,
-                status: status,
-                environment: item.AFFECT_ENVIROMENT || "Producción",
-                teamsLink: item.AFFECT_LINK,
-            };
-        });
-    } catch (error) {
-        console.error('Error al obtener incidentes:', error);
-        return [];
-    }
+    const incidentsData = ensureArray<any>(data?.value ?? [], 'Incidentes');
+    return incidentsData.map(mapIncidentItem);
 }
 
 export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'endDate'>, userEmail: string): Promise<Incident> {
@@ -128,8 +132,13 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
 
     // Construct the new incident object locally instead of fetching it
     // This avoids race conditions where the API hasn't indexed the new item yet
+    const parsedIncidentId = Number.parseInt(newIncidentId, 10);
+    if (Number.isNaN(parsedIncidentId)) {
+        throw new TypeError("API response did not contain a numeric CreatedID.");
+    }
+
     const newIncident: Incident = {
-        id: parseInt(newIncidentId, 10),
+        id: parsedIncidentId,
         service: incident.service,
         description: incident.description,
         startTime: incident.startTime,
@@ -141,12 +150,8 @@ export async function addIncident(incident: Omit<Incident, 'id' | 'status' | 'en
     };
 
 
-    try {
-        const md = `**Nuevo incidente creado**\n\n**ID:** ${newIncident.id}\n**Servicio:** ${newIncident.service}\n**Prioridad:** ${newIncident.priority}\n**Descripción:**\n${newIncident.description}\n**Inicio:** ${newIncident.startTime}`;
-        sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (create incident):', err));
-    } catch (e) {
-        console.error('Failed to prepare WhatsApp message for new incident:', e);
-    }
+    const md = `**Nuevo incidente creado**\n\n**ID:** ${newIncident.id}\n**Servicio:** ${newIncident.service}\n**Prioridad:** ${newIncident.priority}\n**Descripción:**\n${newIncident.description}\n**Inicio:** ${newIncident.startTime}`;
+    sendWhatsAppGroupMessage(md).catch(() => { /* WhatsApp send failed (create incident) */ });
 
     return newIncident;
 }
@@ -219,20 +224,21 @@ export async function addIncidentUpdate(incidentId: string, text: string): Promi
             throw new Error(`La respuesta de la red no fue correcta: ${response.statusText}`);
         }
         const createdUpdateFromApi = await response.json();
+        const parsedIncidentId = Number.parseInt(incidentId, 10);
+        if (Number.isNaN(parsedIncidentId)) {
+            throw new TypeError('Incident ID was not numeric');
+        }
+
         const updateObj: IncidentUpdate = {
             id: createdUpdateFromApi.Id || Date.now(),
-            incidentId: parseInt(incidentId, 10),
+            incidentId: parsedIncidentId,
             text: text,
             timestamp: timestamp
         };
 
         // Send WhatsApp notification for the update (fire-and-forget)
-        try {
-            const md = `**Actualización de incidente**\n\n**ID:** ${incidentId}\n**Mensaje:**\n${text}\n**Timestamp:** ${timestamp}`;
-            sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (incident update):', err));
-        } catch (e) {
-            console.error('Failed to prepare WhatsApp message for incident update:', e);
-        }
+        const md = `**Actualización de incidente**\n\n**ID:** ${incidentId}\n**Mensaje:**\n${text}\n**Timestamp:** ${timestamp}`;
+        sendWhatsAppGroupMessage(md).catch(() => { /* WhatsApp send failed (incident update) */ });
 
         return updateObj;
 
@@ -258,12 +264,8 @@ export async function updateIncidentStatus(id: number, status: IncidentStatus): 
 
         const updatedIncident = await getIncidentById(id);
         // Notify via WhatsApp about the status change (fire-and-forget)
-        try {
-            const md = `**Estado de incidente actualizado**\n\n**ID:** ${id}\n**Nuevo Estado:** ${status}`;
-            sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (status change):', err));
-        } catch (e) {
-            console.error('Failed to prepare WhatsApp message for status change:', e);
-        }
+        const md = `**Estado de incidente actualizado**\n\n**ID:** ${id}\n**Nuevo Estado:** ${status}`;
+        sendWhatsAppGroupMessage(md).catch(() => { /* WhatsApp send failed (status change) */ });
         return updatedIncident;
 
     } catch (error) {
@@ -306,12 +308,8 @@ export async function sendClosureDocumentation(data: ClosureData): Promise<void>
             throw new Error('Failed to send closure documentation');
         }
         // Send WhatsApp notification about incident closure (fire-and-forget)
-        try {
-            const md = `**Cierre de incidente**\n\n**ID:** ${data.incidentId}\n**Servicio:** ${data.service}\n**Inicio:** ${data.startTime}\n**Fin:** ${data.endTime}\n**Solución:**\n${data.solution}`;
-            sendWhatsAppGroupMessage(md).catch((err) => console.error('WhatsApp send failed (closure docs):', err));
-        } catch (e) {
-            console.error('Failed to prepare WhatsApp message for incident closure:', e);
-        }
+        const md = `**Cierre de incidente**\n\n**ID:** ${data.incidentId}\n**Servicio:** ${data.service}\n**Inicio:** ${data.startTime}\n**Fin:** ${data.endTime}\n**Solución:**\n${data.solution}`;
+        sendWhatsAppGroupMessage(md).catch(() => { /* WhatsApp send failed (closure docs) */ });
     } catch (error) {
         console.error("Error sending closure documentation:", error);
         throw error;
@@ -344,6 +342,64 @@ export async function generateTeamsMeetingLink(serviceName: string): Promise<str
     }
 }
 
+function updateGlobalStats(
+    incident: Incident,
+    priorityCounts: Record<string, number>,
+    statusCounts: Record<string, number>,
+    serviceCounts: Record<string, number>
+): void {
+    if (incident.priority) {
+        priorityCounts[incident.priority] = (priorityCounts[incident.priority] || 0) + 1;
+    }
+
+    if (incident.status) {
+        statusCounts[incident.status] = (statusCounts[incident.status] || 0) + 1;
+    }
+
+    const serviceName = incident.service || "Desconocido";
+    serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
+}
+
+function updateRecent7DaysStats(
+    incident: Incident,
+    incidentDate: Date,
+    sevenDaysAgo: Date,
+    recent7Days: DashboardStats['recent7Days'],
+    dailyTimeMap: Record<string, { totalMinutes: number; count: number }>,
+    resolutionTimes: number[],
+    maxResolutionTimeRef: { value: number }
+): void {
+    if (incidentDate < sevenDaysAgo) {
+        return;
+    }
+
+    const serviceName = incident.service || "Desconocido";
+    if (incident.priority) {
+        recent7Days.priorityCounts[incident.priority] = (recent7Days.priorityCounts[incident.priority] || 0) + 1;
+    }
+    recent7Days.serviceCounts[serviceName] = (recent7Days.serviceCounts[serviceName] || 0) + 1;
+
+    if ((incident.status === 'Cerrado' || incident.status === 'Cerrada') && incident.endDate) {
+        const endDate = new Date(incident.endDate);
+        const durationMs = endDate.getTime() - incidentDate.getTime();
+        const durationMinutes = Math.floor(durationMs / 60000);
+
+        if (durationMinutes > 0) {
+            resolutionTimes.push(durationMinutes);
+            if (durationMinutes > maxResolutionTimeRef.value) {
+                maxResolutionTimeRef.value = durationMinutes;
+            }
+
+            const dateKey = incidentDate.toISOString().split('T')[0];
+            if (!dailyTimeMap[dateKey]) {
+                dailyTimeMap[dateKey] = { totalMinutes: 0, count: 0 };
+            }
+            dailyTimeMap[dateKey].totalMinutes += durationMinutes;
+            dailyTimeMap[dateKey].count += 1;
+        }
+    }
+}
+
 export async function getDashboardStats(): Promise<DashboardStats> {
     const incidents = await getIncidents();
 
@@ -365,71 +421,32 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         }
     };
 
-    // Helper structures for calculation
     const dailyTimeMap: Record<string, { totalMinutes: number; count: number }> = {};
     const resolutionTimes: number[] = [];
-    let maxResolutionTime = 0;
+    const maxResolutionTimeRef = { value: 0 };
 
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     incidents.forEach(incident => {
-        // Global stats
-        if (incident.priority) {
-            priorityCounts[incident.priority] = (priorityCounts[incident.priority] || 0) + 1;
-        }
-
-        if (incident.status) {
-            statusCounts[incident.status] = (statusCounts[incident.status] || 0) + 1;
-        }
-
-        const serviceName = incident.service || "Desconocido";
-        serviceCounts[serviceName] = (serviceCounts[serviceName] || 0) + 1;
-
-        // Recent 7 Days stats
+        updateGlobalStats(incident, priorityCounts, statusCounts, serviceCounts);
         const incidentDate = new Date(incident.startTime);
-        if (incidentDate >= sevenDaysAgo) {
-            if (incident.priority) {
-                recent7Days.priorityCounts[incident.priority] = (recent7Days.priorityCounts[incident.priority] || 0) + 1;
-            }
-            recent7Days.serviceCounts[serviceName] = (recent7Days.serviceCounts[serviceName] || 0) + 1;
-
-            // Resolution Times Calculation
-            if ((incident.status === 'Cerrado' || incident.status === 'Cerrada') && incident.endDate) {
-                const endDate = new Date(incident.endDate);
-                const durationMs = endDate.getTime() - incidentDate.getTime();
-                const durationMinutes = Math.floor(durationMs / 60000);
-
-                if (durationMinutes > 0) {
-                    resolutionTimes.push(durationMinutes);
-                    if (durationMinutes > maxResolutionTime) {
-                        maxResolutionTime = durationMinutes;
-                    }
-
-                    const dateKey = incidentDate.toISOString().split('T')[0]; // YYYY-MM-DD
-                    if (!dailyTimeMap[dateKey]) {
-                        dailyTimeMap[dateKey] = { totalMinutes: 0, count: 0 };
-                    }
-                    dailyTimeMap[dateKey].totalMinutes += durationMinutes;
-                    dailyTimeMap[dateKey].count += 1;
-                }
-            }
-        }
+        updateRecent7DaysStats(incident, incidentDate, sevenDaysAgo, recent7Days, dailyTimeMap, resolutionTimes, maxResolutionTimeRef);
     });
 
-    // Aggregate Resolution Stats
     const totalResolutionTime = resolutionTimes.reduce((a, b) => a + b, 0);
     const avgResolutionTime = resolutionTimes.length > 0 ? Math.floor(totalResolutionTime / resolutionTimes.length) : 0;
 
-    // Sort dates and format for trend
-    const dailyTrend = Object.keys(dailyTimeMap).sort().map(date => ({
+    const dailyTrend = Object.keys(dailyTimeMap)
+        .sort((a, b) => a.localeCompare(b))
+        .map(date => ({
         date,
         avgMinutes: Math.floor(dailyTimeMap[date].totalMinutes / dailyTimeMap[date].count)
-    }));
+        }));
 
     recent7Days.resolutionStats = {
         avgMinutes: avgResolutionTime,
-        maxMinutes: maxResolutionTime,
+        maxMinutes: maxResolutionTimeRef.value,
         dailyTrend: dailyTrend
     };
 

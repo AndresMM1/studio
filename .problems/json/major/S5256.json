@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "rule": "S5256",
+  "count": 1,
+  "details": {
+    "code": "typescript:S5256",
+    "source": "SonarLintScanner",
+    "path": "/Users/andmor/Incidentes/studio"
+  },
+  "occurrences": [
+    {
+      "key": "src/components/ui/table.tsx:9:4:13",
+      "file": "src/components/ui/table.tsx",
+      "line": 10,
+      "textRange": {
+        "startLine": 10,
+        "endLine": 14,
+        "startOffset": 4,
+        "endOffset": 6
+      },
+      "message": "Add a valid header row or column to this \"<table>\".",
+      "severity": "MAJOR"
+    }
+  ]
+}

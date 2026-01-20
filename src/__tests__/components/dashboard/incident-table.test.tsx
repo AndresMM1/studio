@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import { IncidentTable } from './incident-table'
+import { IncidentTable } from '@/components/dashboard/incident-table'
 import { BrowserRouter } from 'react-router-dom'
 import type { Incident } from '@/lib/types'
 
@@ -42,10 +42,10 @@ describe('IncidentTable', () => {
     })
 
     it('navigates on row click', () => {
-        // Mock window.location
-        const originalLocation = window.location
-        delete (window as any).location
-        window.location = { href: '' } as any
+        // Mock globalThis.location
+        const originalLocation = globalThis.location
+        delete (globalThis as any).location
+        globalThis.location = { href: '' } as any
 
         render(
             <BrowserRouter>
@@ -54,8 +54,8 @@ describe('IncidentTable', () => {
         )
 
         fireEvent.click(screen.getByText('Service A'))
-        expect(window.location.href).toBe('/incident/1')
+        expect(globalThis.location.href).toBe('/incident/1')
 
-        window.location = originalLocation as any
+        globalThis.location = originalLocation as any
     })
 })

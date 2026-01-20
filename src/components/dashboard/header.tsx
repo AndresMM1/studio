@@ -18,7 +18,7 @@ export function DashboardHeader({
   channels,
   selectedChannel,
   onChannelChange,
-}: DashboardHeaderProps) {
+}: Readonly<DashboardHeaderProps>) {
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
 

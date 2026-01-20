@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import type { User } from '@/lib/types';
 import { Loader2 } from 'lucide-react';
 
@@ -14,7 +14,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,8 +24,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
+    } catch {
+      // Failed to parse user from localStorage
       localStorage.removeItem('user');
     } finally {
       setIsLoading(false);
@@ -45,12 +45,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const responseData = await response.json();
 
-    if (responseData && responseData.nombre) {
-        const userData = { name: responseData.nombre, email };
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+    if (responseData?.nombre) {
+      const userData = { name: responseData.nombre, email };
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
     } else {
-        throw new Error('User data not found in response');
+      throw new Error('User data not found in response');
     }
   }, []);
 
@@ -59,13 +59,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('user');
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     isAuthenticated: !!user,
     user,
     isLoading,
     login,
     logout,
-  };
+  }), [user, isLoading, login, logout]);
 
   if (isLoading) {
      return (

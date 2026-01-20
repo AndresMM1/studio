@@ -11,7 +11,7 @@ const ThemeContext = React.createContext<ThemeContextProps | undefined>(undefine
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [theme, setTheme] = React.useState<"light" | "dark">(() => {
-        if (typeof window === "undefined") return "light"
+        if (globalThis.window === undefined) return "light"
         const stored = localStorage.getItem("theme") as "light" | "dark" | null
         return stored ?? "light"
     })
@@ -30,8 +30,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setTheme(prev => (prev === "dark" ? "light" : "dark"))
     }, [])
 
+    const value = React.useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme])
+
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={value}>
             {children}
         </ThemeContext.Provider>
     )

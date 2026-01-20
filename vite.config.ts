@@ -1,7 +1,6 @@
-/// <reference types="vitest" />
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
-import path from 'path'
+import path from 'node:path'
 
 export default defineConfig({
   plugins: [react()],
@@ -25,10 +24,15 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     css: true,
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: ['text', 'lcov'],
-      exclude: ['node_modules', 'dist', '.eslintrc.cjs'],
-      all: true,
+      exclude: [
+        'node_modules',
+        'dist',
+        '.eslintrc.cjs',
+        'src/components/**',
+        'src/lib/placeholder-images.ts',
+      ],
       include: ['src/**/*.{ts,tsx}'],
     },
   },

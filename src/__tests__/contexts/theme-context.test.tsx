@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import { ThemeProvider, useTheme } from './theme-context'
+import { ThemeProvider, useTheme } from '@/contexts/theme-context'
 
 describe('ThemeContext', () => {
     const TestComponent = () => {

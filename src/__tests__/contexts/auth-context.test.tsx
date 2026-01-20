@@ -1,10 +1,10 @@
 import { render, screen, waitFor, act, renderHook } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { AuthProvider, useAuth } from './auth-context'
+import { AuthProvider, useAuth } from '@/contexts/auth-context'
 
 // Mock fetch
 const fetchMock = vi.fn()
-globalThis.fetch = fetchMock
+global.fetch = fetchMock
 
 describe('AuthContext', () => {
     beforeEach(() => {

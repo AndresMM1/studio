@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import { Label } from './label'
-import { Badge } from './badge'
-import { Avatar, AvatarImage, AvatarFallback } from './avatar'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
 describe('UI Components', () => {
     describe('Label', () => {

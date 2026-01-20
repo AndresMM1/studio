@@ -1,4 +1,4 @@
-import { cn } from './utils'
+import { cn } from '@/lib/utils'
 import { describe, it, expect } from 'vitest'
 
 describe('cn', () => {
@@ -7,7 +7,9 @@ describe('cn', () => {
     })
 
     it('handles conditional classes', () => {
-        expect(cn('class1', true && 'class2', false && 'class3')).toBe('class1 class2')
+        const includeSecond = true
+        const includeThird = false
+        expect(cn('class1', includeSecond && 'class2', includeThird && 'class3')).toBe('class1 class2')
     })
 
     it('merges tailwind classes correctly', () => {

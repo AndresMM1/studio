@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "rule": "S6759",
+  "count": 1,
+  "details": {
+    "code": "typescript:S6759",
+    "source": "SonarLintScanner",
+    "path": "/Users/andmor/Incidentes/studio"
+  },
+  "occurrences": [
+    {
+      "key": "src/components/dashboard/metric-card.tsx:9:27:32",
+      "file": "src/components/dashboard/metric-card.tsx",
+      "line": 10,
+      "textRange": {
+        "startLine": 10,
+        "endLine": 10,
+        "startOffset": 27,
+        "endOffset": 72
+      },
+      "message": "Mark the props of the component as read-only.",
+      "severity": "MAJOR"
+    }
+  ]
+}

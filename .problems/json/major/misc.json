@@ -1,0 +1,300 @@
+{
+  "generatedAt": "2026-01-20T00:42:23.325Z",
+  "rule": "misc",
+  "count": 22,
+  "details": {
+    "code": "no-console",
+    "source": "eslint",
+    "path": "/Users/andmor/Incidentes/studio"
+  },
+  "occurrences": [
+    {
+      "key": "api/ask/index.js:0:14:1",
+      "file": "api/ask/index.js",
+      "line": 1,
+      "textRange": {
+        "startLine": 1,
+        "endLine": 1,
+        "startOffset": 14,
+        "endOffset": 35
+      },
+      "message": "File is a CommonJS module; it may be converted to an ES module.",
+      "severity": "INFO",
+      "source": "ts"
+    },
+    {
+      "key": "src/components/Chatbot.tsx:209:12:3",
+      "file": "src/components/Chatbot.tsx",
+      "line": 210,
+      "textRange": {
+        "startLine": 210,
+        "endLine": 210,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:7:12:14",
+      "file": "src/lib/data.ts",
+      "line": 8,
+      "textRange": {
+        "startLine": 8,
+        "endLine": 8,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:15:12:15",
+      "file": "src/lib/data.ts",
+      "line": 16,
+      "textRange": {
+        "startLine": 16,
+        "endLine": 16,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:22:8:16",
+      "file": "src/lib/data.ts",
+      "line": 23,
+      "textRange": {
+        "startLine": 23,
+        "endLine": 23,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:32:12:17",
+      "file": "src/lib/data.ts",
+      "line": 33,
+      "textRange": {
+        "startLine": 33,
+        "endLine": 33,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:40:12:18",
+      "file": "src/lib/data.ts",
+      "line": 41,
+      "textRange": {
+        "startLine": 41,
+        "endLine": 41,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:76:8:19",
+      "file": "src/lib/data.ts",
+      "line": 77,
+      "textRange": {
+        "startLine": 77,
+        "endLine": 77,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:102:8:20",
+      "file": "src/lib/data.ts",
+      "line": 103,
+      "textRange": {
+        "startLine": 103,
+        "endLine": 103,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:119:8:21",
+      "file": "src/lib/data.ts",
+      "line": 120,
+      "textRange": {
+        "startLine": 120,
+        "endLine": 120,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:124:8:22",
+      "file": "src/lib/data.ts",
+      "line": 125,
+      "textRange": {
+        "startLine": 125,
+        "endLine": 125,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:172:12:23",
+      "file": "src/lib/data.ts",
+      "line": 173,
+      "textRange": {
+        "startLine": 173,
+        "endLine": 173,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:179:12:24",
+      "file": "src/lib/data.ts",
+      "line": 180,
+      "textRange": {
+        "startLine": 180,
+        "endLine": 180,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:192:8:25",
+      "file": "src/lib/data.ts",
+      "line": 193,
+      "textRange": {
+        "startLine": 193,
+        "endLine": 193,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:218:12:26",
+      "file": "src/lib/data.ts",
+      "line": 219,
+      "textRange": {
+        "startLine": 219,
+        "endLine": 219,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:241:8:27",
+      "file": "src/lib/data.ts",
+      "line": 242,
+      "textRange": {
+        "startLine": 242,
+        "endLine": 242,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:256:12:28",
+      "file": "src/lib/data.ts",
+      "line": 257,
+      "textRange": {
+        "startLine": 257,
+        "endLine": 257,
+        "startOffset": 12,
+        "endOffset": 25
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:267:8:29",
+      "file": "src/lib/data.ts",
+      "line": 268,
+      "textRange": {
+        "startLine": 268,
+        "endLine": 268,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:309:8:30",
+      "file": "src/lib/data.ts",
+      "line": 310,
+      "textRange": {
+        "startLine": 310,
+        "endLine": 310,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/lib/data.ts:335:8:31",
+      "file": "src/lib/data.ts",
+      "line": 336,
+      "textRange": {
+        "startLine": 336,
+        "endLine": 336,
+        "startOffset": 8,
+        "endOffset": 21
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "src/pages/Dashboard.tsx:129:16:7",
+      "file": "src/pages/Dashboard.tsx",
+      "line": 130,
+      "textRange": {
+        "startLine": 130,
+        "endLine": 130,
+        "startOffset": 16,
+        "endOffset": 29
+      },
+      "message": "Unexpected console statement.",
+      "severity": "MAJOR"
+    },
+    {
+      "key": "vite.config.ts:29:6:0",
+      "file": "vite.config.ts",
+      "line": 30,
+      "textRange": {
+        "startLine": 30,
+        "endLine": 30,
+        "startOffset": 6,
+        "endOffset": 9
+      },
+      "message": "No overload matches this call.\n  The last overload gave the following error.\n    Object literal may only specify known properties, and 'all' does not exist in type '{ provider: \"v8\"; } & CoverageV8Options'.",
+      "severity": "BLOCKER",
+      "source": "ts"
+    }
+  ]
+}
